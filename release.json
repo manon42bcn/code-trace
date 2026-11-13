@@ -1,0 +1,6 @@
+{
+  "version_files": ["pyproject.toml"],
+  "test": [["sh", "scripts/test.sh"]],
+  "package": [],
+  "assets": []
+}

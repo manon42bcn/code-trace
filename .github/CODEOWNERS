@@ -1,0 +1,6 @@
+# Managed by scripts/configure_repository.py --prepare-codeowners.
+# Protect CI, CODEOWNERS itself, policies, tooling and their tests.
+/.github/ @manon42bcn
+/policies/ @manon42bcn
+/scripts/ @manon42bcn
+/tests/ @manon42bcn

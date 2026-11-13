@@ -1,0 +1,14 @@
+[project]
+name = "repository-template-python"
+version = "0.1.0"
+requires-python = ">=3.13"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.0.0,<5",
+    "ruff==0.15.16",
+]
+
+[tool.ruff]
+required-version = "==0.15.16"
+extend-exclude = ["indexes", "dry_run"]

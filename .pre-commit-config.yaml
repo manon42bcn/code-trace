@@ -1,0 +1,22 @@
+minimum_pre_commit_version: '4.0.0'
+default_install_hook_types: [pre-commit]
+default_stages: [pre-commit]
+# Generated outputs are excluded; JSON examples are validated too.
+exclude: ^(indexes|dry_run)/
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Keep in sync with pyproject.toml's dev dependency and required-version.
+    rev: v0.15.16
+    hooks:
+      - id: ruff-check
+        types_or: [python, pyi]
+        args: [--fix]
+      - id: ruff-format
+        types_or: [python, pyi]
+  - repo: local
+    hooks:
+      - id: check-json
+        name: check JSON
+        entry: python3 scripts/lint_json.py
+        language: system
+        types: [json]
