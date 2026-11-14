@@ -1,14 +1,80 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "code-trace"
 version = "0.1.0"
-requires-python = ">=3.13"
+description = "Local code indexing, grounded answers and static code flows"
+requires-python = ">=3.10"
+dependencies = ["PyYAML>=6.0"]
+
+[project.scripts]
+code-trace = "coderag.__main__:main"
+
+[project.optional-dependencies]
+llm = ["anthropic>=1.0"]
 
 [dependency-groups]
-dev = [
-    "pre-commit>=4.0.0,<5",
-    "ruff==0.15.16",
-]
+dev = ["pytest>=8",
+       "ruff==0.15.16",
+       "pre-commit>=4.0,<5",
+       "tree-sitter-language-pack>=0.10",
+       "sentence-transformers>=3.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff]
 required-version = "==0.15.16"
-extend-exclude = ["indexes", "dry_run"]
+target-version = "py310"
+line-length = 100
+indent-width = 4
+preview = false
+# Indexed sample code is test data; formatting it changes source evidence and line ranges.
+extend-exclude = ["examples", "indexes", "dry_run"]
+force-exclude = true
+
+[tool.ruff.lint]
+select = [
+    "A",   # flake8-builtins
+    "B",   # flake8-bugbear
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "G",   # flake8-logging-format
+    "I",   # isort
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "ARG", # flake8-unused-arguments
+    "COM", # flake8-commas
+    "C4",  # flake8-comprehensions
+    "PT",  # flake8-pytest-style
+    "T20", # flake8-print
+    "RUF", # Ruff-specific rules
+]
+ignore = [
+    "COM812", # Missing trailing comma; conflicts with ruff format
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = true
+known-first-party = ["coderag", "codetrace"]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+line-ending = "auto"
+skip-magic-trailing-comma = false
+docstring-code-format = false
+
+[tool.setuptools.package-data]
+coderag = ["web/*.html", "web/*.css", "web/*.js", "web/*.svg"]

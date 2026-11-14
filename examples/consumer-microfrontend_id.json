@@ -1,0 +1,728 @@
+{
+  "schema_version": 1,
+  "source_repository": "aicc-tests",
+  "query": {
+    "key": "microfrontend_id",
+    "feature": null,
+    "scenario": null,
+    "max_consumers": 25,
+    "max_producers": 10,
+    "only_prior": false
+  },
+  "summary": {
+    "matching_consumers": 10,
+    "returned_consumers": 10,
+    "truncated_consumers": 0,
+    "status_counts": {
+      "no_prior_writer_identified": 9,
+      "plausible_prior_producer": 1
+    },
+    "returned_producer_candidates": 10
+  },
+  "consumers": [
+    {
+      "consumer": {
+        "reference_index": 29,
+        "relation_index": 76,
+        "reference": "[CONTEXT:microfrontend_id]",
+        "key": "microfrontend_id",
+        "feature": "acceptance/features/components/agent_builder/api_config.feature",
+        "scenario": "scenario: Create a new microfrontend configuration",
+        "step_line": 137,
+        "step_text": "the resource \"[CONF:agent_builder.endpoints.microfrontends]/[CONTEXT:microfrontend_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 51,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_builder/api.py",
+            "symbol": "set_microfrontend_status",
+            "chunk_id": "5f21c722ee0c45e6",
+            "line_approx": 108,
+            "namespace": "toolium.storage",
+            "key": "microfrontend_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 31,
+        "relation_index": 82,
+        "reference": "[CONTEXT:microfrontend_id]",
+        "key": "microfrontend_id",
+        "feature": "acceptance/features/components/agent_builder/api_config.feature",
+        "scenario": "scenario: Create a new microfrontend configuration",
+        "step_line": 143,
+        "step_text": "the response element with JSONPath \"$.id\" has value \"[CONTEXT:microfrontend_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 51,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_builder/api.py",
+            "symbol": "set_microfrontend_status",
+            "chunk_id": "5f21c722ee0c45e6",
+            "line_approx": 108,
+            "namespace": "toolium.storage",
+            "key": "microfrontend_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 47,
+        "relation_index": 113,
+        "reference": "[CONTEXT:microfrontend_id]",
+        "key": "microfrontend_id",
+        "feature": "acceptance/features/components/agent_builder/api_config.feature",
+        "scenario": "scenario_outline: Update an existing microfrontend configuration",
+        "step_line": 197,
+        "step_text": "the resource \"[CONF:agent_builder.endpoints.microfrontends_post]/[CONTEXT:microfrontend_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 51,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_builder/api.py",
+            "symbol": "set_microfrontend_status",
+            "chunk_id": "5f21c722ee0c45e6",
+            "line_approx": 108,
+            "namespace": "toolium.storage",
+            "key": "microfrontend_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 51,
+        "relation_index": 122,
+        "reference": "[CONTEXT:microfrontend_id]",
+        "key": "microfrontend_id",
+        "feature": "acceptance/features/components/agent_builder/api_config.feature",
+        "scenario": "scenario_outline: Update an existing microfrontend configuration",
+        "step_line": 208,
+        "step_text": "the resource \"[CONF:agent_builder.endpoints.microfrontends]/[CONTEXT:microfrontend_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 51,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_builder/api.py",
+            "symbol": "set_microfrontend_status",
+            "chunk_id": "5f21c722ee0c45e6",
+            "line_approx": 108,
+            "namespace": "toolium.storage",
+            "key": "microfrontend_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 63,
+        "relation_index": 153,
+        "reference": "[CONTEXT:microfrontend_id]",
+        "key": "microfrontend_id",
+        "feature": "acceptance/features/components/agent_builder/api_config.feature",
+        "scenario": "scenario: Delete an existing microfrontend configuration",
+        "step_line": 264,
+        "step_text": "the resource \"[CONF:agent_builder.endpoints.microfrontends_post]/[CONTEXT:microfrontend_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 51,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_builder/api.py",
+            "symbol": "set_microfrontend_status",
+            "chunk_id": "5f21c722ee0c45e6",
+            "line_approx": 108,
+            "namespace": "toolium.storage",
+            "key": "microfrontend_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 67,
+        "relation_index": 159,
+        "reference": "[CONTEXT:microfrontend_id]",
+        "key": "microfrontend_id",
+        "feature": "acceptance/features/components/agent_builder/api_config.feature",
+        "scenario": "scenario: Delete an existing microfrontend configuration",
+        "step_line": 270,
+        "step_text": "the resource \"[CONF:agent_builder.endpoints.microfrontends]/[CONTEXT:microfrontend_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 51,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_builder/api.py",
+            "symbol": "set_microfrontend_status",
+            "chunk_id": "5f21c722ee0c45e6",
+            "line_approx": 108,
+            "namespace": "toolium.storage",
+            "key": "microfrontend_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 2342,
+        "relation_index": 8289,
+        "reference": "[CONTEXT:microfrontend_id]",
+        "key": "microfrontend_id",
+        "feature": "acceptance/features/end_to_end/agent_builder/host.feature",
+        "scenario": "scenario: Host loads every configured section with microfrontend on startup without recompiling the platform",
+        "step_line": 175,
+        "step_text": "I delete the microfrontend with id \"[CONTEXT:microfrontend_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 51,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_builder/api.py",
+            "symbol": "set_microfrontend_status",
+            "chunk_id": "5f21c722ee0c45e6",
+            "line_approx": 108,
+            "namespace": "toolium.storage",
+            "key": "microfrontend_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 2343,
+        "relation_index": 8299,
+        "reference": "[CONTEXT:microfrontend_id]",
+        "key": "microfrontend_id",
+        "feature": "acceptance/features/end_to_end/agent_builder/host.feature",
+        "scenario": "scenario: Host mounts and unmounts microfrontends dynamically without affecting the rest of the platform",
+        "step_line": 190,
+        "step_text": "I delete the microfrontend with id \"[CONTEXT:microfrontend_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "plausible_prior_producer",
+      "candidate_count": 1,
+      "prior_writer_candidates": 1,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 51,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_builder/api.py",
+            "symbol": "set_microfrontend_status",
+            "chunk_id": "5f21c722ee0c45e6",
+            "line_approx": 108,
+            "namespace": "toolium.storage",
+            "key": "microfrontend_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "plausible_prior_writer",
+          "evidence": {
+            "tier": "preceding_scenario_step_candidate",
+            "source": "prior_step_definition_same_scenario_or_background",
+            "temporal": "prior_step_witness",
+            "producer_step_line": 187,
+            "witness_path": [
+              {
+                "repository": "aicc-tests",
+                "chunk_id": "5f21c722ee0c45e6"
+              }
+            ],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 2346,
+        "relation_index": 8312,
+        "reference": "[CONTEXT:microfrontend_id]",
+        "key": "microfrontend_id",
+        "feature": "acceptance/features/end_to_end/agent_builder/host.feature",
+        "scenario": "scenario: Loading a new microfrontend version to the host does not affect other active microfrontends",
+        "step_line": 208,
+        "step_text": "the resource \"[CONF:agent_builder.endpoints.microfrontends_post]/[CONTEXT:microfrontend_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 51,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_builder/api.py",
+            "symbol": "set_microfrontend_status",
+            "chunk_id": "5f21c722ee0c45e6",
+            "line_approx": 108,
+            "namespace": "toolium.storage",
+            "key": "microfrontend_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 2348,
+        "relation_index": 8322,
+        "reference": "[CONTEXT:microfrontend_id]",
+        "key": "microfrontend_id",
+        "feature": "acceptance/features/end_to_end/agent_builder/host.feature",
+        "scenario": "scenario: Loading a new microfrontend version to the host does not affect other active microfrontends",
+        "step_line": 218,
+        "step_text": "I delete the microfrontend with id \"[CONTEXT:microfrontend_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 51,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_builder/api.py",
+            "symbol": "set_microfrontend_status",
+            "chunk_id": "5f21c722ee0c45e6",
+            "line_approx": 108,
+            "namespace": "toolium.storage",
+            "key": "microfrontend_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    }
+  ],
+  "guarantees": {
+    "runtime_execution_inferred": false,
+    "value_provenance_inferred": false,
+    "call_path_required_between_separate_steps": false,
+    "unknown_writer_is_not_proof_of_absence": true
+  },
+  "limitations": [
+    "Matching key and prior step witness are static evidence only.",
+    "Hooks, dynamic dispatch and actual storage contents are not runtime verified.",
+    "The underlying context_flow candidate inventory may be incomplete."
+  ]
+}

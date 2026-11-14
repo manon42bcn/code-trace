@@ -1,8 +1,17 @@
-.DS_Store
-__pycache__/
-*.py[cod]
 .venv/
-.env
-.env.*
-!.env.example
-/.template-setup/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.egg-info/
+# Generated indexes, chunks, relationships, vectors, and reports
+/indexes/**
+!/indexes/.gitkeep
+uv.lock
+
+.ruff_cache/
+
+# Machine-specific installed skill destinations and installer lock
+/skills/installations.local.json*
+
+# Local repository, provider and skill installation configuration
+/config.json

@@ -1,0 +1,23 @@
+[
+  {
+    "term": "last_final_answer",
+    "kind": "content",
+    "relevant_writers": ["2d4584b265d56024"],
+    "relevant_readers": ["2d4584b265d56024", "653e7c89e1db88fe", "8857bcdb5f2892fd"],
+    "relevant_accesses": ["2d4584b265d56024", "653e7c89e1db88fe", "8857bcdb5f2892fd"]
+  },
+  {
+    "term": "smart_api_user_token",
+    "kind": "content",
+    "relevant_writers": ["116c63ae57289b84", "2d4584b265d56024"],
+    "relevant_readers": ["adcec1de4ddff8f9"],
+    "relevant_accesses": ["116c63ae57289b84", "2d4584b265d56024", "adcec1de4ddff8f9"]
+  },
+  {
+    "term": "context.storage",
+    "kind": "content",
+    "relevant_writers": [],
+    "relevant_readers": [],
+    "relevant_accesses": []
+  }
+]
