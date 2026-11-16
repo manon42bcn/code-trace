@@ -6,3 +6,25 @@ __pycache__/
 .env.*
 !.env.example
 /.template-setup/
+.pytest_cache/
+*.pyc
+*.egg-info/
+# Generated indexes, chunks, relationships, vectors, and reports
+/indexes/**
+!/indexes/.gitkeep
+uv.lock
+
+.ruff_cache/
+
+# Machine-specific installed skill destinations and installer lock
+/skills/installations.local.json*
+
+# Local repository, provider and skill installation configuration
+/config.json
+
+/dry_run/
+
+# Local analysis reports
+/provenance-aicc-example.json
+/reconciliation-aicc-diagnostics.json
+/reconciliation-aicc-example.json

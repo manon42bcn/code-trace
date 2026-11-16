@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "description": "Curated AICC/Fábrica source expectations, verified against local source on 2026-11-05. Exact queries are explicit, separate from human question text.",
+  "cases": [
+    {
+      "id": "aicc-upload_dataset",
+      "kind": "evidence",
+      "question": "¿Dónde se sube el dataset y se guarda dataset_id?",
+      "query": "En aicc-tests, upload_dataset",
+      "default_repo": "fabrica",
+      "expected": {
+        "repository": "aicc-tests",
+        "sources": [
+          {
+            "path": "acceptance/common/steps/agent_evaluator/api.py",
+            "symbol": "upload_dataset"
+          }
+        ]
+      }
+    },
+    {
+      "id": "aicc-launch_evaluation",
+      "kind": "evidence",
+      "question": "¿Qué paso utiliza dataset_id para lanzar una evaluación?",
+      "query": "En aicc-tests, launch_evaluation",
+      "default_repo": "fabrica",
+      "expected": {
+        "repository": "aicc-tests",
+        "sources": [
+          {
+            "path": "acceptance/common/steps/agent_evaluator/api.py",
+            "symbol": "launch_evaluation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "aicc-delete_evaluator_dataset",
+      "kind": "evidence",
+      "question": "¿Dónde se implementa la eliminación de un dataset del evaluador?",
+      "query": "En aicc-tests, delete_evaluator_dataset",
+      "default_repo": "fabrica",
+      "expected": {
+        "repository": "aicc-tests",
+        "sources": [
+          {
+            "path": "acceptance/common/steps/agent_evaluator/api.py",
+            "symbol": "delete_evaluator_dataset"
+          }
+        ]
+      }
+    },
+    {
+      "id": "aicc-dataset-writer-reader",
+      "kind": "evidence",
+      "question": "¿Qué funciones escriben y utilizan dataset_id en el evaluador?",
+      "query": "En aicc-tests, dataset_id",
+      "default_repo": "fabrica",
+      "expected": {
+        "repository": "aicc-tests",
+        "sources": [
+          {
+            "path": "acceptance/common/steps/agent_evaluator/api.py",
+            "symbol": "upload_dataset",
+            "contains": [
+              "dataset_id"
+            ]
+          },
+          {
+            "path": "acceptance/common/steps/agent_evaluator/api.py",
+            "symbol": "launch_evaluation",
+            "contains": [
+              "dataset_id"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "aicc-natural-question",
+      "kind": "evidence",
+      "question": "¿Dónde se sube el dataset al evaluador de agentes?",
+      "query": "En aicc-tests, ¿Dónde se sube el dataset al evaluador de agentes?",
+      "default_repo": "fabrica",
+      "expected": {
+        "repository": "aicc-tests",
+        "sources": [
+          {
+            "path": "acceptance/common/steps/agent_evaluator/api.py",
+            "symbol": "upload_dataset"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fabrica-tool-declaration",
+      "kind": "evidence",
+      "question": "¿Dónde está declarada parcelamento_get_status?",
+      "query": "En fabrica, parcelamento_get_status",
+      "default_repo": "aicc-tests",
+      "expected": {
+        "repository": "fabrica",
+        "sources": [
+          {
+            "path": "eval/aedg/config/domains/parcelamento/agents/parcelamento_agent.yaml",
+            "contains": [
+              "parcelamento_get_status"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "fabrica-tools-entries",
+      "kind": "inventory",
+      "question": "¿Cuántas entradas tiene la lista de tools de Parcelamento?",
+      "query": "En fabrica, tools de Parcelamento",
+      "default_repo": "aicc-tests",
+      "file": "eval/aedg/config/domains/parcelamento/agents/parcelamento_agent.yaml",
+      "path": "$/agent/tools",
+      "expected": {
+        "repository": "fabrica",
+        "total": 20
+      }
+    },
+    {
+      "id": "fabrica-tools-unique",
+      "kind": "inventory",
+      "question": "¿Cuántas tools distintas declara Parcelamento?",
+      "query": "En fabrica, tools de Parcelamento",
+      "default_repo": "aicc-tests",
+      "file": "eval/aedg/config/domains/parcelamento/agents/parcelamento_agent.yaml",
+      "path": "$/agent/tools",
+      "expected": {
+        "repository": "fabrica",
+        "total": 20
+      },
+      "unique_by": "tool_name"
+    },
+    {
+      "id": "aicc-no-evidence",
+      "kind": "absent",
+      "question": "¿Hay evidencia para un identificador de control inexistente?",
+      "query": "En aicc-tests, coderag_eval_nonexistent_7d93b80f",
+      "default_repo": "fabrica",
+      "expected": {
+        "repository": "aicc-tests"
+      }
+    },
+    {
+      "id": "ambiguous-repositories",
+      "kind": "routing",
+      "question": "¿Qué hace upload_dataset en AICC y Fábrica?",
+      "query": "En aicc-tests y fabrica, upload_dataset",
+      "default_repo": "aicc-tests",
+      "expected": {
+        "error": "ambiguous_repository"
+      }
+    }
+  ]
+}

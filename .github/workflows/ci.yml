@@ -21,8 +21,9 @@ jobs:
       - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.13'
-      - run: python -m pip install --upgrade "pip>=25.1"
-      - run: python -m pip install --group dev
-      - run: ruff check .
-      - run: ruff format --check .
+      - run: python -m venv .venv
+      - run: .venv/bin/python -m pip install --upgrade "pip>=25.1"
+      - run: .venv/bin/python -m pip install -e ".[parsers]" --group dev
+      - run: .venv/bin/ruff check .
+      - run: .venv/bin/ruff format --check .
       - run: sh scripts/test.sh

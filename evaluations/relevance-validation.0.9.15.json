@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "version": "0.9.15",
+  "profile": "lexical",
+  "comparison": "0.9.14 routing/ranking and working-tree changes, using identical current artifacts/configuration and unchanged labels.",
+  "generation_evaluated": false,
+  "suites": {
+    "real_questions.json": {
+      "cases": 10,
+      "previous_passed": 9,
+      "current_passed": 9,
+      "dataset_sha256": "3bd11ca40d127a325ccc3aa01edbc8ccfd6ed02a7b61fd5f9ac6143d692e43aa",
+      "config_sha256": "3e7a2e396d0323fb3ac38435268a718bbc5aa88906047427c1b05a4a0b4a07de",
+      "artifacts": {
+        "aicc-tests": {
+          "index_sha256": "5d5a6940ab0a56e9aed1c7a16c9d5bad6150f463c6f3bb79a41fb15d693359ad",
+          "index_created_at": "2026-11-05T19:53:33.648346+00:00",
+          "relationships_sha256": "53123b64b820e2a78ba80c7d78b0af41224102e19edd9e8d935e882430e3b4cb",
+          "embedding_metadata": {},
+          "retrieval_config": {
+            "lexical_kind": "any",
+            "structural_kind": "any",
+            "access": "all",
+            "semantic_profile": "two_stage",
+            "semantic_initial_k": 1,
+            "semantic_v2_weight": 0.05,
+            "limit": 10,
+            "mode": "lexical"
+          },
+          "vectors_sha256": {}
+        },
+        "fabrica": {
+          "index_sha256": "300e85375e5491b2388f96236254192dc5626451835dafa7fad332deb379870c",
+          "index_created_at": "2026-11-05T19:53:29.920152+00:00",
+          "relationships_sha256": "f983eecc8b5083502efe5f41da7356e3a849702c4c043046aa5de42ded7e669f",
+          "embedding_metadata": {},
+          "retrieval_config": {
+            "lexical_kind": "any",
+            "structural_kind": "any",
+            "access": "all",
+            "semantic_profile": "two_stage",
+            "semantic_initial_k": 1,
+            "semantic_v2_weight": 0.05,
+            "limit": 10,
+            "mode": "lexical"
+          },
+          "vectors_sha256": {}
+        }
+      },
+      "verdicts": [
+        {
+          "id": "aicc-upload_dataset",
+          "previous": true,
+          "current": true
+        },
+        {
+          "id": "aicc-launch_evaluation",
+          "previous": true,
+          "current": true
+        },
+        {
+          "id": "aicc-delete_evaluator_dataset",
+          "previous": true,
+          "current": true
+        },
+        {
+          "id": "aicc-dataset-writer-reader",
+          "previous": false,
+          "current": false
+        },
+        {
+          "id": "aicc-natural-question",
+          "previous": true,
+          "current": true
+        },
+        {
+          "id": "fabrica-tool-declaration",
+          "previous": true,
+          "current": true
+        },
+        {
+          "id": "fabrica-tools-entries",
+          "previous": true,
+          "current": true
+        },
+        {
+          "id": "fabrica-tools-unique",
+          "previous": true,
+          "current": true
+        },
+        {
+          "id": "aicc-no-evidence",
+          "previous": true,
+          "current": true
+        },
+        {
+          "id": "ambiguous-repositories",
+          "previous": true,
+          "current": true
+        }
+      ]
+    },
+    "scoped_questions.json": {
+      "cases": 3,
+      "previous_passed": 3,
+      "current_passed": 3,
+      "dataset_sha256": "acb7f5469b627606ca861d967072fff813af1d0f477183dbd32880f475dd35c0",
+      "config_sha256": "3e7a2e396d0323fb3ac38435268a718bbc5aa88906047427c1b05a4a0b4a07de",
+      "artifacts": {
+        "aicc-tests": {
+          "index_sha256": "5d5a6940ab0a56e9aed1c7a16c9d5bad6150f463c6f3bb79a41fb15d693359ad",
+          "index_created_at": "2026-11-05T19:53:33.648346+00:00",
+          "relationships_sha256": "53123b64b820e2a78ba80c7d78b0af41224102e19edd9e8d935e882430e3b4cb",
+          "embedding_metadata": {},
+          "retrieval_config": {
+            "lexical_kind": "any",
+            "structural_kind": "any",
+            "access": "all",
+            "semantic_profile": "two_stage",
+            "semantic_initial_k": 1,
+            "semantic_v2_weight": 0.05,
+            "limit": 10,
+            "mode": "lexical"
+          },
+          "vectors_sha256": {}
+        },
+        "fabrica": {
+          "index_sha256": "300e85375e5491b2388f96236254192dc5626451835dafa7fad332deb379870c",
+          "index_created_at": "2026-11-05T19:53:29.920152+00:00",
+          "relationships_sha256": "f983eecc8b5083502efe5f41da7356e3a849702c4c043046aa5de42ded7e669f",
+          "embedding_metadata": {},
+          "retrieval_config": {
+            "lexical_kind": "any",
+            "structural_kind": "any",
+            "access": "all",
+            "semantic_profile": "two_stage",
+            "semantic_initial_k": 1,
+            "semantic_v2_weight": 0.05,
+            "limit": 10,
+            "mode": "lexical"
+          },
+          "vectors_sha256": {}
+        }
+      },
+      "verdicts": [
+        {
+          "id": "aicc-scoped-writer-reader",
+          "previous": true,
+          "current": true
+        },
+        {
+          "id": "fabrica-scoped-tool",
+          "previous": true,
+          "current": true
+        },
+        {
+          "id": "aicc-scoped-directory",
+          "previous": true,
+          "current": true
+        }
+      ]
+    },
+    "relevance_questions.json": {
+      "cases": 5,
+      "previous_passed": 1,
+      "current_passed": 5,
+      "dataset_sha256": "e7d25fdffe2237d3ff7b8a0eb359b51437842f965249ec88fedc8b80332fd128",
+      "config_sha256": "3e7a2e396d0323fb3ac38435268a718bbc5aa88906047427c1b05a4a0b4a07de",
+      "artifacts": {
+        "fabrica": {
+          "index_sha256": "300e85375e5491b2388f96236254192dc5626451835dafa7fad332deb379870c",
+          "index_created_at": "2026-11-05T19:53:29.920152+00:00",
+          "relationships_sha256": "f983eecc8b5083502efe5f41da7356e3a849702c4c043046aa5de42ded7e669f",
+          "embedding_metadata": {},
+          "retrieval_config": {
+            "lexical_kind": "any",
+            "structural_kind": "any",
+            "access": "all",
+            "semantic_profile": "two_stage",
+            "semantic_initial_k": 1,
+            "semantic_v2_weight": 0.05,
+            "limit": 10,
+            "mode": "lexical"
+          },
+          "vectors_sha256": {}
+        }
+      },
+      "verdicts": [
+        {
+          "id": "handoff-embedded-repo",
+          "previous": false,
+          "current": true
+        },
+        {
+          "id": "handoff-trailing-scope",
+          "previous": false,
+          "current": true
+        },
+        {
+          "id": "handoff-leading-scope",
+          "previous": true,
+          "current": true
+        },
+        {
+          "id": "unknown-embedded-repo",
+          "previous": false,
+          "current": true
+        },
+        {
+          "id": "conflicting-embedded-repo",
+          "previous": false,
+          "current": true
+        }
+      ]
+    }
+  },
+  "live_generation_smoke": {
+    "provider": "ollama",
+    "model": "qwen2.5-coder:14b",
+    "method": "Live configured answer retrieval, followed by live generation on the same selected context with the final language/scope prompt. One observation, not a statistical generation evaluation.",
+    "question": "en que tools se incluye en handoff en fábrica --repo fabrica",
+    "normalized_question": "en que tools se incluye en handoff",
+    "selected_sources": [
+      "app/infrastructure/tools/parcelamento/human_handoff.py",
+      "app/infrastructure/tools/parcelamento/parcelamento_render_anticipation_handoff.py",
+      "app/infrastructure/tools/parcelamento/parcelamento_render_cancellation_handoff.py"
+    ],
+    "observed_response_language": "Spanish",
+    "acknowledged_partial_scope": true,
+    "refusal": false,
+    "citations": 3,
+    "citation_identity_and_range_validation": "passed",
+    "source_excerpts_recorded": false
+  }
+}

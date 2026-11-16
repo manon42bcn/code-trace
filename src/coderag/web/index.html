@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="chat-token" content="__CHAT_TOKEN__">
+  <title>CodeTrace · Chat local</title>
+  <link rel="stylesheet" href="/chat.css">
+  <script src="/chat.js" defer></script>
+</head>
+<body>
+  <header><div><img class="brand-logo" src="/codetrace-logo-light.svg" alt="CodeTrace — Understand the code. Follow the evidence." width="850" height="240"><h1>Conversa con tu código.</h1><p>Respuestas del modelo configurado, con evidencias del repositorio.</p></div><span class="badge">127.0.0.1</span></header>
+  <main>
+    <section class="settings" aria-label="Configuración de la consulta">
+      <label for="repo">Repositorio<select id="repo" disabled><option>Cargando…</option></select></label>
+      <p id="description"></p>
+      <label class="remote"><input id="remote" type="checkbox"> Permitir enviar evidencias al proveedor remoto configurado</label>
+      <button id="clear" class="secondary" type="button">Nueva conversación</button>
+    </section>
+    <section class="workspace" aria-label="Chat">
+      <div class="notice">Cada pregunta es independiente. El historial solo se muestra en esta pestaña y no se envía al modelo.</div>
+      <div id="messages" aria-live="polite" aria-relevant="additions"><div id="empty"><span class="eyebrow">EXPLORA EL REPOSITORIO</span><h2>Empieza por una pregunta concreta.</h2><p>Por ejemplo: ¿Dónde se implementa la autenticación y qué funciones intervienen?</p><p>Las respuestas aparecerán aquí, junto a sus fuentes.</p></div></div>
+      <form id="form"><label for="question">Tu pregunta</label><textarea id="question" rows="3" maxlength="12000" placeholder="¿Qué quieres saber del código?" required></textarea><div class="compose-footer"><span id="status" role="status">Cargando repositorios…</span><button id="send" disabled>Consultar →</button></div></form>
+    </section>
+  </main>
+  <footer>CodeTrace gestiona la búsqueda y la generación. La interfaz muestra la respuesta sin reinterpretarla.</footer>
+</body>
+</html>

@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "profile": "lexical",
+  "dataset_sha256": "3bd11ca40d127a325ccc3aa01edbc8ccfd6ed02a7b61fd5f9ac6143d692e43aa",
+  "config_sha256": "8e0fd90e92bc4408a9d5f52b2f240855e82059c7ff6b170313a37fb2c17086d3",
+  "cases": 10,
+  "passed": 8,
+  "failed": 2,
+  "status": "failed",
+  "generation_evaluated": false,
+  "ranking_profile": "identifier-v1",
+  "description": "0.9.7 identifier-v1 lexical baseline. Same real sources/gold labels as the initial baseline; 8/10 passing. Latencies are observations, not thresholds.",
+  "artifacts": {
+    "aicc-tests": {
+      "index_sha256": "690447cd94917be52254b608fb45dcfd63349b47baaa5598293913ceb2f02027",
+      "index_created_at": "2026-11-04T22:09:44.410498+00:00",
+      "vectors_sha256": {},
+      "relationships_sha256": "efdbb5d7685081cd2ae8c25d30c73b8bfccaefe9cd98a8efe0b51490a915d7c7"
+    },
+    "fabrica": {
+      "index_sha256": "89d576083d0034615f0c8039faa8d6a826deb24503ad319dacf1ee376c1af5c3",
+      "index_created_at": "2026-11-04T22:09:40.872097+00:00",
+      "vectors_sha256": {},
+      "relationships_sha256": "525b82703e0f5d3c979402c1684358aee697766040602b37411be112a4d96732"
+    }
+  },
+  "rows": [
+    {
+      "id": "aicc-upload_dataset",
+      "kind": "evidence",
+      "passed": true,
+      "retrieved_source_coverage": 1.0,
+      "context_source_coverage": 1.0,
+      "gold_sources_found": true,
+      "citations_valid": true,
+      "retrieved_chunks": 3,
+      "latency_seconds": 0.686029,
+      "reason": null
+    },
+    {
+      "id": "aicc-launch_evaluation",
+      "kind": "evidence",
+      "passed": true,
+      "retrieved_source_coverage": 1.0,
+      "context_source_coverage": 1.0,
+      "gold_sources_found": true,
+      "citations_valid": true,
+      "retrieved_chunks": 1,
+      "latency_seconds": 0.086974,
+      "reason": null
+    },
+    {
+      "id": "aicc-delete_evaluator_dataset",
+      "kind": "evidence",
+      "passed": true,
+      "retrieved_source_coverage": 1.0,
+      "context_source_coverage": 1.0,
+      "gold_sources_found": true,
+      "citations_valid": true,
+      "retrieved_chunks": 1,
+      "latency_seconds": 0.062313,
+      "reason": null
+    },
+    {
+      "id": "aicc-dataset-writer-reader",
+      "kind": "evidence",
+      "passed": false,
+      "retrieved_source_coverage": 0.0,
+      "context_source_coverage": 0.0,
+      "gold_sources_found": true,
+      "citations_valid": true,
+      "retrieved_chunks": 10,
+      "latency_seconds": 0.085136,
+      "reason": "Expected sources absent, insufficient coverage or unexpected results"
+    },
+    {
+      "id": "aicc-natural-question",
+      "kind": "evidence",
+      "passed": false,
+      "retrieved_source_coverage": 0.0,
+      "context_source_coverage": 0.0,
+      "gold_sources_found": true,
+      "citations_valid": true,
+      "retrieved_chunks": 0,
+      "latency_seconds": 0.039952,
+      "reason": "Expected sources absent, insufficient coverage or unexpected results"
+    },
+    {
+      "id": "fabrica-tool-declaration",
+      "kind": "evidence",
+      "passed": true,
+      "retrieved_source_coverage": 1.0,
+      "context_source_coverage": 1.0,
+      "gold_sources_found": true,
+      "citations_valid": true,
+      "retrieved_chunks": 10,
+      "latency_seconds": 1.083593,
+      "reason": null
+    },
+    {
+      "id": "fabrica-tools-entries",
+      "kind": "inventory",
+      "passed": true,
+      "latency_seconds": 0.015953,
+      "total": 20,
+      "entries": 20,
+      "complete": true
+    },
+    {
+      "id": "fabrica-tools-unique",
+      "kind": "inventory",
+      "passed": true,
+      "latency_seconds": 0.015621,
+      "total": 20,
+      "entries": 20,
+      "complete": true
+    },
+    {
+      "id": "aicc-no-evidence",
+      "kind": "absent",
+      "passed": true,
+      "retrieved_source_coverage": null,
+      "context_source_coverage": null,
+      "gold_sources_found": true,
+      "citations_valid": true,
+      "retrieved_chunks": 0,
+      "latency_seconds": 0.053411,
+      "reason": null
+    },
+    {
+      "id": "ambiguous-repositories",
+      "kind": "routing",
+      "passed": true,
+      "latency_seconds": 0.000125,
+      "routing_error": "ambiguous_repository"
+    }
+  ]
+}

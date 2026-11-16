@@ -1,0 +1,724 @@
+{
+  "schema_version": 1,
+  "source_repository": "aicc-tests",
+  "query": {
+    "key": "dataset_id",
+    "feature": null,
+    "scenario": null,
+    "max_consumers": 25,
+    "max_producers": 10,
+    "only_prior": false
+  },
+  "summary": {
+    "matching_consumers": 10,
+    "returned_consumers": 10,
+    "truncated_consumers": 0,
+    "status_counts": {
+      "no_prior_writer_identified": 10
+    },
+    "returned_producer_candidates": 10
+  },
+  "consumers": [
+    {
+      "consumer": {
+        "reference_index": 101,
+        "relation_index": 248,
+        "reference": "[CONTEXT:dataset_id]",
+        "key": "dataset_id",
+        "feature": "acceptance/features/components/agent_evaluator/datasets_management.feature",
+        "scenario": "scenario: Upload a valid dataset for a dimension",
+        "step_line": 142,
+        "step_text": "I delete the evaluator dataset with id \"[CONTEXT:dataset_id]\" and dimension id \"[CONTEXT:dimension_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 64,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_evaluator/opik/lifecycle.py",
+            "symbol": "_store_experiment_context",
+            "chunk_id": "b88b13ba98636634",
+            "line_approx": 159,
+            "namespace": "toolium.storage",
+            "key": "dataset_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 127,
+        "relation_index": 325,
+        "reference": "[CONTEXT:dataset_id]",
+        "key": "dataset_id",
+        "feature": "acceptance/features/components/agent_evaluator/datasets_management.feature",
+        "scenario": "scenario: Try to upload a dataset that already exists with the same name, version and domain",
+        "step_line": 290,
+        "step_text": "I delete the evaluator dataset with id \"[CONTEXT:dataset_id]\" and dimension id \"[CONTEXT:dimension_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 64,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_evaluator/opik/lifecycle.py",
+            "symbol": "_store_experiment_context",
+            "chunk_id": "b88b13ba98636634",
+            "line_approx": 159,
+            "namespace": "toolium.storage",
+            "key": "dataset_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 140,
+        "relation_index": 356,
+        "reference": "[CONTEXT:dataset_id]",
+        "key": "dataset_id",
+        "feature": "acceptance/features/components/agent_evaluator/datasets_management.feature",
+        "scenario": "scenario: Upload a dataset with all needed_properties present in sample references",
+        "step_line": 355,
+        "step_text": "I delete the evaluator dataset with id \"[CONTEXT:dataset_id]\" and dimension id \"[CONTEXT:dimension_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 64,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_evaluator/opik/lifecycle.py",
+            "symbol": "_store_experiment_context",
+            "chunk_id": "b88b13ba98636634",
+            "line_approx": 159,
+            "namespace": "toolium.storage",
+            "key": "dataset_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 268,
+        "relation_index": 703,
+        "reference": "[CONTEXT:dataset_id]",
+        "key": "dataset_id",
+        "feature": "acceptance/features/components/agent_evaluator/experiment_runs.feature",
+        "scenario": "scenario: Get an existing experiment run by id",
+        "step_line": 170,
+        "step_text": "the response element with JSONPath \"$.dataset.dataset_id\" has value \"[CONTEXT:dataset_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 64,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_evaluator/opik/lifecycle.py",
+            "symbol": "_store_experiment_context",
+            "chunk_id": "b88b13ba98636634",
+            "line_approx": 159,
+            "namespace": "toolium.storage",
+            "key": "dataset_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 271,
+        "relation_index": 709,
+        "reference": "[CONTEXT:dataset_id]",
+        "key": "dataset_id",
+        "feature": "acceptance/features/components/agent_evaluator/experiment_runs.feature",
+        "scenario": "scenario: Get an existing experiment run by id",
+        "step_line": 176,
+        "step_text": "I delete the evaluator dataset with id \"[CONTEXT:dataset_id]\" and dimension id \"[CONTEXT:dimension_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 64,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_evaluator/opik/lifecycle.py",
+            "symbol": "_store_experiment_context",
+            "chunk_id": "b88b13ba98636634",
+            "line_approx": 159,
+            "namespace": "toolium.storage",
+            "key": "dataset_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 279,
+        "relation_index": 737,
+        "reference": "[CONTEXT:dataset_id]",
+        "key": "dataset_id",
+        "feature": "acceptance/features/components/agent_evaluator/experiment_runs.feature",
+        "scenario": "scenario: Experiment run registers complete data in Opik for each processed case",
+        "step_line": 222,
+        "step_text": "the experiment in Opik has metadata with dataset \"[CONTEXT:dataset_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 64,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_evaluator/opik/lifecycle.py",
+            "symbol": "_store_experiment_context",
+            "chunk_id": "b88b13ba98636634",
+            "line_approx": 159,
+            "namespace": "toolium.storage",
+            "key": "dataset_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 281,
+        "relation_index": 739,
+        "reference": "[CONTEXT:dataset_id]",
+        "key": "dataset_id",
+        "feature": "acceptance/features/components/agent_evaluator/experiment_runs.feature",
+        "scenario": "scenario: Experiment run registers complete data in Opik for each processed case",
+        "step_line": 224,
+        "step_text": "I delete the evaluator dataset with id \"[CONTEXT:dataset_id]\" and dimension id \"[CONTEXT:dimension_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 64,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_evaluator/opik/lifecycle.py",
+            "symbol": "_store_experiment_context",
+            "chunk_id": "b88b13ba98636634",
+            "line_approx": 159,
+            "namespace": "toolium.storage",
+            "key": "dataset_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 283,
+        "relation_index": 750,
+        "reference": "[CONTEXT:dataset_id]",
+        "key": "dataset_id",
+        "feature": "acceptance/features/components/agent_evaluator/experiment_runs.feature",
+        "scenario": "scenario: Agent server error on one sample does not stop the evaluation and error is traced",
+        "step_line": 246,
+        "step_text": "I delete the evaluator dataset with id \"[CONTEXT:dataset_id]\" and dimension id \"[CONTEXT:dimension_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 64,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_evaluator/opik/lifecycle.py",
+            "symbol": "_store_experiment_context",
+            "chunk_id": "b88b13ba98636634",
+            "line_approx": 159,
+            "namespace": "toolium.storage",
+            "key": "dataset_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 285,
+        "relation_index": 761,
+        "reference": "[CONTEXT:dataset_id]",
+        "key": "dataset_id",
+        "feature": "acceptance/features/components/agent_evaluator/experiment_runs.feature",
+        "scenario": "scenario: Agent server timeout on one sample does not stop the evaluation and timeout is traced",
+        "step_line": 266,
+        "step_text": "I delete the evaluator dataset with id \"[CONTEXT:dataset_id]\" and dimension id \"[CONTEXT:dimension_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 64,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_evaluator/opik/lifecycle.py",
+            "symbol": "_store_experiment_context",
+            "chunk_id": "b88b13ba98636634",
+            "line_approx": 159,
+            "namespace": "toolium.storage",
+            "key": "dataset_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    {
+      "consumer": {
+        "reference_index": 287,
+        "relation_index": 770,
+        "reference": "[CONTEXT:dataset_id]",
+        "key": "dataset_id",
+        "feature": "acceptance/features/components/agent_evaluator/experiment_runs.feature",
+        "scenario": "scenario: All samples fail due to agent server errors and evaluation ends with failed status",
+        "step_line": 284,
+        "step_text": "I delete the evaluator dataset with id \"[CONTEXT:dataset_id]\" and dimension id \"[CONTEXT:dimension_id]\"",
+        "example_row": null,
+        "example_values": null
+      },
+      "status": "no_prior_writer_identified",
+      "candidate_count": 1,
+      "prior_writer_candidates": 0,
+      "returned_candidates": 1,
+      "candidates_truncated": 0,
+      "candidates": [
+        {
+          "producer_id": 64,
+          "writer": {
+            "repository": "aicc-tests",
+            "path": "acceptance/common/steps/agent_evaluator/opik/lifecycle.py",
+            "symbol": "_store_experiment_context",
+            "chunk_id": "b88b13ba98636634",
+            "line_approx": 159,
+            "namespace": "toolium.storage",
+            "key": "dataset_id",
+            "operation": "write",
+            "value_kind": "dynamic"
+          },
+          "classification": "insufficient_temporal_evidence",
+          "evidence": {
+            "tier": "key_only_candidate",
+            "source": "matching_key_only",
+            "temporal": "not_ordered_in_scenario",
+            "producer_step_line": null,
+            "witness_path": [],
+            "scope": "static_hook_reachable",
+            "storage_layer": "scenario",
+            "lookup_rule": "storage_primary",
+            "route_conditions": [],
+            "future_step_lines": [],
+            "later_prior_writer_step_lines": []
+          },
+          "runtime_verified": false
+        }
+      ],
+      "diagnostics": [
+        "no_reachable_writer_from_prior_step"
+      ],
+      "hook_applicability": "static_hook_candidates",
+      "effective_storage_scope": {
+        "model": "conditional_chainmap_static",
+        "layer_order": [
+          "scenario",
+          "feature",
+          "run",
+          "behave.context"
+        ],
+        "scenario_layer_reachable": true,
+        "feature_layer_reachable": true,
+        "run_layer_reachable": true,
+        "execution_guaranteed": false,
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    }
+  ],
+  "guarantees": {
+    "runtime_execution_inferred": false,
+    "value_provenance_inferred": false,
+    "call_path_required_between_separate_steps": false,
+    "unknown_writer_is_not_proof_of_absence": true
+  },
+  "limitations": [
+    "Matching key and prior step witness are static evidence only.",
+    "Hooks, dynamic dispatch and actual storage contents are not runtime verified.",
+    "The underlying context_flow candidate inventory may be incomplete."
+  ]
+}

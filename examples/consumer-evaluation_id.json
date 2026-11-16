@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "source_repository": "aicc-tests",
+  "query": {
+    "key": "evaluation_id",
+    "feature": null,
+    "scenario": null,
+    "max_consumers": 25,
+    "max_producers": 10,
+    "only_prior": false
+  },
+  "summary": {
+    "matching_consumers": 0,
+    "returned_consumers": 0,
+    "truncated_consumers": 0,
+    "status_counts": {},
+    "returned_producer_candidates": 0
+  },
+  "consumers": [],
+  "guarantees": {
+    "runtime_execution_inferred": false,
+    "value_provenance_inferred": false,
+    "call_path_required_between_separate_steps": false,
+    "unknown_writer_is_not_proof_of_absence": true
+  },
+  "limitations": [
+    "Matching key and prior step witness are static evidence only.",
+    "Hooks, dynamic dispatch and actual storage contents are not runtime verified.",
+    "The underlying context_flow candidate inventory may be incomplete."
+  ]
+}
