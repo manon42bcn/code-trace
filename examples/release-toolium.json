@@ -1,0 +1,6 @@
+{
+  "version_files": ["package.json", "package-lock.json"],
+  "test": [["npm", "ci"], ["npm", "test"]],
+  "package": [["npm", "run", "package"]],
+  "assets": ["dist/*.vsix"]
+}

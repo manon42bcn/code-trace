@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="490" viewBox="0 0 1100 490" role="img" aria-labelledby="title desc">
+<title id="title">Repository branching model</title>
+<desc id="desc">Time flows left to right. Feature branches start from dev and merge back through pull requests and successful CI by the designated maintainer. Dev is promoted to main through a pull request and successful CI by the designated maintainer. Direct pushes to main and dev are blocked.</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#475569"/></marker>
+</defs>
+<rect width="1100" height="490" rx="20" fill="#f8fafc"/>
+<g font-family="Arial, sans-serif">
+<text x="40" y="45" font-size="26" font-weight="700" fill="#0f172a">Branching model</text>
+<text x="40" y="73" font-size="15" fill="#475569">Feature work → integration → promotion</text>
+<path d="M820 48H1050" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="820" y="73" font-size="14" fill="#475569">Time</text>
+<g font-size="18" font-weight="700">
+<text x="40" y="151" fill="#166534">main</text>
+<text x="40" y="291" fill="#1d4ed8">dev</text>
+<text x="40" y="391" fill="#7e22ce">feature/*</text>
+</g>
+<path d="M170 145H1030" stroke="#15803d" stroke-width="5" fill="none"/>
+<path d="M170 285H1030" stroke="#2563eb" stroke-width="5" fill="none"/>
+<path d="M260 285C290 285 290 385 335 385H485C530 385 540 285 585 285" stroke="#9333ea" stroke-width="4" fill="none"/>
+<path d="M730 285C805 285 805 145 880 145" stroke="#475569" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<g fill="#fff" stroke-width="4">
+<g stroke="#15803d"><circle cx="170" cy="145" r="8"/><circle cx="880" cy="145" r="8"/></g>
+<g stroke="#2563eb"><circle cx="170" cy="285" r="8"/><circle cx="260" cy="285" r="8"/><circle cx="585" cy="285" r="8"/><circle cx="730" cy="285" r="8"/></g>
+<g stroke="#9333ea"><circle cx="355" cy="385" r="7"/><circle cx="440" cy="385" r="7"/></g>
+</g>
+<g fill="#475569" font-size="15">
+<text x="178" y="326">Branch from dev</text>
+<text x="600" y="350">PR to dev</text>
+<text x="600" y="373">CI passes → maintainer merges</text>
+<text x="855" y="210">PR: dev → main</text>
+<text x="855" y="233">CI passes</text>
+<text x="855" y="256">Maintainer merges</text>
+<text x="178" y="120">Stable branch</text>
+<text x="178" y="260">Permanent integration branch</text>
+</g>
+<path d="M40 429H1060" stroke="#cbd5e1"/>
+<text x="40" y="454" fill="#0f172a" font-size="14">main + dev: no direct pushes · Sensitive changes: owner review or explicit owner review bypass</text>
+<text x="40" y="476" fill="#64748b" font-size="13">Branch routing is a recommended convention. CI and protected-branch rules are enforced after setup.</text>
+</g>
+</svg>
