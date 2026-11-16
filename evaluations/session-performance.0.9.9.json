@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "version": "0.9.9",
+  "query": "En aicc-tests, Where is the dataset uploaded to the agent evaluator?",
+  "results": {
+    "session": {
+      "first_page_seconds": 12.4976,
+      "continuation_seconds": 0.0823,
+      "provider_load_progress_on_continuation": false
+    },
+    "stateless": {
+      "first_page_seconds": 12.8957,
+      "continuation_seconds": 12.9484,
+      "provider_load_progress_on_continuation": true
+    }
+  },
+  "equivalent_page_matches_and_evidence": true,
+  "session_reused": true,
+  "session_bytes": 18162,
+  "planning_profile": "natural-v1",
+  "ranking_profile": "identifier-v1",
+  "offline_embedding_assets": true,
+  "parameters": {
+    "limit": 4,
+    "page_size": 1,
+    "max_chunks": 1,
+    "retrieval_mode": "configured"
+  },
+  "artifact_sha256": {
+    "config.json": "8e0fd90e92bc4408a9d5f52b2f240855e82059c7ff6b170313a37fb2c17086d3",
+    "aicc-tests.chunks.json": "690447cd94917be52254b608fb45dcfd63349b47baaa5598293913ceb2f02027",
+    "aicc-tests.relationships.json": "efdbb5d7685081cd2ae8c25d30c73b8bfccaefe9cd98a8efe0b51490a915d7c7",
+    "aicc-tests.vectors-v1.json": "571d1772d963cc36d6863d20536cf7dc96d322f1cf67bba0f268195e524f7442",
+    "aicc-tests.vectors-v2.json": "868f874045090d63f4fceeb458cf573cc4e121a8fae3506a9c6fad4c383b75e9"
+  },
+  "limitations": [
+    "Single local observation including CLI startup/model loading; not a performance threshold."
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "description": "0.9.15 handoff regression: original user question, repository-selector isolation and conservative routing errors. Source paths/symbols verified against the existing Fábrica snapshot; no source excerpts.",
+  "cases": [
+    {
+      "id": "handoff-embedded-repo",
+      "kind": "evidence",
+      "question": "en que tools se incluye en handoff en fábrica --repo fabrica",
+      "query": "en que tools se incluye en handoff en fábrica --repo fabrica",
+      "default_repo": "aicc-tests",
+      "expected": {
+        "repository": "fabrica",
+        "sources": [
+          {
+            "path": "app/infrastructure/tools/parcelamento/human_handoff.py",
+            "symbol": "make_human_handoff_tool"
+          },
+          {
+            "path": "app/infrastructure/tools/parcelamento/parcelamento_render_anticipation_handoff.py",
+            "symbol": "make_parcelamento_render_anticipation_handoff_tool"
+          },
+          {
+            "path": "app/infrastructure/tools/parcelamento/parcelamento_render_cancellation_handoff.py",
+            "symbol": "make_parcelamento_render_cancellation_handoff_tool"
+          }
+        ]
+      }
+    },
+    {
+      "id": "handoff-trailing-scope",
+      "kind": "evidence",
+      "question": "en que tools se incluye en handoff en fábrica",
+      "query": "en que tools se incluye en handoff en fábrica",
+      "default_repo": "aicc-tests",
+      "expected": {
+        "repository": "fabrica",
+        "sources": [
+          {
+            "path": "app/infrastructure/tools/parcelamento/human_handoff.py",
+            "symbol": "make_human_handoff_tool"
+          },
+          {
+            "path": "app/infrastructure/tools/parcelamento/parcelamento_render_anticipation_handoff.py",
+            "symbol": "make_parcelamento_render_anticipation_handoff_tool"
+          },
+          {
+            "path": "app/infrastructure/tools/parcelamento/parcelamento_render_cancellation_handoff.py",
+            "symbol": "make_parcelamento_render_cancellation_handoff_tool"
+          }
+        ]
+      }
+    },
+    {
+      "id": "handoff-leading-scope",
+      "kind": "evidence",
+      "question": "En fábrica, ¿qué tools incluyen handoff?",
+      "query": "En fábrica, ¿qué tools incluyen handoff?",
+      "default_repo": "aicc-tests",
+      "expected": {
+        "repository": "fabrica",
+        "sources": [
+          {
+            "path": "app/infrastructure/tools/parcelamento/human_handoff.py",
+            "symbol": "make_human_handoff_tool"
+          },
+          {
+            "path": "app/infrastructure/tools/parcelamento/parcelamento_render_anticipation_handoff.py",
+            "symbol": "make_parcelamento_render_anticipation_handoff_tool"
+          },
+          {
+            "path": "app/infrastructure/tools/parcelamento/parcelamento_render_cancellation_handoff.py",
+            "symbol": "make_parcelamento_render_cancellation_handoff_tool"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unknown-embedded-repo",
+      "kind": "routing",
+      "question": "handoff --repo coderag_missing_repository",
+      "query": "handoff --repo coderag_missing_repository",
+      "default_repo": "aicc-tests",
+      "expected": {
+        "error": "unknown_repository"
+      }
+    },
+    {
+      "id": "conflicting-embedded-repo",
+      "kind": "routing",
+      "question": "En aicc-tests, handoff --repo fabrica",
+      "query": "En aicc-tests, handoff --repo fabrica",
+      "default_repo": "aicc-tests",
+      "expected": {
+        "error": "conflicting_repository"
+      }
+    }
+  ]
+}
