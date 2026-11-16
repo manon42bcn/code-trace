@@ -1,5 +1,5 @@
-from coderag.behave_links import build_behave_relations
-from coderag.core import index_repository
+from codetrace.behave_links import build_behave_relations
+from codetrace.core import index_repository
 
 CFG = {
     'languages': ['python', 'gherkin'],

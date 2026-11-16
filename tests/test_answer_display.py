@@ -5,9 +5,9 @@ import sys
 
 import pytest
 
-from coderag import __main__ as cli, generation_factory
-from coderag.answer_display import render_answer
-from coderag.generation import Claim, GenerationResult
+from codetrace import __main__ as cli, generation_factory
+from codetrace.answer_display import render_answer
+from codetrace.generation import Claim, GenerationResult
 
 ANSWER = 'Respuesta **literal**: sí.\nNo cambiar «este texto».\n'
 
@@ -122,7 +122,7 @@ def test_answer_cli_routing_reports_and_verbatim_text(
     monkeypatch.setattr(generation_factory, 'build_generation_provider', lambda _config: Provider())
     report = configured.parent / 'report.json'
     argv = [
-        'coderag',
+        'codetrace',
         'answer',
         'En demo, order_id',
         '--default-repo',
@@ -166,7 +166,7 @@ def test_text_output_without_provider_fails_instead_of_synthesizing(
         sys,
         'argv',
         [
-            'coderag',
+            'codetrace',
             'answer',
             'order_id',
             '--default-repo',
@@ -266,7 +266,7 @@ def test_answer_cli_sends_handoff_evidence_without_repository_metadata_to_provid
     monkeypatch.setattr(generation_factory, 'build_generation_provider', lambda _cfg: Provider())
     question = '¿Qué tools incluyen handoff en demo?'
     argv = [
-        'coderag',
+        'codetrace',
         'answer',
         question if explicit_flag else question + ' --repo demo',
         '--config',
@@ -290,7 +290,7 @@ def test_answer_unknown_explicit_repository_fails_before_loading_models(
         sys,
         'argv',
         [
-            'coderag',
+            'codetrace',
             'answer',
             'handoff tools',
             '--config',
@@ -324,7 +324,7 @@ def test_answer_routing_diagnostic_needs_no_artifacts_or_generation(
         sys,
         'argv',
         [
-            'coderag',
+            'codetrace',
             'answer',
             'En demo, handoff',
             '--config',

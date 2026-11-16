@@ -1,4 +1,4 @@
-from coderag.behave_links import _pattern_regex
+from codetrace.behave_links import _pattern_regex
 
 
 def test_typed_number_rejects_non_number():

@@ -1,6 +1,6 @@
 import json
 
-from coderag.rag_report import save_rag_report
+from codetrace.rag_report import save_rag_report
 
 
 def test_rag_report_is_versioned_and_reproducible(tmp_path):

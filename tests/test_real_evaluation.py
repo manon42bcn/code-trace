@@ -7,8 +7,8 @@ import sys
 
 import pytest
 
-from coderag.core import index_repository
-from coderag.real_evaluation import compare_reports, load_suite, run_suite
+from codetrace.core import index_repository
+from codetrace.real_evaluation import compare_reports, load_suite, run_suite
 
 
 @pytest.fixture
@@ -149,7 +149,7 @@ def test_cli_report_exit_status_and_case_selection(suite, tmp_path):
     args = [
         sys.executable,
         '-m',
-        'coderag',
+        'codetrace',
         'evaluate-real',
         '--dataset',
         str(dataset),
@@ -171,10 +171,10 @@ def test_cli_report_exit_status_and_case_selection(suite, tmp_path):
 
 
 def test_profile_comparison_uses_same_cases_and_semantic_only_provider(suite, monkeypatch):
-    from coderag import embedding_provider
-    from coderag.embeddings import EmbeddingMetadata
-    from coderag.real_evaluation import compare_profiles
-    from coderag.vector_store import VectorStore
+    from codetrace import embedding_provider
+    from codetrace.embeddings import EmbeddingMetadata
+    from codetrace.real_evaluation import compare_profiles
+    from codetrace.vector_store import VectorStore
 
     dataset, config = suite
     raw = json.loads(config.read_text())
@@ -225,7 +225,7 @@ def test_profile_comparison_uses_same_cases_and_semantic_only_provider(suite, mo
 
 
 def test_missing_semantic_stores_are_recorded_without_lexical_fallback(suite):
-    from coderag.real_evaluation import compare_profiles
+    from codetrace.real_evaluation import compare_profiles
 
     dataset, config = suite
     report = compare_profiles(dataset, config, selected=['source'])
@@ -244,7 +244,7 @@ def test_comparison_cli_persists_failed_profiles(suite, tmp_path):
         [
             sys.executable,
             '-m',
-            'coderag',
+            'codetrace',
             'evaluate-real',
             '--dataset',
             str(dataset),
@@ -266,7 +266,7 @@ def test_comparison_cli_persists_failed_profiles(suite, tmp_path):
 
 
 def test_incomparable_comparison_is_not_success_even_with_zero_failed_cases(tmp_path, monkeypatch):
-    from coderag import real_evaluation
+    from codetrace import real_evaluation
 
     monkeypatch.setattr(
         real_evaluation,

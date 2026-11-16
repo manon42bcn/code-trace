@@ -1,7 +1,7 @@
 import json
 from io import BytesIO
 
-from coderag.ollama_provider import OllamaProvider
+from codetrace.ollama_provider import OllamaProvider
 
 
 def test_ollama_provider_parses_structured_response(monkeypatch):
@@ -17,7 +17,7 @@ def test_ollama_provider_parses_structured_response(monkeypatch):
             pass
 
     monkeypatch.setattr(
-        'coderag.ollama_provider.urlopen',
+        'codetrace.ollama_provider.urlopen',
         lambda _request, timeout: Response(json.dumps(payload).encode()),  # noqa: ARG005 - urlopen keyword
     )
     result = OllamaProvider(model='local').generate('prompt')

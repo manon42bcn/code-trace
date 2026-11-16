@@ -1,4 +1,4 @@
-from coderag.two_stage_retrieval import two_stage_retrieve
+from codetrace.two_stage_retrieval import two_stage_retrieve
 
 
 def test_two_stage_keeps_v1_candidates_and_expands_with_v2():

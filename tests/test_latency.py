@@ -1,6 +1,6 @@
 import time
 
-from coderag.latency import timed
+from codetrace.latency import timed
 
 
 def test_timed_records_elapsed_seconds():

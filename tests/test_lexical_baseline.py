@@ -1,6 +1,6 @@
 """Provider-neutral lexical retrieval baseline with labeled synthetic queries."""
 
-from coderag.evaluation import mrr, precision_at_k, recall_at_k
+from codetrace.evaluation import mrr, precision_at_k, recall_at_k
 
 QUERIES = [
     {'term': 'save_order', 'kind': 'symbol', 'relevant': {'order'}},

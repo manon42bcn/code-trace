@@ -1,7 +1,7 @@
 import json
 
-from coderag.behave_links import build_behave_relations
-from coderag.repo_links import build_repository_links
+from codetrace.behave_links import build_behave_relations
+from codetrace.repo_links import build_repository_links
 
 
 def test_distinct_outline_rows_not_ambiguous(tmp_path):

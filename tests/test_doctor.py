@@ -6,9 +6,9 @@ import sys
 
 import pytest
 
-from coderag.artifact_state import link_signature
-from coderag.core import index_repository
-from coderag.doctor import diagnose
+from codetrace.artifact_state import link_signature
+from codetrace.core import index_repository
+from codetrace.doctor import diagnose
 
 
 @pytest.fixture
@@ -110,7 +110,7 @@ def test_bad_config_and_unknown_repository(prepared):
 
 def test_cli_exit_json_and_optional_probe(prepared, monkeypatch):
     path, _, _, _ = prepared
-    from coderag import provider_check
+    from codetrace import provider_check
 
     calls = []
     monkeypatch.setattr(
@@ -122,7 +122,7 @@ def test_cli_exit_json_and_optional_probe(prepared, monkeypatch):
         [
             sys.executable,
             '-m',
-            'coderag',
+            'codetrace',
             'doctor',
             '--config',
             str(path),
@@ -166,7 +166,7 @@ def test_full_ignores_excluded_source_and_tracks_empty_files(prepared):
 
 def test_optional_provider_failure_is_actionable(prepared, monkeypatch):
     path, _, _, _ = prepared
-    from coderag import provider_check
+    from codetrace import provider_check
 
     def fail(*_args, **_kwargs):
         raise provider_check.ProviderCheckError('connection_failed', 'Service unavailable')

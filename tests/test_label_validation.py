@@ -1,4 +1,4 @@
-from coderag.label_validation import validate_labels
+from codetrace.label_validation import validate_labels
 
 
 def test_labels_validate_against_graph_edges():

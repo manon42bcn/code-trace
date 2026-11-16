@@ -1,6 +1,6 @@
 import pytest
 
-from coderag.generation_config import GenerationConfig
+from codetrace.generation_config import GenerationConfig
 
 
 def test_generation_config_defaults_to_offline():

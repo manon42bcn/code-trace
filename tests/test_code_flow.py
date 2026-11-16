@@ -2,12 +2,12 @@
 
 import pytest
 
-from coderag.code_flow import flow_candidates, is_flow_query
-from coderag.core import build_chunks
-from coderag.evidence_graph import build_evidence_graph
-from coderag.grounded_prompt import build_grounded_prompt
-from coderag.intent_context import build_context_for_query
-from coderag.rag_pipeline import answer
+from codetrace.code_flow import flow_candidates, is_flow_query
+from codetrace.core import build_chunks
+from codetrace.evidence_graph import build_evidence_graph
+from codetrace.grounded_prompt import build_grounded_prompt
+from codetrace.intent_context import build_context_for_query
+from codetrace.rag_pipeline import answer
 
 SETTINGS = {
     'chunking': {
@@ -173,7 +173,7 @@ def test_depth_and_node_bounds(prepared):
 
 
 def test_answer_pipeline_receives_flow_without_bypassing_generation_validation(prepared):
-    from coderag.generation import Claim, GenerationResult
+    from codetrace.generation import Claim, GenerationResult
 
     index, graph, ids = prepared
 
@@ -229,8 +229,8 @@ def test_evidence_only_context_does_not_change_pagination_candidates(prepared):
 
 
 def test_markdown_answer_shows_bounded_flow_without_changing_provider_text(prepared):
-    from coderag.answer_display import render_answer
-    from coderag.generation import GenerationResult
+    from codetrace.answer_display import render_answer
+    from codetrace.generation import GenerationResult
 
     index, graph, _ids = prepared
     context = flow_context(index, graph, 'Request flow POST /orders', [], max_chunks=2)

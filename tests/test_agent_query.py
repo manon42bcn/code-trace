@@ -4,8 +4,8 @@ import sys
 
 import pytest
 
-from coderag import agent_query
-from coderag.generation import Claim, GenerationResult
+from codetrace import agent_query
+from codetrace.generation import Claim, GenerationResult
 
 
 @pytest.fixture
@@ -36,7 +36,7 @@ def inputs(tmp_path):
 
 def invoke(argv):
     return subprocess.run(
-        [sys.executable, '-m', 'coderag', 'query', *argv], capture_output=True, text=True
+        [sys.executable, '-m', 'codetrace', 'query', *argv], capture_output=True, text=True
     )
 
 

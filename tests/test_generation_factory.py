@@ -1,5 +1,5 @@
-from coderag.generation_config import GenerationConfig
-from coderag.generation_factory import build_generation_provider
+from codetrace.generation_config import GenerationConfig
+from codetrace.generation_factory import build_generation_provider
 
 
 def test_none_provider_keeps_offline_mode():

@@ -1,7 +1,7 @@
 import json
 
-from coderag.behave_links import _pattern_regex, build_behave_relations
-from coderag.repo_links import _outline_rows, _variants, build_repository_links
+from codetrace.behave_links import _pattern_regex, build_behave_relations
+from codetrace.repo_links import _outline_rows, _variants, build_repository_links
 
 
 def test_quoted_fields_cannot_cross_quotes():

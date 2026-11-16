@@ -1,5 +1,5 @@
-from coderag.context_flow import context_flow
-from coderag.execution_paths import call_graph
+from codetrace.context_flow import context_flow
+from codetrace.execution_paths import call_graph
 
 
 def ch(cid, path, symbol, code, strategy='python_ast'):

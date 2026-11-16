@@ -1,7 +1,7 @@
 import json
 
-from coderag.behave_links import build_behave_relations
-from coderag.repo_links import build_repository_links, save_links
+from codetrace.behave_links import build_behave_relations
+from codetrace.repo_links import build_repository_links, save_links
 
 
 def _make_index(root, name, chunks):
@@ -83,7 +83,7 @@ def test_dependency_link_and_missing(tmp_path):
 
 
 def test_repeated_steps_reuse_compiled_patterns(tmp_path, monkeypatch):
-    from coderag import repo_links
+    from codetrace import repo_links
 
     steps = '\n'.join(' Given shared hello' for _ in range(100))
     chunks = [

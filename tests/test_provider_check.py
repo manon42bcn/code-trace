@@ -5,8 +5,8 @@ from urllib.error import HTTPError, URLError
 
 import pytest
 
-from coderag import provider_check
-from coderag.generation import GenerationResult
+from codetrace import provider_check
+from codetrace.generation import GenerationResult
 
 
 def configuration(**settings):

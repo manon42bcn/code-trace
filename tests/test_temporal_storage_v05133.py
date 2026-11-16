@@ -1,4 +1,4 @@
-from coderag.context_flow import _lifecycle_events, context_flow
+from codetrace.context_flow import _lifecycle_events, context_flow
 
 
 def chunk(symbol, content, path='features/steps/example.py'):

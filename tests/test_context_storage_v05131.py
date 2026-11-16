@@ -1,4 +1,4 @@
-from coderag.context_flow import context_flow, context_inventory
+from codetrace.context_flow import context_flow, context_inventory
 
 
 def chunk(source):

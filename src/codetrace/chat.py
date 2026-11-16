@@ -61,7 +61,7 @@ class ChatApplication:
             command = [
                 sys.executable,
                 '-m',
-                'coderag',
+                'codetrace',
                 'answer',
                 '--config',
                 str(self.config),
@@ -91,7 +91,7 @@ class ChatApplication:
                 # Stderr may include provider secrets. Keep it in the local process, off the API.
                 raise ChatError(
                     'CodeTrace no devolvió JSON válido. '
-                    'Revisa el proveedor y los índices con coderag doctor.',
+                    'Revisa el proveedor y los índices con codetrace doctor.',
                     502,
                 ) from exc
             if not isinstance(output, dict):

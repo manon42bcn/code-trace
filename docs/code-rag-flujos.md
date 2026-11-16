@@ -1,6 +1,6 @@
 # Consultar flujos de código (0.9.21)
 
-`coderag answer` y el chat local reconocen preguntas sobre flujos y puntos de entrada. Recuperan evidencias estructurales antes de los resultados de texto genéricos y proporcionan al modelo un conjunto acotado de relaciones entre funciones.
+`codetrace answer` y el chat local reconocen preguntas sobre flujos y puntos de entrada. Recuperan evidencias estructurales antes de los resultados de texto genéricos y proporcionan al modelo un conjunto acotado de relaciones entre funciones.
 
 ## Ejemplos
 

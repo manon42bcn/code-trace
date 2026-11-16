@@ -298,7 +298,7 @@ def inspect_preparation(index, links, raw, config_path, index_path, repo=None):
     remedy = (
         rebuild_command(config_path, repo)
         if config_path
-        else ('Rebuild chunks/links with their original configuration; run coderag doctor.')
+        else ('Rebuild chunks/links with their original configuration; run codetrace doctor.')
     )
 
     def add(code, status, message):
@@ -330,7 +330,7 @@ def inspect_preparation(index, links, raw, config_path, index_path, repo=None):
         add(
             'coverage',
             'warning',
-            'Index has skipped files/parser diagnostics; inspect coderag analyze.',
+            'Index has skipped files/parser diagnostics; inspect codetrace analyze.',
         )
     spec = source_spec(index, raw, repo, index_path)
     return {

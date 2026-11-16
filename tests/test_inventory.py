@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from coderag.core import index_repository
-from coderag.inventory import InventoryError, inventory, markdown, page_result
+from codetrace.core import index_repository
+from codetrace.inventory import InventoryError, inventory, markdown, page_result
 
 ROOT = Path(__file__).resolve().parents[1]
 CFG = {
@@ -148,7 +148,7 @@ def test_cli_full_report_is_not_paginated_and_inventory_is_offline(tmp_path):
     command = [
         sys.executable,
         '-m',
-        'coderag',
+        'codetrace',
         'inventory',
         '--config',
         str(config),

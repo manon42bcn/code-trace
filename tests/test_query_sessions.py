@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from coderag import agent_query, query_sessions, semantic_config
-from coderag.query_pagination import CursorError, decode_cursor
+from codetrace import agent_query, query_sessions, semantic_config
+from codetrace.query_pagination import CursorError, decode_cursor
 
 
 @pytest.fixture
@@ -246,9 +246,9 @@ def test_session_option_validation(search):
 
 
 def test_semantic_continuation_skips_embeddings_and_vector_changes_invalidate(search, monkeypatch):
-    from coderag import embedding_provider
-    from coderag.embeddings import EmbeddingMetadata
-    from coderag.vector_store import VectorStore
+    from codetrace import embedding_provider
+    from codetrace.embeddings import EmbeddingMetadata
+    from codetrace.vector_store import VectorStore
 
     _, index, links, config, root = search
     raw = json.loads(config.read_text())

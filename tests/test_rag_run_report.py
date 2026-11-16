@@ -1,7 +1,7 @@
 import json
 
-from coderag.generation import GenerationResult
-from coderag.rag_run_report import save_rag_run_report
+from codetrace.generation import GenerationResult
+from codetrace.rag_run_report import save_rag_run_report
 
 
 def test_rag_run_report_serializes_result_without_secrets(tmp_path):

@@ -1,6 +1,6 @@
 import pytest
 
-from coderag.generation import GenerationResult, validate_generation_result
+from codetrace.generation import GenerationResult, validate_generation_result
 
 
 def test_citation_evidence_type_is_normalized():

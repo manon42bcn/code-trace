@@ -1,5 +1,5 @@
-from coderag.generation import Claim, GenerationResult
-from coderag.rag_evaluation import evaluate_answer
+from codetrace.generation import Claim, GenerationResult
+from codetrace.rag_evaluation import evaluate_answer
 
 
 def test_rag_evaluation_measures_citations_and_claims():

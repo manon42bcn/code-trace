@@ -1,4 +1,4 @@
-from coderag.intent_context import build_context_for_query
+from codetrace.intent_context import build_context_for_query
 
 
 def test_context_defaults_follow_generic_intent():

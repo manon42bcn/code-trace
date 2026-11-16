@@ -1,6 +1,6 @@
 # Inventarios de CodeTrace: CLI independiente
 
-`coderag inventory` realiza conteos estructurales sobre las instantáneas indexadas, sin llamar al LLM. Es una operación explícita de la CLI y no un modo de la skill `/code-rag`, que utiliza siempre `answer`.
+`codetrace inventory` realiza conteos estructurales sobre las instantáneas indexadas, sin llamar al LLM. Es una operación explícita de la CLI y no un modo de la skill `/code-rag`, que utiliza siempre `answer`.
 
 Para contar entradas de una lista YAML/JSON conocida:
 

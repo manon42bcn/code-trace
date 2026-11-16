@@ -1,4 +1,4 @@
-from coderag.context_evaluation import evaluate_context_package
+from codetrace.context_evaluation import evaluate_context_package
 
 
 def test_context_evaluation_reports_coverage_and_budget():

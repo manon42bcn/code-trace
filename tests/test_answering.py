@@ -1,7 +1,7 @@
 import pytest
 
-from coderag.answering import answer_query
-from coderag.generation import Claim, GenerationResult
+from codetrace.answering import answer_query
+from codetrace.generation import Claim, GenerationResult
 
 
 class FakeProvider:

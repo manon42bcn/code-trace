@@ -6,10 +6,10 @@ import sys
 
 import pytest
 
-from coderag.query_planning import plan_query
-from coderag.rag_pipeline import answer
-from coderag.retrieval import RetrievalConfig, retrieve
-from coderag.search import search_hybrid
+from codetrace.query_planning import plan_query
+from codetrace.rag_pipeline import answer
+from codetrace.retrieval import RetrievalConfig, retrieve
+from codetrace.search import search_hybrid
 
 
 def test_plan_preserves_input_and_extracts_only_written_identifiers():
@@ -125,7 +125,7 @@ def test_semantic_only_embeds_original_question_without_literal_results():
 
 
 def test_generation_receives_unmodified_natural_question():
-    from coderag.generation import GenerationResult
+    from codetrace.generation import GenerationResult
 
     question = 'Where is upload_dataset defined?'
 
@@ -182,7 +182,7 @@ def test_query_cli_saves_original_plan_and_selected_sources(tmp_path):
         [
             sys.executable,
             '-m',
-            'coderag',
+            'codetrace',
             'query',
             question,
             '--index',
@@ -265,7 +265,7 @@ def test_lexical_pagination_does_not_require_semantic_artifact_files(tmp_path):
         [
             sys.executable,
             '-m',
-            'coderag',
+            'codetrace',
             'query',
             'Where is an order sent?',
             '--config',

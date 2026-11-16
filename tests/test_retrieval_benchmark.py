@@ -1,4 +1,4 @@
-from coderag.retrieval_benchmark import benchmark_retrievers
+from codetrace.retrieval_benchmark import benchmark_retrievers
 
 
 def test_benchmark_compares_named_strategies():

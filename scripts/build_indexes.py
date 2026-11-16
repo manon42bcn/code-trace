@@ -39,8 +39,8 @@ def build_plan(config_path, selected=None, *, incremental=False):
         include(name)
     if str(ROOT / 'src') not in sys.path:
         sys.path.insert(0, str(ROOT / 'src'))
-    from coderag.repository_paths import repository_index_path, repository_relationships_path
-    from coderag.semantic_config import resolve_retrieval
+    from codetrace.repository_paths import repository_index_path, repository_relationships_path
+    from codetrace.semantic_config import resolve_retrieval
 
     outputs = {}
     for name in names:
@@ -59,12 +59,12 @@ def build_plan(config_path, selected=None, *, incremental=False):
         outputs[output] = name
     commands = []
     for name in names:
-        command = ['-m', 'coderag', 'index', '--config', str(config_path), '--repo', name]
+        command = ['-m', 'codetrace', 'index', '--config', str(config_path), '--repo', name]
         if incremental:
             command.append('--incremental')
         commands.append(command)
     for name in names:
-        commands.append(['-m', 'coderag', 'link', '--config', str(config_path), '--repo', name])
+        commands.append(['-m', 'codetrace', 'link', '--config', str(config_path), '--repo', name])
     # Resolve semantics with the same rules used by the query entry points.
     vector_outputs = set()
     for name in names:
@@ -82,7 +82,7 @@ def build_plan(config_path, selected=None, *, incremental=False):
                     )
                 vector_outputs.add(path)
             commands.append(
-                ['-m', 'coderag', 'embed', '--config', str(config_path), '--repo', name]
+                ['-m', 'codetrace', 'embed', '--config', str(config_path), '--repo', name]
             )
     return commands
 

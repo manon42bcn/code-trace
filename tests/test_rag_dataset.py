@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from coderag.rag_dataset import load_rag_dataset
+from codetrace.rag_dataset import load_rag_dataset
 
 
 def test_load_rag_dataset(tmp_path):

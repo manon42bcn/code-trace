@@ -1,5 +1,5 @@
-from coderag.context_flow import context_flow
-from coderag.hook_scope import environment_scope
+from codetrace.context_flow import context_flow
+from codetrace.hook_scope import environment_scope
 
 
 def chunk(path, symbol, source):

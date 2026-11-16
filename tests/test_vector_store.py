@@ -1,7 +1,7 @@
 import pytest
 
-from coderag.embeddings import EmbeddingMetadata
-from coderag.vector_store import VectorStore
+from codetrace.embeddings import EmbeddingMetadata
+from codetrace.vector_store import VectorStore
 
 
 def metadata(dimensions=2):

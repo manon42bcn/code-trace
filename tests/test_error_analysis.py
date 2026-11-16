@@ -1,4 +1,4 @@
-from coderag.error_analysis import analyze_retrieval_errors
+from codetrace.error_analysis import analyze_retrieval_errors
 
 
 def test_error_analysis_reports_hits_misses_and_false_positives():

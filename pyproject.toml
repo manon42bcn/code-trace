@@ -10,7 +10,8 @@ requires-python = ">=3.10"
 dependencies = ["PyYAML>=6.0"]
 
 [project.scripts]
-code-trace = "coderag.__main__:main"
+code-trace = "codetrace.__main__:main"
+codetrace = "codetrace.__main__:main"
 
 [project.optional-dependencies]
 parsers = ["tree-sitter-language-pack>=0.10"]
@@ -58,7 +59,7 @@ ignore = [
 [tool.ruff.lint.isort]
 combine-as-imports = true
 split-on-trailing-comma = true
-known-first-party = ["coderag", "codetrace"]
+known-first-party = ["codetrace"]
 section-order = [
     "future",
     "standard-library",
@@ -75,4 +76,4 @@ skip-magic-trailing-comma = false
 docstring-code-format = false
 
 [tool.setuptools.package-data]
-coderag = ["web/*.html", "web/*.css", "web/*.js", "web/*.svg"]
+codetrace = ["web/*.html", "web/*.css", "web/*.js", "web/*.svg"]

@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from coderag.core import (
+from codetrace.core import (
     build_chunks,
     detect_language,
     index_repository,
@@ -61,7 +61,7 @@ def test_minified_long_line():
 
 
 def test_missing_parser_fails_loudly(monkeypatch):
-    import coderag.core as core
+    import codetrace.core as core
 
     def unavailable(*_args, **_kwargs):
         raise ValueError('parser missing')
@@ -115,7 +115,7 @@ def test_python_decorator_stays_with_method():
 
 
 def test_report():
-    from coderag.core import analyze_index
+    from codetrace.core import analyze_index
 
     chunks = build_chunks('x.feature', 'gherkin', 'Feature: hello\nScenario: a\n Given foo\n', CFG)
     report = analyze_index({'chunks': chunks, 'chunking': CFG['chunking'], 'files_discovered': 1})
@@ -124,14 +124,14 @@ def test_report():
 
 
 def test_doctext_adjacent_c_function():
-    from coderag.core import attach_leading_docs
+    from codetrace.core import attach_leading_docs
 
     lines = ['/**', ' * Description', ' */', 'int answer(void) {', 'return 42;', '}']
     assert attach_leading_docs(lines, [(4, 6, 'answer', 'tree_sitter')], 'c')[0][0] == 1
 
 
 def test_exclusions_global_and_repo_cli(tmp_path):
-    from coderag.core import is_excluded
+    from codetrace.core import is_excluded
 
     assert is_excluded('websrv/data/docs/html/search/search.js', ['**/docs/html/**'])
     assert is_excluded('docs/html/a.js', ['**/docs/html/**'])
@@ -174,7 +174,7 @@ def test_exclude_cli(tmp_path):
         [
             sys.executable,
             '-m',
-            'coderag',
+            'codetrace',
             'index',
             '--config',
             str(tmp_path / 'config.json'),
@@ -195,7 +195,7 @@ def test_tree_sitter_coordinates_use_tuple_access(monkeypatch, syntax_error):
     import sys
     from types import SimpleNamespace
 
-    from coderag.core import treesitter_units
+    from codetrace.core import treesitter_units
 
     class Point(tuple):
         @property

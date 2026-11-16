@@ -1,4 +1,4 @@
-from coderag.evaluation import evaluate_retrieval, relevant_for
+from codetrace.evaluation import evaluate_retrieval, relevant_for
 
 
 def test_evaluate_separates_writer_and_reader_labels():

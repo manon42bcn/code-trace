@@ -1,4 +1,4 @@
-from coderag.embedding_text import EMBEDDING_TEXT_VERSION, chunk_embedding_text
+from codetrace.embedding_text import EMBEDDING_TEXT_VERSION, chunk_embedding_text
 
 
 def test_chunk_embedding_text_is_deterministic_and_contextual():

@@ -1,7 +1,7 @@
 import json
 
-from coderag.behave_reconcile import apply_reconciliation
-from coderag.capability_contract import attach_capability_contract, build_capability_contract
+from codetrace.behave_reconcile import apply_reconciliation
+from codetrace.capability_contract import attach_capability_contract, build_capability_contract
 
 
 def test_generic_python_without_gherkin_or_toolium():

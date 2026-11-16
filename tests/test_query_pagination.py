@@ -6,7 +6,7 @@ import sys
 
 import pytest
 
-from coderag.query_pagination import CursorError, decode_cursor, paginate
+from codetrace.query_pagination import CursorError, decode_cursor, paginate
 
 
 @pytest.fixture
@@ -46,7 +46,7 @@ def search(tmp_path):
 
     def invoke(*extra):
         proc = subprocess.run(
-            [sys.executable, '-m', 'coderag', 'query', *argv, *extra],
+            [sys.executable, '-m', 'codetrace', 'query', *argv, *extra],
             capture_output=True,
             text=True,
         )

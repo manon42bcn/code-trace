@@ -1,6 +1,6 @@
 import pytest
 
-from coderag.grounded_prompt import build_grounded_prompt, response_language_instruction
+from codetrace.grounded_prompt import build_grounded_prompt, response_language_instruction
 
 
 def test_grounded_prompt_is_deterministic_and_marks_code_as_data():
