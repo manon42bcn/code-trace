@@ -1,6 +1,6 @@
 import pytest
 
-from coderag.retrieval import RetrievalConfig, retrieve
+from codetrace.retrieval import RetrievalConfig, retrieve
 
 
 def test_configured_retrieval_defaults():

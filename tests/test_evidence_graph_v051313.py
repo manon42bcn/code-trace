@@ -1,4 +1,4 @@
-from coderag.evidence_graph import build_evidence_graph
+from codetrace.evidence_graph import build_evidence_graph
 
 
 def _index():

@@ -2,7 +2,7 @@
 
 import pytest
 
-from coderag.repository_routing import RepositoryRoutingError, select_repository
+from codetrace.repository_routing import RepositoryRoutingError, select_repository
 
 
 @pytest.fixture

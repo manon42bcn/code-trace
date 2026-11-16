@@ -7,12 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from coderag import agent_query, git_state
-from coderag.core import index_repository
-from coderag.doctor import diagnose
-from coderag.evidence_graph import build_evidence_graph
-from coderag.preparation import ReadinessError, assess_sources, source_spec
-from coderag.repo_links import build_repository_links, save_links
+from codetrace import agent_query, git_state
+from codetrace.core import index_repository
+from codetrace.doctor import diagnose
+from codetrace.evidence_graph import build_evidence_graph
+from codetrace.preparation import ReadinessError, assess_sources, source_spec
+from codetrace.repo_links import build_repository_links, save_links
 
 
 def git(repo, *args):
@@ -250,7 +250,7 @@ def test_paged_sessions_keep_git_assessment_without_loading_artifacts(prepared, 
     (repo / 'README.md').write_text('next docs')
     git(repo, 'add', '.')
     git(repo, 'commit', '-m', 'docs')
-    import coderag.preparation as preparation
+    import codetrace.preparation as preparation
 
     clock = first['readiness']['source']['valid_until'] + 1
     monkeypatch.setattr(preparation.time, 'time', lambda: clock)
@@ -294,9 +294,9 @@ def test_answer_exposes_commit_state_without_rewriting_provider_text(
 ):
     import sys
 
-    from coderag import __main__ as cli, generation_factory
-    from coderag.answer_display import render_answer
-    from coderag.generation import GenerationResult
+    from codetrace import __main__ as cli, generation_factory
+    from codetrace.answer_display import render_answer
+    from codetrace.generation import GenerationResult
 
     repo, config, raw, index, _, data, _, _ = prepared
     raw['generation'] = {'provider': 'ollama', 'model': 'test'}
@@ -323,7 +323,7 @@ def test_answer_exposes_commit_state_without_rewriting_provider_text(
         sys,
         'argv',
         [
-            'coderag',
+            'codetrace',
             'answer',
             'order_id',
             '--config',

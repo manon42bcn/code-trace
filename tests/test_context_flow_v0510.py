@@ -1,7 +1,7 @@
 from test_toolium_v058 import _setup
 
-from coderag.context_flow import context_flow, context_inventory
-from coderag.toolium_analysis import analyze_toolium
+from codetrace.context_flow import context_flow, context_inventory
+from codetrace.toolium_analysis import analyze_toolium
 
 
 def _chunk(content, identifier, symbol='my_step'):

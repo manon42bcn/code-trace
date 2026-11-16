@@ -1,5 +1,5 @@
-from coderag.generation import Claim, GenerationResult
-from coderag.rag_pipeline import answer
+from codetrace.generation import Claim, GenerationResult
+from codetrace.rag_pipeline import answer
 
 
 class FakeProvider:

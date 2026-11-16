@@ -1,5 +1,5 @@
-from coderag.evaluation import evaluate_retrieval
-from coderag.reranking import reciprocal_rank_fusion
+from codetrace.evaluation import evaluate_retrieval
+from codetrace.reranking import reciprocal_rank_fusion
 
 
 def test_rrf_improves_disagreement_case():

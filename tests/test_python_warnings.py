@@ -7,8 +7,8 @@ import warnings
 
 import pytest
 
-from coderag.core import index_repository, python_units
-from coderag.python_parsing import parse_python
+from codetrace.core import index_repository, python_units
+from codetrace.python_parsing import parse_python
 
 SOURCE = (
     '# header\n'
@@ -53,7 +53,7 @@ def test_cli_prints_original_file_locations_once_and_saves_diagnostics(prepared,
     repo, file, config, path, output = prepared
     config['indexing'] = {**SETTINGS, 'isolate_parsers': isolated}
     path.write_text(json.dumps(config))
-    command = [sys.executable, '-m', 'coderag', 'index', '--config', str(path), '--repo', 'demo']
+    command = [sys.executable, '-m', 'codetrace', 'index', '--config', str(path), '--repo', 'demo']
     for extra in ([], ['--incremental']):
         proc = subprocess.run([*command, *extra], capture_output=True, text=True)
         assert proc.returncode == 0, proc.stdout + proc.stderr
@@ -119,7 +119,7 @@ def test_standalone_parser_reports_supplied_filename():
 
 @pytest.mark.parametrize('category', [UserWarning, DeprecationWarning])
 def test_quiet_snippet_parse_preserves_unrelated_warning_categories(monkeypatch, category):
-    import coderag.python_parsing as parsing
+    import codetrace.python_parsing as parsing
 
     original = parsing.ast.parse
 

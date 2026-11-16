@@ -6,11 +6,11 @@ import sys
 
 import pytest
 
-from coderag.embeddings import EmbeddingMetadata
-from coderag.rag_pipeline import answer
-from coderag.retrieval import RetrievalConfig, retrieve
-from coderag.source_filters import SourceFilters, scope_sources
-from coderag.vector_store import VectorStore
+from codetrace.embeddings import EmbeddingMetadata
+from codetrace.rag_pipeline import answer
+from codetrace.retrieval import RetrievalConfig, retrieve
+from codetrace.source_filters import SourceFilters, scope_sources
+from codetrace.vector_store import VectorStore
 
 
 def test_combination_normalization_and_directory_boundaries():
@@ -179,7 +179,7 @@ def query(tmp_path):
             [
                 sys.executable,
                 '-m',
-                'coderag',
+                'codetrace',
                 'query',
                 'target',
                 '--index',

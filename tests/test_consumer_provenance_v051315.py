@@ -1,6 +1,6 @@
 import pytest
 
-from coderag.consumer_provenance import query_context_consumers
+from codetrace.consumer_provenance import query_context_consumers
 
 
 def fixture_report(tier='preceding_scenario_step_candidate', temporal='prior_step_witness'):

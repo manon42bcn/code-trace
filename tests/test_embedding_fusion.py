@@ -1,4 +1,4 @@
-from coderag.embedding_fusion import fuse_embedding_results
+from codetrace.embedding_fusion import fuse_embedding_results
 
 
 def test_embedding_fusion_uses_configurable_weights():

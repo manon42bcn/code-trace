@@ -37,7 +37,7 @@ El puerto `0` elige uno libre y muestra la dirección en la terminal. `--timeout
 2. Escribir una pregunta y pulsar **Consultar**.
 3. Leer la respuesta y desplegar **Evidencias**, **Limitaciones** o **Estado del índice**.
 
-El selector equivale a `--repo`: establece explícitamente el repositorio. No es necesario escribir el argumento dentro de la pregunta. Los límites de recuperación y contexto, la selección del modelo y las comprobaciones del índice se heredan de `coderag answer`; el chat no amplía la cobertura ni garantiza recuentos exhaustivos.
+El selector equivale a `--repo`: establece explícitamente el repositorio. No es necesario escribir el argumento dentro de la pregunta. Los límites de recuperación y contexto, la selección del modelo y las comprobaciones del índice se heredan de `codetrace answer`; el chat no amplía la cobertura ni garantiza recuentos exhaustivos.
 
 La respuesta se muestra como texto conservando sus saltos de línea, sin ejecutar HTML ni interpretar Markdown. Las evidencias conservan el contenido recuperado, archivo, líneas, certeza y distinción entre fuente citada y contexto. Se señala cuando un fragmento está truncado. Si las fuentes han cambiado, el estado muestra la necesidad de actualización y la orden incremental sugerida; no reconstruye índices automáticamente.
 
@@ -70,8 +70,8 @@ Se puede preguntar «¿Cuál es la primera función al llegar una petición?», 
 
 ## Identidad visual (0.9.22)
 
-La cabecera integra el logo CodeTrace para fondos claros de `img/codetrace-logo-light.svg`. Su copia en `src/coderag/web/` se distribuye con el paquete Python y se sirve localmente, sin recursos externos. Al actualizar ese logo, sincronizar ambos archivos. El tamaño se adapta al ancho disponible en escritorio y móvil.
+La cabecera integra el logo CodeTrace para fondos claros de `img/codetrace-logo-light.svg`. Su copia en `src/codetrace/web/` se distribuye con el paquete Python y se sirve localmente, sin recursos externos. Al actualizar ese logo, sincronizar ambos archivos. El tamaño se adapta al ancho disponible en escritorio y móvil.
 
 ## Nombre del proyecto (0.9.23)
 
-El proyecto y el chat utilizan la marca **CodeTrace**, y el paquete se llama `code-trace`. El comando público es `code-trace` y el módulo es `codetrace`; el módulo anterior `coderag` sigue siendo compatible. Ver [instalación y compatibilidad](code-trace.md).
+El proyecto y el chat utilizan la marca **CodeTrace**, y el paquete se llama `code-trace`. El comando público es `code-trace` y el módulo es `codetrace`; el módulo anterior `codetrace` sigue siendo compatible. Ver [instalación y compatibilidad](code-trace.md).

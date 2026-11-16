@@ -64,6 +64,19 @@ El chat se abre en `http://127.0.0.1:8765`. Seleccionar un repositorio, escribir
 
 Más detalles en [preparación de repositorios](docs/code-rag-preparacion.md) y [chat local](docs/code-rag-chat.md).
 
+## Preguntas desde la terminal
+
+```sh
+codetrace --repo demo
+```
+
+Escribe una pregunta y pulsa Intro para ver la respuesta. Dentro de la sesión,
+usa `codetrace --repo otro_repo` para cambiar de repositorio, `/repos` para
+ver los repositorios configurados y `codetrace --exit` o Ctrl+C para salir.
+La sesión usa el proveedor de generación de `config.json`. Puedes seleccionar
+otro archivo con `--config ruta/config.json`.
+
+
 ## CLI
 
 Tras `make setup`, se puede utilizar el comando instalado o el módulo Python:
@@ -89,7 +102,7 @@ Ejemplos con el repositorio `demo` de la plantilla:
 
 Para autorizar el envío de evidencias al proveedor remoto configurado, añadir `--allow-remote` a la consulta; el chat ofrece la casilla equivalente.
 
-El módulo `coderag` sigue disponible por compatibilidad. Los comandos públicos actuales son `code-trace` y `python -m codetrace`.
+La CLI está disponible como `codetrace`, `code-trace` y `python -m codetrace`.
 
 ## Comandos de mantenimiento
 

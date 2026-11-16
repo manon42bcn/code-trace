@@ -1,6 +1,6 @@
 import pytest
 
-from coderag.generation_safety import validate_generation_context
+from codetrace.generation_safety import validate_generation_context
 
 
 def test_remote_generation_requires_explicit_consent():

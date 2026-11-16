@@ -1,10 +1,10 @@
 """Identifier signals precede source caps while preserving explicit access and match semantics."""
 
-from coderag.hybrid_search import hybrid_search
-from coderag.lexical_search import search_index
-from coderag.match_ranking import describe_match
-from coderag.search import search_hybrid
-from coderag.structural_search import search_graph
+from codetrace.hybrid_search import hybrid_search
+from codetrace.lexical_search import search_index
+from codetrace.match_ranking import describe_match
+from codetrace.search import search_hybrid
+from codetrace.structural_search import search_graph
 
 
 def test_exact_definition_precedes_partial_symbol_before_top_k():

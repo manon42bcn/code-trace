@@ -1,6 +1,6 @@
-from coderag.embeddings import EmbeddingMetadata
-from coderag.semantic_search import search_vectors
-from coderag.vector_store import VectorStore
+from codetrace.embeddings import EmbeddingMetadata
+from codetrace.semantic_search import search_vectors
+from codetrace.vector_store import VectorStore
 
 
 class FakeProvider:

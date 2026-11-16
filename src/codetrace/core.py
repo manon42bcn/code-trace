@@ -736,7 +736,7 @@ def index_repository(
                 )
                 try:
                     result = subprocess.run(
-                        [sys.executable, '-m', 'coderag.worker'],
+                        [sys.executable, '-m', 'codetrace.worker'],
                         input=payload,
                         text=True,
                         capture_output=True,

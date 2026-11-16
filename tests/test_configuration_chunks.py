@@ -8,9 +8,9 @@ from pathlib import Path
 
 import pytest
 
-from coderag import core
-from coderag.core import build_chunks, detect_language, index_repository
-from coderag.lexical_search import search_index
+from codetrace import core
+from codetrace.core import build_chunks, detect_language, index_repository
+from codetrace.lexical_search import search_index
 
 CFG = {
     'languages': ['yaml', 'json', 'lock'],
@@ -181,7 +181,7 @@ def test_configuration_files_are_indexed_incrementally_and_sensitive_names_are_e
 def test_worker_supports_configuration_structures():
     request = {'path': 'agent.yaml', 'language': 'yaml', 'source': YAML, 'config': CFG}
     process = subprocess.run(
-        [sys.executable, '-m', 'coderag.worker'],
+        [sys.executable, '-m', 'codetrace.worker'],
         input=json.dumps(request),
         text=True,
         capture_output=True,
@@ -191,8 +191,8 @@ def test_worker_supports_configuration_structures():
 
 
 def test_configuration_paths_are_available_to_structural_graph_search():
-    from coderag.evidence_graph import build_evidence_graph
-    from coderag.structural_search import search_graph
+    from codetrace.evidence_graph import build_evidence_graph
+    from codetrace.structural_search import search_graph
 
     chunks = build_chunks('agent.yaml', 'yaml', YAML, CFG)
     graph = build_evidence_graph(
@@ -205,7 +205,7 @@ def test_configuration_paths_are_available_to_structural_graph_search():
 
 @pytest.mark.parametrize('language', ['json', 'yaml'])
 def test_deep_configuration_respects_nesting_limits(monkeypatch, language):
-    from coderag import configuration_chunks
+    from codetrace import configuration_chunks
 
     monkeypatch.setattr(configuration_chunks, 'MAX_DEPTH', 2)
     with pytest.raises(ValueError, match='nesting exceeds'):
@@ -214,7 +214,7 @@ def test_deep_configuration_respects_nesting_limits(monkeypatch, language):
 
 @pytest.mark.parametrize('language', ['json', 'yaml'])
 def test_configuration_respects_node_limits(monkeypatch, language):
-    from coderag import configuration_chunks
+    from codetrace import configuration_chunks
 
     monkeypatch.setattr(configuration_chunks, 'MAX_NODES', 2)
     with pytest.raises(ValueError, match='node limit'):
@@ -234,7 +234,7 @@ def test_many_json_keys_keep_exact_line_coverage():
 def test_partition_sweep_preserves_leaf_selection_and_tie_breaking():
     import random
 
-    from coderag.core import partition
+    from codetrace.core import partition
 
     generator = random.Random(17)
     lines = ['line'] * 30

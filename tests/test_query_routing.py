@@ -1,4 +1,4 @@
-from coderag.query_routing import classify_query, retrieval_sources
+from codetrace.query_routing import classify_query, retrieval_sources
 
 
 def test_query_intents_are_provider_neutral():

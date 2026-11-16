@@ -1,5 +1,5 @@
-from coderag.generation import Claim, GenerationResult
-from coderag.rag_batch import evaluate_rag_dataset
+from codetrace.generation import Claim, GenerationResult
+from codetrace.rag_batch import evaluate_rag_dataset
 
 
 def test_batch_rag_evaluation_aggregates_metrics():

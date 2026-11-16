@@ -1,4 +1,4 @@
-from coderag.context_flow import context_flow
+from codetrace.context_flow import context_flow
 
 
 def chunk(cid, symbol, code):

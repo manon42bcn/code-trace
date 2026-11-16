@@ -1,4 +1,4 @@
-from coderag.embedding_enrichment import enrich_chunks_from_graph
+from codetrace.embedding_enrichment import enrich_chunks_from_graph
 
 
 def test_enrichment_keeps_access_per_chunk():

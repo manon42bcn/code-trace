@@ -495,8 +495,8 @@ def test_code_rag_uses_central_model_and_budgets_for_the_original_count_question
 ):
     import importlib.util
 
-    from coderag import __main__ as cli, generation_factory
-    from coderag.generation import GenerationResult
+    from codetrace import __main__ as cli, generation_factory
+    from codetrace.generation import GenerationResult
 
     root, config = checkout
     pipeline_path = root / 'config.json'

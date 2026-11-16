@@ -1,5 +1,5 @@
-from coderag.context_flow import context_flow
-from coderag.execution_paths import call_graph, reachable
+from codetrace.context_flow import context_flow
+from codetrace.execution_paths import call_graph, reachable
 
 
 def chunk(cid, symbol, code, path='project/steps/steps.py', strategy='python_ast'):
@@ -15,7 +15,7 @@ def chunk(cid, symbol, code, path='project/steps/steps.py', strategy='python_ast
 
 
 def test_propagated_storage_and_key_parameters():
-    from coderag.context_flow import _propagated_parameter_writers
+    from codetrace.context_flow import _propagated_parameter_writers
 
     indexes = {
         'project': {
@@ -34,7 +34,7 @@ def test_propagated_storage_and_key_parameters():
 
 
 def test_propagated_dynamic_key_is_not_invented():
-    from coderag.context_flow import _propagated_parameter_writers
+    from codetrace.context_flow import _propagated_parameter_writers
 
     indexes = {
         'project': {
@@ -89,7 +89,7 @@ def test_propagated_writer_gets_step_evidence():
 
 
 def test_two_hop_propagated_writer():
-    from coderag.context_flow import _propagated_parameter_writers
+    from codetrace.context_flow import _propagated_parameter_writers
 
     indexes = {
         'project': {

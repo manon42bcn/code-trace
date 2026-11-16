@@ -2,7 +2,7 @@ import builtins
 
 import pytest
 
-from coderag.anthropic_provider import AnthropicProvider
+from codetrace.anthropic_provider import AnthropicProvider
 
 
 def test_missing_optional_anthropic_dependency(monkeypatch):

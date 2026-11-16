@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from coderag.core import index_repository
-from coderag.inventory import InventoryError, inventory, markdown, page_result
+from codetrace.core import index_repository
+from codetrace.inventory import InventoryError, inventory, markdown, page_result
 
 
 def snapshot(source, language='json'):
@@ -169,7 +169,7 @@ def test_incremental_python_snapshots_and_cli_report(tmp_path):
         [
             sys.executable,
             '-m',
-            'coderag',
+            'codetrace',
             'inventory',
             '--config',
             str(config),
@@ -194,7 +194,7 @@ def test_incremental_python_snapshots_and_cli_report(tmp_path):
     base = [
         sys.executable,
         '-m',
-        'coderag',
+        'codetrace',
         'inventory',
         '--config',
         str(config),

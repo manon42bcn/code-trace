@@ -1,4 +1,4 @@
-from coderag.context_api import build_context
+from codetrace.context_api import build_context
 
 
 def test_context_api_unifies_building_and_evaluation():

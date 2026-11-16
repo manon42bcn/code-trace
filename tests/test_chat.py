@@ -9,7 +9,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from coderag import chat
+from codetrace import chat
 
 
 @pytest.fixture
@@ -78,7 +78,7 @@ def test_http_delegates_answer_verbatim_with_current_python_and_no_shell(server,
     assert command == [
         sys.executable,
         '-m',
-        'coderag',
+        'codetrace',
         'answer',
         '--config',
         str(server.application.config),

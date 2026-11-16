@@ -129,11 +129,11 @@ Para consultar la instantánea exigiendo fuentes actuales:
 | Pregunta | Implementación |
 | --- | --- |
 | ¿En qué orden se prepara todo? | [`scripts/build_indexes.py`](../scripts/build_indexes.py): `build_plan`, `main` |
-| ¿Cómo se descubren archivos y crean chunks? | [`core.py`](../src/coderag/core.py): `discover`, `build_chunks`, `index_repository` |
-| ¿Cómo se enlazan repositorios y se crea el grafo? | [`__main__.py`](../src/coderag/__main__.py): comando `link`; [`repo_links.py`](../src/coderag/repo_links.py); [`evidence_graph.py`](../src/coderag/evidence_graph.py) |
-| ¿Cómo se preparan los dos almacenes semánticos? | [`prepare_embeddings.py`](../src/coderag/prepare_embeddings.py): `prepare`; [`embedding_index.py`](../src/coderag/embedding_index.py) |
-| ¿Cómo se resuelven configuración y rutas? | [`repository_paths.py`](../src/coderag/repository_paths.py); [`semantic_config.py`](../src/coderag/semantic_config.py) |
-| ¿Cómo se comprueba la preparación? | [`doctor.py`](../src/coderag/doctor.py); [`preparation.py`](../src/coderag/preparation.py) |
+| ¿Cómo se descubren archivos y crean chunks? | [`core.py`](../src/codetrace/core.py): `discover`, `build_chunks`, `index_repository` |
+| ¿Cómo se enlazan repositorios y se crea el grafo? | [`__main__.py`](../src/codetrace/__main__.py): comando `link`; [`repo_links.py`](../src/codetrace/repo_links.py); [`evidence_graph.py`](../src/codetrace/evidence_graph.py) |
+| ¿Cómo se preparan los dos almacenes semánticos? | [`prepare_embeddings.py`](../src/codetrace/prepare_embeddings.py): `prepare`; [`embedding_index.py`](../src/codetrace/embedding_index.py) |
+| ¿Cómo se resuelven configuración y rutas? | [`repository_paths.py`](../src/codetrace/repository_paths.py); [`semantic_config.py`](../src/codetrace/semantic_config.py) |
+| ¿Cómo se comprueba la preparación? | [`doctor.py`](../src/codetrace/doctor.py); [`preparation.py`](../src/codetrace/preparation.py) |
 
 Esta guía describe el recorrido implementado. Al modificar el orden de preparación, los artefactos o las comprobaciones, conviene actualizar también estos diagramas.
 
@@ -145,7 +145,7 @@ Es el registro de la **última indexación**, no una bitácora de todas las vers
 
 ### Consultas y diagnóstico
 
-`coderag query` expone `readiness.git` con las referencias `indexed` y `current`, la relación local (`same_commit`, `ahead`, `behind`, `diverged`, `unborn` o `unknown`) y, cuando están disponibles, los números de commits `ahead`/`behind`. `readiness.needs_update` se decide por las fuentes indexables, no solo por el SHA:
+`codetrace query` expone `readiness.git` con las referencias `indexed` y `current`, la relación local (`same_commit`, `ahead`, `behind`, `diverged`, `unborn` o `unknown`) y, cuando están disponibles, los números de commits `ahead`/`behind`. `readiness.needs_update` se decide por las fuentes indexables, no solo por el SHA:
 
 | Estado observado | `needs_update` | Comportamiento |
 | --- | --- | --- |
@@ -158,7 +158,7 @@ Cuando cambia el commit o la rama, el modo rápido comprueba hashes de las fuent
 
 Las sesiones paginadas conservan su instantánea y pueden reutilizar la evaluación rápida de fuentes/Git durante 30 segundos; `checked_at`, `valid_until` y `reused` indican su antigüedad. Después se vuelve a evaluar sin cargar modelos ni releer índices completos. `--require-fresh` sigue exigiendo hashes actuales en cada página, pero un cambio de commit sin cambio de fuentes no provoca un rechazo por frescura. Las sesiones creadas con perfiles anteriores requieren una búsqueda nueva tras actualizar.
 
-`coderag answer`, utilizado por `/code-rag`, añade `index_state` al JSON y a los metadatos del informe. La salida con evidencias incluye un bloque determinista «Estado del índice» con commits, ramas, cambios locales, verificación de fuentes y necesidad de actualización. No altera el texto generado por el proveedor ni cambia el modelo. Este bloque comprueba fuentes/Git; no equivale a la validación completa de relaciones y vectores de `doctor`.
+`codetrace answer`, utilizado por `/code-rag`, añade `index_state` al JSON y a los metadatos del informe. La salida con evidencias incluye un bloque determinista «Estado del índice» con commits, ramas, cambios locales, verificación de fuentes y necesidad de actualización. No altera el texto generado por el proveedor ni cambia el modelo. Este bloque comprueba fuentes/Git; no equivale a la validación completa de relaciones y vectores de `doctor`.
 
 ```bash
 .venv/bin/python -m codetrace doctor --config config.json --repo fabrica --output-format json
@@ -202,6 +202,6 @@ La primera orden actualiza los artefactos con la preparación habitual; la segun
 
 ## Consultar desde el navegador (0.9.20)
 
-Una vez preparados los índices y verificado el proveedor de generación, ejecutar `make chat` para abrir el chat local en `http://127.0.0.1:8765`. Reutiliza `config.json` y `coderag answer`, permite seleccionar repositorio y muestra la respuesta, evidencias y estado del índice. No necesita Docker ni una skill.
+Una vez preparados los índices y verificado el proveedor de generación, ejecutar `make chat` para abrir el chat local en `http://127.0.0.1:8765`. Reutiliza `config.json` y `codetrace answer`, permite seleccionar repositorio y muestra la respuesta, evidencias y estado del índice. No necesita Docker ni una skill.
 
 Ver [la guía del chat](code-rag-chat.md) para opciones de arranque, proveedores remotos y límites de esta primera versión: historial temporal en la pestaña y preguntas independientes, sin memoria conversacional del modelo.

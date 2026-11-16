@@ -1,6 +1,6 @@
-from coderag.embedding_index import update_embedding_store
-from coderag.embeddings import EmbeddingMetadata
-from coderag.vector_store import VectorStore
+from codetrace.embedding_index import update_embedding_store
+from codetrace.embeddings import EmbeddingMetadata
+from codetrace.vector_store import VectorStore
 
 
 class FakeProvider:

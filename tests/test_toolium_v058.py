@@ -1,4 +1,4 @@
-from coderag.toolium_analysis import analyze_toolium
+from codetrace.toolium_analysis import analyze_toolium
 
 
 def _setup(tmp_path, *, mode='enabled'):

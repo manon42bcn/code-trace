@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from coderag.behave_reconcile import apply_reconciliation
+from codetrace.behave_reconcile import apply_reconciliation
 
 
 def _report():

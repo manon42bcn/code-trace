@@ -1,4 +1,4 @@
-from coderag.evidence_context import build_evidence_package, build_multi_chunk_context
+from codetrace.evidence_context import build_evidence_package, build_multi_chunk_context
 
 
 def test_evidence_package_is_bounded_and_explicitly_uncertain():

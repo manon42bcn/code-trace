@@ -1,4 +1,4 @@
-from coderag.fusion_evaluation import evaluate_fusion_weights
+from codetrace.fusion_evaluation import evaluate_fusion_weights
 
 
 def test_evaluate_fusion_weight_configurations():

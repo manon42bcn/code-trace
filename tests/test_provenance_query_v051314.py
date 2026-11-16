@@ -1,6 +1,6 @@
 import pytest
 
-from coderag.provenance_query import query_provenance
+from codetrace.provenance_query import query_provenance
 
 
 def graph():

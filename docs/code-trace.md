@@ -29,7 +29,7 @@ Consultar [la preparación](code-rag-preparacion.md), [el chat local](code-rag-c
 
 ## Compatibilidad de la instalación existente
 
-El módulo `coderag` y sus imports siguen disponibles. Los scripts, los lanzadores de las skills y los identificadores de formatos existentes siguen funcionando con las mismas configuraciones y artefactos.
+El módulo `codetrace` y sus imports siguen disponibles. Los scripts, los lanzadores de las skills y los identificadores de formatos existentes siguen funcionando con las mismas configuraciones y artefactos.
 
 Las skills se llaman `code-trace` y `code-trace-inventory`, usan `python -m codetrace` y las configuraciones nuevas incluyen `code_trace_root`. Las conexiones existentes con `code_rag_root` siguen admitidas. Se gestionan con `make skills-install`, `make skills-update` y `make skills-status`; ver [la guía de instalación](skills-instalacion.md).
 

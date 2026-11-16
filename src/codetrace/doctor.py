@@ -112,7 +112,7 @@ def diagnose(config_path, *, repos=None, full=False, probe=False, allow_remote=F
                     'warning',
                     'Index has skipped files or parser diagnostics.',
                     name,
-                    'Inspect coderag analyze output and fix indexing diagnostics.',
+                    'Inspect codetrace analyze output and fix indexing diagnostics.',
                 )
             check_freshness(raw, index, index_path, full, add, name, rebuild)
         except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
@@ -168,7 +168,7 @@ def diagnose(config_path, *, repos=None, full=False, probe=False, allow_remote=F
                 'provider',
                 'error',
                 f'{exc.code}: {exc}',
-                remedy='Run coderag check-provider --help.',
+                remedy='Run codetrace check-provider --help.',
             )
     else:
         add(

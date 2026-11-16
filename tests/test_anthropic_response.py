@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from coderag.anthropic_provider import AnthropicProvider
+from codetrace.anthropic_provider import AnthropicProvider
 
 
 def test_anthropic_response_maps_refusal():

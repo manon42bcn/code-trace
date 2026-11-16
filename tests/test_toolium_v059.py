@@ -1,6 +1,6 @@
 from test_toolium_v058 import _setup
 
-from coderag.toolium_analysis import _references, analyze_toolium
+from codetrace.toolium_analysis import _references, analyze_toolium
 
 
 def test_nested_context_inside_lang(tmp_path):

@@ -2,10 +2,10 @@ import json
 
 import pytest
 
-from coderag.embeddings import EmbeddingMetadata
-from coderag.prepare_embeddings import prepare
-from coderag.semantic_config import load_retrieval, resolve_retrieval
-from coderag.vector_store import VectorStore
+from codetrace.embeddings import EmbeddingMetadata
+from codetrace.prepare_embeddings import prepare
+from codetrace.semantic_config import load_retrieval, resolve_retrieval
+from codetrace.vector_store import VectorStore
 
 
 class Provider:
@@ -63,7 +63,7 @@ def config(tmp_path):
 
 def test_prepare_and_query_share_per_repository_stores(config, monkeypatch):
     path, raw = config
-    from coderag import embedding_provider
+    from codetrace import embedding_provider
 
     monkeypatch.setattr(embedding_provider, 'SentenceTransformerProvider', Provider)
     for name in ('app', 'lib'):
@@ -132,7 +132,7 @@ def test_per_repository_disable_and_explicit_paths(config):
 
 
 def test_prepared_vectors_are_consumed_by_compact_query(config, monkeypatch, capsys):
-    from coderag import agent_query, embedding_provider
+    from codetrace import agent_query, embedding_provider
 
     path, _raw = config
     prepare(path, 'app', provider=Provider())
@@ -156,8 +156,8 @@ def test_prepared_vectors_are_consumed_by_compact_query(config, monkeypatch, cap
 
 
 def test_default_profile_can_query_a_pair_of_stores(config, monkeypatch):
-    from coderag import embedding_provider
-    from coderag.search import search_hybrid
+    from codetrace import embedding_provider
+    from codetrace.search import search_hybrid
 
     path, raw = config
     prepare(path, 'app', provider=Provider())

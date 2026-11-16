@@ -1,4 +1,4 @@
-from coderag.hook_scope import environment_scope
+from codetrace.hook_scope import environment_scope
 
 
 def ck(path, sym, content):

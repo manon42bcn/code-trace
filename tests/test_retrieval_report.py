@@ -1,6 +1,6 @@
 import json
 
-from coderag.retrieval_report import save_retrieval_report
+from codetrace.retrieval_report import save_retrieval_report
 
 
 def test_retrieval_report_is_reproducible(tmp_path):

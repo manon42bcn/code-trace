@@ -1,4 +1,4 @@
-from coderag.context_flow import _literal_path_status, context_flow
+from codetrace.context_flow import _literal_path_status, context_flow
 
 
 def _chunk(name, code):

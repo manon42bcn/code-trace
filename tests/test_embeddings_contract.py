@@ -1,6 +1,6 @@
 import pytest
 
-from coderag.embeddings import EmbeddingMetadata, validate_vectors
+from codetrace.embeddings import EmbeddingMetadata, validate_vectors
 
 
 def test_embedding_metadata_is_versioned():

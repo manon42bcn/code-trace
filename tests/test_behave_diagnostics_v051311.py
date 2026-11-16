@@ -1,6 +1,6 @@
 import json
 
-from coderag.behave_reconcile import apply_reconciliation
+from codetrace.behave_reconcile import apply_reconciliation
 
 
 def test_dependency_definition_diagnostic(tmp_path):

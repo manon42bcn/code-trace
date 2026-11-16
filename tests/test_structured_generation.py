@@ -1,4 +1,4 @@
-from coderag.structured_generation import parse_generation_json
+from codetrace.structured_generation import parse_generation_json
 
 
 def test_parse_string_citations_as_objects():

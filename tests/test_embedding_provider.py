@@ -1,6 +1,6 @@
 import pytest
 
-from coderag.embedding_provider import SentenceTransformerProvider
+from codetrace.embedding_provider import SentenceTransformerProvider
 
 
 def test_provider_reports_missing_optional_dependency(monkeypatch):

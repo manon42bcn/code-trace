@@ -1,7 +1,7 @@
-from coderag.hybrid_search import hybrid_search
-from coderag.reranking import reciprocal_rank_fusion
-from coderag.search import search_hybrid
-from coderag.structural_search import search_graph
+from codetrace.hybrid_search import hybrid_search
+from codetrace.reranking import reciprocal_rank_fusion
+from codetrace.search import search_hybrid
+from codetrace.structural_search import search_graph
 
 
 def test_access_profile_routes_to_edge_filter():

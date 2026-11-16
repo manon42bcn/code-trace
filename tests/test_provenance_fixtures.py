@@ -1,6 +1,6 @@
 """Labeled synthetic fixtures for static provenance precision/recall."""
 
-from coderag.context_flow import context_flow
+from codetrace.context_flow import context_flow
 
 
 def chunk(cid, symbol, code, path='pkg/steps.py'):
@@ -221,7 +221,7 @@ def test_conditional_writer_is_not_guaranteed():
 
 
 def test_lexical_index_kinds_are_separate():
-    from coderag.core import index_repository
+    from codetrace.core import index_repository
 
     assert callable(index_repository)
 

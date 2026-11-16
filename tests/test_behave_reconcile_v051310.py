@@ -1,6 +1,6 @@
 import json
 
-from coderag.behave_reconcile import apply_reconciliation
+from codetrace.behave_reconcile import apply_reconciliation
 
 
 def _data(tmp_path, steps):

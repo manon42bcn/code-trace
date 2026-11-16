@@ -6,11 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from coderag import agent_query, preparation, semantic_config
-from coderag.core import index_repository
-from coderag.evidence_graph import build_evidence_graph
-from coderag.preparation import ReadinessError
-from coderag.repo_links import build_repository_links, save_links
+from codetrace import agent_query, preparation, semantic_config
+from codetrace.core import index_repository
+from codetrace.evidence_graph import build_evidence_graph
+from codetrace.preparation import ReadinessError
+from codetrace.repo_links import build_repository_links, save_links
 
 
 @pytest.fixture
@@ -214,9 +214,9 @@ def test_direct_paths_without_configuration_do_not_invent_signature_mismatches(p
 @pytest.mark.parametrize('problem', ['identifiers', 'dimensions'])
 def test_bad_vectors_fail_before_provider_creation(prepared, monkeypatch, problem):
     _, _, index, _, config, raw, _ = prepared
-    from coderag import embedding_provider
-    from coderag.embeddings import EmbeddingMetadata
-    from coderag.vector_store import VectorStore
+    from codetrace import embedding_provider
+    from codetrace.embeddings import EmbeddingMetadata
+    from codetrace.vector_store import VectorStore
 
     raw['retrieval'] = {'semantic_enabled': True, 'embedding_model': 'test'}
     chunks = json.loads(index.read_text())

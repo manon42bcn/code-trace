@@ -235,7 +235,7 @@ def build_repository_links(config: dict, config_path: Path, repo: str) -> dict:
             raise ValueError(f'Index changed during linking: {name}; retry link')
         index_stamps[name] = before
     if repo not in indexes:
-        raise ValueError(f'Falta el índice de origen: {repo}; ejecuta primero coderag index')
+        raise ValueError(f'Falta el índice de origen: {repo}; ejecuta primero codetrace index')
     defs = {name: _definitions(idx['chunks']) for name, idx in indexes.items()}
     exported_defs = {name: _exported(config, name, ds) for name, ds in defs.items()}
     source = indexes[repo].get('behave_relations', {}).get('step_occurrences', [])

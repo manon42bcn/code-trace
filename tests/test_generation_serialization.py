@@ -1,7 +1,7 @@
 import json
 
-from coderag.generation import Claim, GenerationResult
-from coderag.generation_serialization import generation_result_dict
+from codetrace.generation import Claim, GenerationResult
+from codetrace.generation_serialization import generation_result_dict
 
 
 def test_generation_result_serializes_as_json_data():
