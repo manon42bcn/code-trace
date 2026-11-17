@@ -458,45 +458,24 @@ def main(argv=None):
                     allow_remote=args.allow_remote,
                 )
                 from .generation import GenerationResult
-                from .generation_serialization import generation_result_dict
 
                 result['index_state'] = index_state
-                output = dict(result)
-                if isinstance(output.get('answer'), GenerationResult):
-                    output['answer'] = generation_result_dict(output['answer'])
                 elapsed = time.perf_counter() - started
+                generated_answer = result.get('answer')
                 answer_metrics = {
                     'citation_recall': None,
                     'invalid_citations': None,
                     'claim_coverage': None,
                 }
-                if args.relevant_chunks and isinstance(output.get('answer'), dict):
+                if args.relevant_chunks and isinstance(generated_answer, GenerationResult):
                     from .rag_evaluation import evaluate_answer
 
                     labels = json.loads(args.relevant_chunks.read_text(encoding='utf-8'))
-                    from .generation_serialization import generation_result_dict
-
-                    answer_data = output['answer']
-                    from .generation import Claim, GenerationResult
-
-                    structured = GenerationResult(
-                        answer_data['answer'],
-                        answer_data['provider'],
-                        answer_data['model'],
-                        claims=[
-                            Claim(c['text'], c['certainty'], c.get('citations', []))
-                            for c in answer_data.get('claims', [])
-                        ],
-                        citations=answer_data.get('citations', []),
-                        limitations=answer_data.get('limitations', []),
-                        refusal=answer_data.get('refusal', False),
-                    )
                     answer_metrics = evaluate_answer(
-                        structured,
+                        generated_answer,
                         relevant_citations=labels.get('relevant_citations', []),
                         required_claims=labels.get('required_claims', 0),
                     )
-                output['latency_seconds'] = elapsed
                 if args.report:
                     from .rag_run_report import save_rag_run_report
 
@@ -514,8 +493,6 @@ def main(argv=None):
                             **({'routing': routing} if routing is not None else {}),
                         },
                     )
-                if routing is not None:
-                    output.update(repository=routing['repository'], routing=routing)
                 if args.output_format in {'text', 'markdown'}:
                     from .answer_display import render_answer
 
@@ -526,6 +503,14 @@ def main(argv=None):
                         repository=routing['repository'] if routing else None,
                     )
                 else:
+                    output = dict(result)
+                    if isinstance(generated_answer, GenerationResult):
+                        from .generation_serialization import generation_result_dict
+
+                        output['answer'] = generation_result_dict(generated_answer)
+                    output['latency_seconds'] = elapsed
+                    if routing is not None:
+                        output.update(repository=routing['repository'], routing=routing)
                     rendered = json.dumps(output, ensure_ascii=False, indent=2) + '\n'
             sys.stdout.write(rendered)
         elif args.command == 'analyze':
