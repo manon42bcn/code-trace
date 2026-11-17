@@ -5,7 +5,7 @@ from __future__ import annotations
 from .answering import answer_query
 from .context_api import build_context
 from .grounded_prompt import build_grounded_prompt
-from .retrieval import RetrievalConfig, retrieve
+from .retrieval import retrieve_scoped
 from .source_filters import scope_sources
 
 
@@ -27,21 +27,24 @@ def answer(
     """Retrieve, build grounded context, and optionally generate an answer."""
     indexed_chunks = len(index.get('chunks', []))
     index, graph = scope_sources(index, graph, search_filters)
-    config = retrieval_config or RetrievalConfig()
+    allowed_chunk_ids = (
+        {chunk['id'] for chunk in index.get('chunks', [])}
+        if search_filters and search_filters.active
+        else None
+    )
     results = retrieval_results
     if results is None:
-        results = retrieve(
+        results = retrieve_scoped(
             index,
             graph,
             query,
-            config=config,
+            config=retrieval_config,
             semantic_store=semantic_store,
             provider=embedding_provider,
-            filters=search_filters,
+            allowed_chunk_ids=allowed_chunk_ids,
         )
-    if search_filters and search_filters.active:
-        allowed = {chunk['id'] for chunk in index.get('chunks', [])}
-        results = [result for result in results if result.get('chunk_id') in allowed]
+    if allowed_chunk_ids is not None:
+        results = [result for result in results if result.get('chunk_id') in allowed_chunk_ids]
     context = build_context(
         index,
         graph,
@@ -51,7 +54,7 @@ def answer(
         flow_analysis=generation_provider is not None,
         **(context_limits or {}),
     )
-    if search_filters and search_filters.active:
+    if allowed_chunk_ids is not None:
         context['source_scope'] = {
             'filters': search_filters.describe(),
             'indexed_chunks': indexed_chunks,
