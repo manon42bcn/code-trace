@@ -11,6 +11,7 @@ def run(argv, run_command):
     parser = argparse.ArgumentParser(prog='codetrace interactive')
     parser.add_argument('--config', type=Path, default=Path('config.json'))
     parser.add_argument('--repo', required=True)
+    parser.add_argument('--allow-remote', action='store_true')
     args = parser.parse_args(argv)
     config = args.config.resolve()
 
@@ -59,6 +60,7 @@ def run(argv, run_command):
                         repo,
                         '--output-format',
                         'text',
+                        *(['--allow-remote'] if args.allow_remote else []),
                         '--',
                         question,
                     ]

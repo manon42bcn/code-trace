@@ -14,7 +14,7 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 
-from .generation_config import GenerationConfig
+from .generation_config import GenerationConfig, GenerationSetupError
 from .generation_factory import build_generation_provider
 
 PROBE = (
@@ -99,6 +99,8 @@ def check_provider(raw, *, allow_remote=False):
     try:
         provider = build_generation_provider(bounded)
         result = provider.generate(PROBE)
+    except GenerationSetupError as exc:
+        raise ProviderCheckError('provider_setup_failed', str(exc)) from exc
     except Exception as exc:
         status = getattr(exc, 'status_code', None)
         if isinstance(exc, HTTPError):

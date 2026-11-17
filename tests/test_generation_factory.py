@@ -30,3 +30,21 @@ def test_anthropic_provider_can_be_constructed_with_runtime_settings(monkeypatch
     assert provider.model == 'claude-opus-5-5'
     assert provider._client.kwargs['auth_token'] == 'runtime-token'
     assert provider._client.kwargs['base_url'] == 'https://gateway'
+
+
+def test_anthropic_reads_dotenv_and_prefers_exported_values(monkeypatch, tmp_path):
+    from unittest.mock import Mock
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / '.env').write_text(
+        'ANTHROPIC_API_KEY=file-key\nANTHROPIC_AUTH_TOKEN=file-token\n', encoding='utf-8'
+    )
+    monkeypatch.setenv('ANTHROPIC_API_KEY', 'exported-key')
+    monkeypatch.delenv('ANTHROPIC_AUTH_TOKEN', raising=False)
+    provider = Mock()
+    monkeypatch.setattr('codetrace.generation_factory.AnthropicProvider', provider)
+
+    build_generation_provider(GenerationConfig(provider='anthropic'))
+
+    assert provider.call_args.kwargs['api_key'] == 'exported-key'
+    assert provider.call_args.kwargs['auth_token'] == 'file-token'
