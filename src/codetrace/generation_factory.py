@@ -34,6 +34,14 @@ def build_generation_provider(config: GenerationConfig):
             timeout=config.timeout_seconds,
             max_tokens=config.max_tokens,
         )
+    if config.provider == 'mlx':
+        if config.base_url or config.proxy_url:
+            raise GenerationSetupError(
+                'MLX uses a local model directory without an endpoint or proxy'
+            )
+        from .mlx_provider import MLXProvider
+
+        return MLXProvider(model=config.model, max_tokens=config.max_tokens)
     settings = read_generation_dotenv()
 
     if config.provider == 'anthropic':

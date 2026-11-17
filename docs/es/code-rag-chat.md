@@ -77,3 +77,7 @@ La cabecera integra el logo CodeTrace para fondos claros de `img/codetrace-logo-
 ## Nombre del proyecto (0.9.23)
 
 El proyecto y el chat utilizan la marca **CodeTrace**, y el paquete se llama `code-trace`. El comando público es `code-trace` y el módulo es `codetrace`. El comando `codetrace` sigue disponible. Ver [instalación y compatibilidad](code-trace.md).
+
+## MLX LM en Apple silicon
+
+Instala el extra con `uv sync --extra mlx` junto con los demás extras que uses. Define `CODETRACE_GENERATION_PROVIDER=mlx` y usa como `CODETRACE_GENERATION_MODEL` la ruta a un directorio local de MLX LM con su configuración, tokenizador y pesos. Usa un modelo de instrucciones capaz de devolver el JSON solicitado. Deja vacías las variables de endpoint y proxy. Valida el modelo con `codetrace check-provider`. El límite `CODETRACE_GENERATION_MAX_TOKENS` se aplica al texto generado. MLX ejecuta la generación en el proceso de consulta y el tiempo máximo de la consulta web sigue aplicándose. El timeout de proveedor HTTP no se aplica a MLX.

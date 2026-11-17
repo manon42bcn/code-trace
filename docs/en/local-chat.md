@@ -35,3 +35,7 @@ Each question starts a new CLI process and has no conversational memory. The tab
 ## Local access
 
 The server binds to `127.0.0.1`, checks Host and Origin, and requires a session token for API requests. It serves web assets locally. It keeps no persistent chat history and excludes question and answer text from the HTTP log. Provider data handling depends on the configured service. This interface is designed for personal local use. See [repository preparation](repository-preparation.md) for diagnosing artifact issues.
+
+## MLX LM on Apple silicon
+
+Install the extra with `uv sync --extra mlx` alongside any other extras you use. Set `CODETRACE_GENERATION_PROVIDER=mlx` and point `CODETRACE_GENERATION_MODEL` to a local MLX LM directory containing its configuration, tokenizer, and weights. Use an instruction model that can return the requested JSON. Leave endpoint and proxy settings empty. Validate the model with `codetrace check-provider`. `CODETRACE_GENERATION_MAX_TOKENS` limits the generated output. MLX runs inside the query process and the web chat’s overall query deadline still applies. The HTTP provider timeout does not apply to MLX.

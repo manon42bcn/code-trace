@@ -72,6 +72,8 @@ Si ya tienes un bloque `generation` en `config.json`, traslada sus valores a
 
 | `CODETRACE_GENERATION_PROVIDER` | `CODETRACE_GENERATION_MODEL` | Credenciales y endpoint |
 | --- | --- | --- |
+| `none` | — | Generación desactivada (valor predeterminado). |
+| `mlx` | Ruta al directorio local del modelo MLX LM | Mac con Apple silicon. Sin credenciales ni endpoint. |
 | `ollama` | Nombre del modelo local | Endpoint por defecto `http://localhost:11434`. |
 | `anthropic` | Nombre del modelo | `ANTHROPIC_API_KEY` o `ANTHROPIC_AUTH_TOKEN`. |
 | `openai` | Nombre del modelo | `OPENAI_API_KEY` y, opcionalmente, `CODETRACE_GENERATION_BASE_URL`. |
@@ -87,6 +89,20 @@ desde la CLI interactiva, inicia la sesión con `codetrace --repo demo --allow-r
 El chat se abre en `http://127.0.0.1:8765`. Seleccionar un repositorio, escribir una pregunta y desplegar las evidencias o el estado del índice. Detener el servidor con `Ctrl+C`.
 
 Más detalles en [preparación de repositorios](docs/es/code-rag-preparacion.md) y [chat local](docs/es/code-rag-chat.md).
+
+### MLX LM en Mac
+
+En Apple silicon, instala el extra con `uv sync --extra mlx`. Añade también los extras de preparación
+que uses, como `--extra parsers --extra embeddings`. Configura `mlx` y la ruta al directorio de un
+modelo MLX LM ya descargado:
+
+```dotenv
+CODETRACE_GENERATION_PROVIDER=mlx
+CODETRACE_GENERATION_MODEL=/ruta/al/modelo-mlx
+```
+
+El modelo debe responder con el JSON solicitado por CodeTrace. Usa `codetrace check-provider`
+para comprobarlo en local. Consulta los detalles en la guía del [chat local](docs/es/code-rag-chat.md#mlx-lm-en-apple-silicon).
 
 ## Preguntas desde la terminal
 
