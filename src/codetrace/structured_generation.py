@@ -8,7 +8,12 @@ from .generation import Claim, GenerationResult
 
 
 def parse_generation_json(text: str, *, provider: str, model: str) -> GenerationResult:
-    """Parse strict JSON or a JSON fenced block from a provider response."""
+    """Decode a JSON object from raw text or a Markdown code fence.
+
+    Normalize shorthand citation IDs to dictionaries and attach provider
+    identity from the caller. Evidence validation uses the original context
+    later in the answering pipeline.
+    """
     raw = text.strip()
     if raw.startswith('```'):
         raw = raw.split('\n', 1)[1].rsplit('```', 1)[0].strip()

@@ -53,6 +53,11 @@ def is_loopback(url):
 
 
 def check_provider(raw, *, allow_remote=False):
+    """Probe the configured generation adapter with a synthetic prompt.
+
+    Validate settings and remote access before making the request, cap the
+    output budget, and map failures to messages suitable for the CLI.
+    """
     if not isinstance(raw, dict) or not isinstance(raw.get('generation'), dict):
         raise ProviderCheckError(
             'not_configured', 'Configure the generation object in config.json.'

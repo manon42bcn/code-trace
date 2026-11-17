@@ -17,7 +17,12 @@ def build_context(
     flow_analysis=False,
     **limits,
 ):
-    """Build and optionally evaluate an intent-aware evidence context."""
+    """Turn retrieval results into a versioned evidence package.
+
+    Intent, flow analysis, and context limits shape the evidence passed to
+    answering. Provide relevant chunk IDs to evaluate the selection against
+    known labels.
+    """
     package = build_context_for_query(
         index, graph, query, retrieval_results, intent=intent, flow_analysis=flow_analysis, **limits
     )

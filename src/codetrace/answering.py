@@ -8,7 +8,12 @@ from .grounded_prompt import build_grounded_prompt
 
 
 def answer_query(query, context, provider, *, metadata=None, allow_remote=False):
-    """Generate and validate an answer from an evidence context."""
+    """Send a grounded prompt and validate the returned evidence references.
+
+    Check generation permissions and sensitive filenames before building the
+    prompt. Treat Ollama as local for the permission check. After generation,
+    validate the provider result against the same context supplied to the model.
+    """
     is_local = getattr(provider, 'provider', None) == 'ollama'
     validate_generation_context(context, allow_remote=allow_remote or is_local)
     prompt = build_grounded_prompt(query, context)

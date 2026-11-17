@@ -8,6 +8,7 @@ from pathlib import Path
 
 
 def run(argv, run_command):
+    """Dispatch questions from the terminal session through the answer command."""
     parser = argparse.ArgumentParser(prog='codetrace interactive')
     parser.add_argument('--config', type=Path, default=Path('config.json'))
     parser.add_argument('--repo', required=True)

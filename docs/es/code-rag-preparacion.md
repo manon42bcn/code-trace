@@ -1,5 +1,7 @@
 # Cómo preparamos los repositorios para consultar con CodeTrace
 
+[English](../en/repository-preparation.md)
+
 Esta guía explica el flujo **implementado** de preparación: cómo pasamos de repositorios locales a una instantánea de código que podemos buscar y utilizar como evidencia. Los diagramas están escritos en Mermaid dentro de Markdown, para mantener juntos el dibujo y su explicación y poder visualizarlos en GitHub o en un visor compatible.
 
 La preparación termina antes de recibir una pregunta. Generar una respuesta con un LLM es un paso posterior y requiere que el proveedor de generación esté disponible.
@@ -93,7 +95,7 @@ flowchart TD
     I -->|No| K["Advertir y usar la instantánea indexada"]
     K --> H
     H --> L["Resultados y contexto con referencias al código"]
-    L --> M["Si se solicita generación: usar el LLM configurado"]
+    L --> M["En modo answer: usar el LLM configurado"]
 ```
 
 `quick` es la opción predeterminada y puede reutilizar la evaluación durante 30 segundos; `full` lee las fuentes y compara hashes. `--require-fresh` fuerza la comprobación completa y exige fuentes actuales. `--readiness off` desactiva estas comprobaciones. Ninguna de ellas reconstruye automáticamente los artefactos. Los avisos de cobertura por parsers o archivos omitidos siguen siendo relevantes aunque las fuentes estén actuales.
@@ -128,12 +130,12 @@ Para consultar la instantánea exigiendo fuentes actuales:
 
 | Pregunta | Implementación |
 | --- | --- |
-| ¿En qué orden se prepara todo? | [`scripts/build_indexes.py`](../scripts/build_indexes.py): `build_plan`, `main` |
-| ¿Cómo se descubren archivos y crean chunks? | [`core.py`](../src/codetrace/core.py): `discover`, `build_chunks`, `index_repository` |
-| ¿Cómo se enlazan repositorios y se crea el grafo? | [`__main__.py`](../src/codetrace/__main__.py): comando `link`; [`repo_links.py`](../src/codetrace/repo_links.py); [`evidence_graph.py`](../src/codetrace/evidence_graph.py) |
-| ¿Cómo se preparan los dos almacenes semánticos? | [`prepare_embeddings.py`](../src/codetrace/prepare_embeddings.py): `prepare`; [`embedding_index.py`](../src/codetrace/embedding_index.py) |
-| ¿Cómo se resuelven configuración y rutas? | [`repository_paths.py`](../src/codetrace/repository_paths.py); [`semantic_config.py`](../src/codetrace/semantic_config.py) |
-| ¿Cómo se comprueba la preparación? | [`doctor.py`](../src/codetrace/doctor.py); [`preparation.py`](../src/codetrace/preparation.py) |
+| ¿En qué orden se prepara todo? | [`scripts/build_indexes.py`](../../scripts/build_indexes.py): `build_plan`, `main` |
+| ¿Cómo se descubren archivos y crean chunks? | [`core.py`](../../src/codetrace/core.py): `discover`, `build_chunks`, `index_repository` |
+| ¿Cómo se enlazan repositorios y se crea el grafo? | [`__main__.py`](../../src/codetrace/__main__.py): comando `link`; [`repo_links.py`](../../src/codetrace/repo_links.py); [`evidence_graph.py`](../../src/codetrace/evidence_graph.py) |
+| ¿Cómo se preparan los dos almacenes semánticos? | [`prepare_embeddings.py`](../../src/codetrace/prepare_embeddings.py): `prepare`; [`embedding_index.py`](../../src/codetrace/embedding_index.py) |
+| ¿Cómo se resuelven configuración y rutas? | [`repository_paths.py`](../../src/codetrace/repository_paths.py); [`semantic_config.py`](../../src/codetrace/semantic_config.py) |
+| ¿Cómo se comprueba la preparación? | [`doctor.py`](../../src/codetrace/doctor.py); [`preparation.py`](../../src/codetrace/preparation.py) |
 
 Esta guía describe el recorrido implementado. Al modificar el orden de preparación, los artefactos o las comprobaciones, conviene actualizar también estos diagramas.
 
@@ -158,7 +160,7 @@ Cuando cambia el commit o la rama, el modo rápido comprueba hashes de las fuent
 
 Las sesiones paginadas conservan su instantánea y pueden reutilizar la evaluación rápida de fuentes/Git durante 30 segundos; `checked_at`, `valid_until` y `reused` indican su antigüedad. Después se vuelve a evaluar sin cargar modelos ni releer índices completos. `--require-fresh` sigue exigiendo hashes actuales en cada página, pero un cambio de commit sin cambio de fuentes no provoca un rechazo por frescura. Las sesiones creadas con perfiles anteriores requieren una búsqueda nueva tras actualizar.
 
-`codetrace answer`, utilizado por `/code-rag`, añade `index_state` al JSON y a los metadatos del informe. La salida con evidencias incluye un bloque determinista «Estado del índice» con commits, ramas, cambios locales, verificación de fuentes y necesidad de actualización. No altera el texto generado por el proveedor ni cambia el modelo. Este bloque comprueba fuentes/Git; no equivale a la validación completa de relaciones y vectores de `doctor`.
+`codetrace answer`, utilizado por `/code-trace`, añade `index_state` al JSON y a los metadatos del informe. La salida con evidencias incluye un bloque determinista «Estado del índice» con commits, ramas, cambios locales, verificación de fuentes y necesidad de actualización. No altera el texto generado por el proveedor ni cambia el modelo. Este bloque comprueba fuentes/Git; no equivale a la validación completa de relaciones y vectores de `doctor`.
 
 ```bash
 .venv/bin/python -m codetrace doctor --config config.json --repo fabrica --output-format json

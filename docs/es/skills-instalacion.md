@@ -1,5 +1,7 @@
 # Instalación de skills
 
+[English](../en/skill-installation.md)
+
 Las instalaciones declaradas en `skills.installations` del `config.json` de CodeTrace se gestionan con:
 
 ```bash

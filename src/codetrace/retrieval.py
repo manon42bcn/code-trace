@@ -10,6 +10,8 @@ from .source_filters import scope_sources
 
 @dataclass(frozen=True)
 class RetrievalConfig:
+    """Define search mode, candidate settings, and the result limit."""
+
     lexical_kind: str = 'any'
     structural_kind: str = 'any'
     access: str = 'all'
@@ -43,7 +45,12 @@ def retrieve(
     provider=None,
     filters=None,
 ):
-    """Run the configured lexical/structural/semantic retrieval pipeline."""
+    """Scope the repository inputs and delegate ranking to hybrid search.
+
+    Apply source filters to both the index and graph. When a semantic store is
+    available, pass the surviving chunk IDs so vector search respects that same
+    source scope.
+    """
     config = config or RetrievalConfig()
     index, graph = scope_sources(index, graph, filters)
     allowed = (

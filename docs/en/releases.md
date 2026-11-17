@@ -1,5 +1,7 @@
 # Releases through tags
 
+[Español](../es/releases.md)
+
 The default manual release process works with any project
 language. A tag identifies an exact commit; a GitHub Release adds release notes
 and optional downloadable assets. Neither operation deploys an application or
