@@ -1,4 +1,4 @@
-"""Generation through the OpenAI and Azure OpenAI v1 Chat Completions APIs."""
+"""Generation through OpenAI-compatible Chat Completions APIs."""
 
 from __future__ import annotations
 
@@ -19,10 +19,10 @@ class OpenAIRequestError(OSError):
 
 
 class OpenAIProvider:
-    """Adapt OpenAI and Azure OpenAI v1 to the generation interface.
+    """Adapt OpenAI-compatible services to the generation interface.
 
     The factory supplies credentials and the endpoint. The configured model
-    identifies a model in OpenAI or a deployment in Azure.
+    identifies a model or, for Azure OpenAI, a deployment.
     """
 
     def __init__(self, *, config, api_key, base_url):

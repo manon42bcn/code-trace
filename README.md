@@ -67,7 +67,7 @@ cp .env.example .env
 
 Rellena en `.env` solo las variables del proveedor elegido y ejecuta CodeTrace
 desde ese directorio. El archivo se carga automáticamente y Git lo ignora.
-Las variables ya exportadas tienen prioridad. OpenAI y Azure OpenAI requieren
+Las variables ya exportadas tienen prioridad. OpenAI, Azure OpenAI, OpenRouter y Groq requieren
 que exista `.env`. Anthropic también admite una configuración con solo variables
 exportadas.
 
@@ -76,8 +76,10 @@ exportadas.
 | `anthropic` | Nombre del modelo | `ANTHROPIC_API_KEY` o `ANTHROPIC_AUTH_TOKEN`. |
 | `openai` | Nombre del modelo | `OPENAI_API_KEY` y, opcionalmente, `generation.base_url`. |
 | `azure_openai` | Nombre del despliegue en Azure | `AZURE_OPENAI_API_KEY` y la URL del recurso en `generation.base_url` o `AZURE_OPENAI_ENDPOINT`. |
+| `openrouter` | ID del modelo con su prefijo, por ejemplo `openai/gpt-4o` | `OPENROUTER_API_KEY`. Endpoint por defecto `https://openrouter.ai/api/v1`. |
+| `groq` | ID del modelo en Groq | `GROQ_API_KEY`. Endpoint por defecto `https://api.groq.com/openai/v1`. |
 
-OpenAI y Azure OpenAI requieren un modelo o despliegue que admita Chat Completions en modo JSON.
+Estos cuatro proveedores requieren un modelo o despliegue que admita Chat Completions en modo JSON. OpenRouter y Groq admiten un endpoint HTTPS alternativo mediante `generation.base_url`.
 Para probar la configuración con una consulta sintética, ejecuta
 `codetrace check-provider --allow-remote`. Para enviar evidencias de un repositorio
 desde la CLI interactiva, inicia la sesión con `codetrace --repo demo --allow-remote`.

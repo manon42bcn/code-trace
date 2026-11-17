@@ -13,14 +13,21 @@ from .generation_config import GenerationConfig, GenerationSetupError
 from .ollama_provider import OllamaProvider
 from .openai_provider import OpenAIProvider
 
+_CHAT_PROVIDERS = {
+    'openai': ('OPENAI_API_KEY', None),
+    'azure_openai': ('AZURE_OPENAI_API_KEY', None),
+    'openrouter': ('OPENROUTER_API_KEY', 'https://openrouter.ai/api/v1'),
+    'groq': ('GROQ_API_KEY', 'https://api.groq.com/openai/v1'),
+}
+
 
 def build_generation_provider(config: GenerationConfig):
     """Create the adapter selected by the generation settings.
 
     Disabled generation returns None, and Ollama uses its configuration
     directly. For hosted providers, environment variables take precedence over
-    values in the working directory's .env file. OpenAI and Azure OpenAI require
-    that file and share the Chat Completions adapter.
+    values in the working directory's .env file. Providers using the shared
+    Chat Completions adapter require that file.
     """
     if config.provider == 'none':
         return None
@@ -39,7 +46,7 @@ def build_generation_provider(config: GenerationConfig):
             settings = dotenv_values(dotenv_path, interpolate=False)
         except (OSError, UnicodeError) as exc:
             raise GenerationSetupError('Cannot read .env as UTF-8') from exc
-    elif config.provider in {'openai', 'azure_openai'}:
+    elif config.provider in _CHAT_PROVIDERS:
         raise GenerationSetupError('Copy .env.example to .env in the working directory')
 
     if config.provider == 'anthropic':
@@ -54,13 +61,13 @@ def build_generation_provider(config: GenerationConfig):
             max_tokens=config.max_tokens,
             effort=config.effort,
         )
-    if config.provider in {'openai', 'azure_openai'}:
+    if config.provider in _CHAT_PROVIDERS:
         azure = config.provider == 'azure_openai'
-        key_name = 'AZURE_OPENAI_API_KEY' if azure else 'OPENAI_API_KEY'
+        key_name, default_base_url = _CHAT_PROVIDERS[config.provider]
         api_key = os.getenv(key_name, settings.get(key_name))
         if not api_key or not api_key.strip():
             raise GenerationSetupError(f'Set {key_name} in .env')
-        base_url = config.base_url
+        base_url = config.base_url or default_base_url
         if azure:
             base_url = base_url or os.getenv(
                 'AZURE_OPENAI_ENDPOINT', settings.get('AZURE_OPENAI_ENDPOINT')
