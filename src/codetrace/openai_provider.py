@@ -19,6 +19,12 @@ class OpenAIRequestError(OSError):
 
 
 class OpenAIProvider:
+    """Adapt OpenAI and Azure OpenAI v1 to the generation interface.
+
+    The factory supplies credentials and the endpoint. The configured model
+    identifies a model in OpenAI or a deployment in Azure.
+    """
+
     def __init__(self, *, config, api_key, base_url):
         try:
             import openai
@@ -38,6 +44,12 @@ class OpenAIProvider:
         self._client = openai.OpenAI(**options)
 
     def generate(self, prompt: str, *, metadata=None) -> GenerationResult:  # noqa: ARG002 - Provider interface
+        """Request a JSON object and convert it to a provider-independent result.
+
+        Preserve model refusals as results so callers can handle them explicitly.
+        Translate request failures into errors with a short message and reject
+        completions that reached the output token limit.
+        """
         try:
             response = self._client.chat.completions.create(
                 model=self.model,

@@ -84,7 +84,7 @@ desde la CLI interactiva, inicia la sesión con `codetrace --repo demo --allow-r
 
 El chat se abre en `http://127.0.0.1:8765`. Seleccionar un repositorio, escribir una pregunta y desplegar las evidencias o el estado del índice. Detener el servidor con `Ctrl+C`.
 
-Más detalles en [preparación de repositorios](docs/code-rag-preparacion.md) y [chat local](docs/code-rag-chat.md).
+Más detalles en [preparación de repositorios](docs/es/code-rag-preparacion.md) y [chat local](docs/es/code-rag-chat.md).
 
 ## Preguntas desde la terminal
 
@@ -159,13 +159,13 @@ make skills-update
 
 Las conexiones usan `code_trace_root` y `repo`. Los lanzadores utilizan el Python del entorno de CodeTrace y heredan su catálogo y configuración. No reconstruyen índices automáticamente al consultar. El registro local de instalaciones es `skills/installations.local.json`.
 
-Ver [instalación de skills](docs/skills-instalacion.md), [skill code-trace](docs/skill-code-rag.md) y [skill code-trace-inventory](docs/skill-code-inventory.md).
+Ver [instalación de skills](docs/es/skills-instalacion.md), [skill code-trace](docs/es/skill-code-rag.md) y [skill code-trace-inventory](docs/es/skill-code-inventory.md).
 
 ## Alcance de las respuestas
 
-La recuperación tiene límites de candidatos, chunks, caracteres y tokens. Las evidencias recuperadas no equivalen a un análisis exhaustivo del repositorio ni garantizan un recuento global. Los inventarios completos requieren un alcance explícito compatible: ver [inventarios](docs/code-rag-inventory.md).
+La recuperación tiene límites de candidatos, chunks, caracteres y tokens. Las evidencias recuperadas no equivalen a un análisis exhaustivo del repositorio ni garantizan un recuento global. Los inventarios completos requieren un alcance explícito compatible: ver [inventarios](docs/es/code-rag-inventory.md).
 
-El análisis de flujo sigue llamadas estáticas entre símbolos Python e identifica candidatos HTTP de FastAPI/Flask. No es una traza de ejecución; middleware, montaje de routers y despacho dinámico pueden quedar sin resolver. Ver [flujos de código](docs/code-rag-flujos.md).
+El análisis de flujo sigue llamadas estáticas entre símbolos Python e identifica candidatos HTTP de FastAPI/Flask. No es una traza de ejecución; middleware, montaje de routers y despacho dinámico pueden quedar sin resolver. Ver [flujos de código](docs/es/code-rag-flujos.md).
 
 El historial del chat solo permanece en la pestaña. Cada pregunta es independiente y no recibe automáticamente la conversación anterior. Las consultas utilizan la instantánea indexada; los avisos de frescura no reconstruyen los índices por sí solos.
 
@@ -180,8 +180,10 @@ make hooks-install
 
 Ruff configura lint y formato en [pyproject.toml](pyproject.toml). El lint JSON y los hooks están definidos en el repositorio. Algunas pruebas levantan servidores HTTP temporales en localhost.
 
-- [Guía del proyecto y compatibilidad](docs/code-trace.md).
-- [Recorrido técnico](docs/code-rag-recorrido-tecnico.md).
+- [Guía del proyecto y compatibilidad](docs/es/code-trace.md).
+- [Flujo de CodeTrace](docs/es/flujo-codetrace.md) · [English](docs/en/codetrace-flow.md).
+- [Recorrido técnico](docs/es/code-rag-recorrido-tecnico.md) · [English](docs/en/technical-walkthrough.md).
+- [Publicaciones](docs/es/releases.md) · [English](docs/en/releases.md).
 - [Historial de cambios](CHANGELOG.md).
 
 Con cada versión se actualizan `pyproject.toml`, la documentación afectada y `CHANGELOG.md`, y se registra el cambio mediante un commit descriptivo.

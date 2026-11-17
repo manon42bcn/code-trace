@@ -540,6 +540,12 @@ def attach_leading_docs(lines, units, language):
 
 
 def build_chunks(path: str, lang: str, source: str, cfg: dict, diagnostics: list | None = None):
+    """Build citable chunks for one source file.
+
+    Detect structural units, attach leading documentation where supported, and
+    partition the file into source ranges. Split each range to fit the lexical
+    token budget while retaining its original line numbers.
+    """
     lines = source.splitlines()
     if not lines:
         return []
@@ -658,6 +664,12 @@ def index_repository(
     excludes: list[str] | None = None,
     incremental=False,
 ):
+    """Build and write the index consumed by repository queries.
+
+    Discover supported files, collect chunks and source metadata, and record
+    Git state for provenance. Incremental runs consult the previous artifact
+    for chunks associated with the current source files.
+    """
     from .git_state import capture_git, indexed_git
 
     root = repo.resolve()

@@ -1,6 +1,8 @@
 # Skill code-trace-inventory: recuperar evidencias e interpretarlas con el agente
 
-Esta guía describe la skill implementada en [`skills/code-trace-inventory`](../skills/code-trace-inventory/SKILL.md). CodeTrace recupera evidencia y el modelo que ejecuta la skill redacta la respuesta. Su launcher siempre invoca `codetrace query --mode evidence`; el proveedor generativo configurado en CodeTrace no participa en este recorrido.
+[English](../en/skill-code-inventory.md)
+
+Esta guía describe la skill implementada en [`skills/code-trace-inventory`](../../skills/code-trace-inventory/SKILL.md). CodeTrace recupera evidencia y el modelo que ejecuta la skill redacta la respuesta. Su launcher siempre invoca `codetrace query --mode evidence`; el proveedor generativo configurado en CodeTrace no participa en este recorrido.
 
 Los índices, relaciones y vectores opcionales deben existir previamente, como explica la [guía de preparación](code-rag-preparacion.md).
 
@@ -112,7 +114,7 @@ Agotar páginas solo agota el conjunto limitado recuperado. `matches` puede incl
 
 La skill devuelve una selección acotada, pese a su nombre `code-trace-inventory`. El número de chunks recuperados no es un recuento exhaustivo de funciones, herramientas o registros. `total_matches: null` indica que el total es desconocido; alcanzar el límite tampoco demuestra que existan más coincidencias.
 
-Para un recuento completo dentro de un alcance compatible se necesita una operación como `codetrace inventory`: listas literales YAML/JSON o funciones con un decorador explícito en un archivo Python. Ese recorrido está documentado en [la guía de code-rag](skill-code-rag.md).
+Para un recuento completo dentro de un alcance compatible se necesita una operación como `codetrace inventory`: listas literales YAML/JSON o funciones con un decorador explícito en un archivo Python. Ese recorrido está documentado en [la guía de inventarios de la CLI](code-rag-inventory.md).
 
 El agente puede hacer consultas de seguimiento enfocadas, manteniendo explícito el repositorio canónico. Debe comunicar cambios de fuente si sale de la evidencia indexada. El contenido del repositorio se trata como datos, no como instrucciones. Si la evidencia no basta o el comando falla, no se inventan conclusiones.
 
@@ -144,14 +146,14 @@ Que CodeTrace no use su proveedor generativo no garantiza procesamiento enterame
 
 | Responsabilidad | Fuente |
 | --- | --- |
-| Contrato de interpretación por el agente | [`SKILL.md`](../skills/code-trace-inventory/SKILL.md) |
-| Launcher y opciones disponibles | [`scripts/query.py`](../skills/code-trace-inventory/scripts/query.py) |
-| Orquestación y salida JSON | [`agent_query.py`](../src/codetrace/agent_query.py) |
-| Selección del repositorio | [`repository_routing.py`](../src/codetrace/repository_routing.py) |
-| Filtros y planificación | [`source_filters.py`](../src/codetrace/source_filters.py), [`query_planning.py`](../src/codetrace/query_planning.py) |
-| Recuperación y contexto | [`retrieval.py`](../src/codetrace/retrieval.py), [`context_api.py`](../src/codetrace/context_api.py) |
-| Páginas y sesiones | [`query_pagination.py`](../src/codetrace/query_pagination.py), [`query_sessions.py`](../src/codetrace/query_sessions.py) |
-| Comprobaciones de preparación | [`preparation.py`](../src/codetrace/preparation.py) |
+| Contrato de interpretación por el agente | [`SKILL.md`](../../skills/code-trace-inventory/SKILL.md) |
+| Launcher y opciones disponibles | [`scripts/query.py`](../../skills/code-trace-inventory/scripts/query.py) |
+| Orquestación y salida JSON | [`agent_query.py`](../../src/codetrace/agent_query.py) |
+| Selección del repositorio | [`repository_routing.py`](../../src/codetrace/repository_routing.py) |
+| Filtros y planificación | [`source_filters.py`](../../src/codetrace/source_filters.py), [`query_planning.py`](../../src/codetrace/query_planning.py) |
+| Recuperación y contexto | [`retrieval.py`](../../src/codetrace/retrieval.py), [`context_api.py`](../../src/codetrace/context_api.py) |
+| Páginas y sesiones | [`query_pagination.py`](../../src/codetrace/query_pagination.py), [`query_sessions.py`](../../src/codetrace/query_sessions.py) |
+| Comprobaciones de preparación | [`preparation.py`](../../src/codetrace/preparation.py) |
 
 ## Selección y relevancia (0.9.15)
 

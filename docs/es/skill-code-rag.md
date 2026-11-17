@@ -1,5 +1,7 @@
 # Skill code-trace
 
+[English](../en/skill-code-trace.md)
+
 La skill utiliza siempre `codetrace answer`. El modelo que ejecuta la skill actúa como lanzador y devuelve literalmente la respuesta del proveedor configurado en CodeTrace, con sus evidencias y limitaciones. No elige un modo de recuperación, inventario o interpretación propio.
 
 ## Flujo de una petición (0.9.16)
@@ -47,7 +49,7 @@ La skill conserva el stdout completo: respuesta del proveedor, fuentes, extracto
 
 La recuperación es acotada. Un conteo sobre comportamiento o relaciones puede necesitar más evidencia o una definición precisa del alcance; el proveedor debe reconocerlo. El número de chunks no acredita el total de herramientas ni su ejecución. La skill no convierte esa incertidumbre en una petición arbitraria de archivo/lista YAML o JSON.
 
-Los conteos estructurales exactos siguen disponibles como operación CLI independiente en [Inventarios de CodeTrace](code-rag-inventory.md). La skill `code-trace-inventory` mantiene su flujo separado de evidencia interpretada por el agente. Ninguna de esas opciones es un modo alternativo de `/code-rag`.
+Los conteos estructurales exactos siguen disponibles como operación CLI independiente en [Inventarios de CodeTrace](code-rag-inventory.md). La skill `code-trace-inventory` mantiene su flujo separado de evidencia interpretada por el agente. Ninguna de esas opciones es un modo alternativo de `/code-trace`.
 
 ## Diagnóstico y actualización
 
@@ -59,7 +61,7 @@ Después de actualizar el checkout:
 make skills-update
 ```
 
-No se necesitan índices nuevos por este cambio. Las instrucciones ejecutables de la skill están en [`SKILL.md`](../skills/code-trace/SKILL.md), y su launcher en [`scripts/query.py`](../skills/code-trace/scripts/query.py).
+No se necesitan índices nuevos por este cambio. Las instrucciones ejecutables de la skill están en [`SKILL.md`](../../skills/code-trace/SKILL.md), y su launcher en [`scripts/query.py`](../../skills/code-trace/scripts/query.py).
 
 ## Relevancia y selección explícita (0.9.15)
 

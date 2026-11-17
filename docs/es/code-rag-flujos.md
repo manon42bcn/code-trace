@@ -1,5 +1,7 @@
 # Consultar flujos de código (0.9.21)
 
+[English](../en/static-code-flows.md)
+
 `codetrace answer` y el chat local reconocen preguntas sobre flujos y puntos de entrada. Recuperan evidencias estructurales antes de los resultados de texto genéricos y proporcionan al modelo un conjunto acotado de relaciones entre funciones.
 
 ## Ejemplos

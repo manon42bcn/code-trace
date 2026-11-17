@@ -15,7 +15,13 @@ from .openai_provider import OpenAIProvider
 
 
 def build_generation_provider(config: GenerationConfig):
-    """Return a configured provider, or None for the offline default."""
+    """Create the adapter selected by the generation settings.
+
+    Disabled generation returns None, and Ollama uses its configuration
+    directly. For hosted providers, environment variables take precedence over
+    values in the working directory's .env file. OpenAI and Azure OpenAI require
+    that file and share the Chat Completions adapter.
+    """
     if config.provider == 'none':
         return None
     if config.provider == 'ollama':
@@ -29,6 +35,7 @@ def build_generation_provider(config: GenerationConfig):
     settings = {}
     if dotenv_path.is_file():
         try:
+            # Read settings without modifying the environment of the running process.
             settings = dotenv_values(dotenv_path, interpolate=False)
         except (OSError, UnicodeError) as exc:
             raise GenerationSetupError('Cannot read .env as UTF-8') from exc
@@ -78,6 +85,7 @@ def build_generation_provider(config: GenerationConfig):
                     or parsed.fragment
                 ):
                     raise ValueError('Use the Azure resource endpoint or its /openai/v1/ URL')
+                # The shared client appends its Chat Completions path to this API root.
                 base_url = f'https://{parsed.netloc}/openai/v1/'
         return OpenAIProvider(config=config, api_key=api_key, base_url=base_url)
     raise ValueError(f'unsupported generation provider: {config.provider}')

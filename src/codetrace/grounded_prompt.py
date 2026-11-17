@@ -75,7 +75,12 @@ def response_language_instruction(query):
 
 
 def build_grounded_prompt(query: str, context: dict) -> str:
-    """Create a deterministic prompt with citations and uncertainty rules."""
+    """Render selected evidence and its citation boundaries for the model.
+
+    Label each excerpt with its chunk ID and line range. Include static flow
+    metadata when available and report context exclusions so the model can
+    describe the scope of its answer.
+    """
     items = []
     for item in context.get('items', []):
         citation = item.get('citation', {})

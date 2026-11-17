@@ -1,5 +1,7 @@
 # Chat local de CodeTrace (0.9.20)
 
+[English](../en/local-chat.md)
+
 El chat permite consultar los repositorios desde el navegador sin instalar una skill. CodeTrace recupera las evidencias y llama al proveedor y al modelo definidos en `config.json`; la interfaz muestra su respuesta sin una segunda interpretación por otro modelo.
 
 ## Preparación y arranque
@@ -16,7 +18,7 @@ Editar `config.json` para definir repositorios, recuperación y generación. La 
 ```bash
 make indexes
 make doctor
-make check-provider
+make check-provider  # Para un proveedor remoto, añadir PROVIDER_ARGS=--allow-remote
 make chat
 ```
 
@@ -74,4 +76,4 @@ La cabecera integra el logo CodeTrace para fondos claros de `img/codetrace-logo-
 
 ## Nombre del proyecto (0.9.23)
 
-El proyecto y el chat utilizan la marca **CodeTrace**, y el paquete se llama `code-trace`. El comando público es `code-trace` y el módulo es `codetrace`; el módulo anterior `codetrace` sigue siendo compatible. Ver [instalación y compatibilidad](code-trace.md).
+El proyecto y el chat utilizan la marca **CodeTrace**, y el paquete se llama `code-trace`. El comando público es `code-trace` y el módulo es `codetrace`. El comando `codetrace` sigue disponible. Ver [instalación y compatibilidad](code-trace.md).

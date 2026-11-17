@@ -1,5 +1,7 @@
 # CodeTrace: recorrido técnico del código a la respuesta
 
+[English](../en/technical-walkthrough.md)
+
 Esta guía sigue el flujo implementado y señala **archivo, función y mecanismo** en cada etapa. Los diagramas muestran el camino principal; las tablas explican los puntos clave sin reproducir todas las llamadas auxiliares. Las rutas `codetrace/...` de los diagramas corresponden a `src/codetrace/`.
 
 Hay dos momentos: **preparar una instantánea consultable** y **consultarla**. Las skills son puntos de entrada a la consulta; la preparación se ejecuta por separado. No se ejecuta el código de los repositorios indexados.
@@ -41,10 +43,10 @@ Los errores detienen la ejecución y conservan los artefactos ya generados. El d
 
 | Etapa y función | Qué hace y cómo | Librería o mecanismo |
 | --- | --- | --- |
-| [`core.py`](../src/codetrace/core.py) · `discover_paths()`, `discover()` | Detecta lenguajes por nombre/extensión y overrides, aplica exclusiones y obtiene fuentes aptas para indexar. | Código propio; biblioteca estándar para rutas, lectura y patrones. |
+| [`core.py`](../../src/codetrace/core.py) · `discover_paths()`, `discover()` | Detecta lenguajes por nombre/extensión y overrides, aplica exclusiones y obtiene fuentes aptas para indexar. | Código propio; biblioteca estándar para rutas, lectura y patrones. |
 | `core.py` · `python_units()` | Lee funciones, funciones async y clases, con nombres y rangos; incluye decoradores en el comienzo de la unidad. | `ast.parse()` de Python. Analiza sintaxis sin importar el módulo. |
 | `core.py` · `treesitter_units()` | Recorre el árbol de sintaxis de los lenguajes configurados en `TREE_LANG` y recoge nodos estructurales. Puede registrar recuperación de errores sintácticos. | `tree-sitter-language-pack`, mediante `get_parser()` y `parser.parse()`. Dependencia opcional `parsers`. |
-| [`configuration_chunks.py`](../src/codetrace/configuration_chunks.py) · `configuration_units()`, `parse_configuration()` | Identifica unidades y rutas estructurales YAML/JSON conservando posiciones en el texto. | YAML: eventos de **PyYAML** con `SafeLoader`. JSON: parser estructural propio `JsonStructure`, apoyado en `json` para valores. |
+| [`configuration_chunks.py`](../../src/codetrace/configuration_chunks.py) · `configuration_units()`, `parse_configuration()` | Identifica unidades y rutas estructurales YAML/JSON conservando posiciones en el texto. | YAML: eventos de **PyYAML** con `SafeLoader`. JSON: parser estructural propio `JsonStructure`, apoyado en `json` para valores. |
 | `core.py` · `gherkin_units()`, `make_units()` | Extrae unidades específicas, por ejemplo escenarios Gherkin o bloques Makefile. | Código propio; no se usa un parser externo para estas funciones. |
 | `core.py` · `attach_leading_docs()`, `partition()` | Asocia documentación precedente y organiza bloques estructurales y código circundante. | Código propio sobre líneas y rangos. |
 | `core.py` · `split_budget()` | Mantiene bloques que caben; divide los grandes y reutiliza parte del final como solapamiento. Una línea demasiado larga se divide por límites de tokens léxicos. | Código propio y `re`; el solapamiento está acotado por el presupuesto y los fragmentos disponibles. |
@@ -60,8 +62,8 @@ En modo incremental, `index_repository()` compara SHA-256 por archivo y condicio
 | Uso | Implementación | Qué significa el límite |
 | --- | --- | --- |
 | Tamaño de los chunks | `core.py` · `token_count()` usa `re.compile(r'\w+|[^\w\s]')`; `split_budget()` aplica el presupuesto. | Cuenta grupos de caracteres de palabra y signos individuales, ignorando espacios. Por ejemplo, `x = foo(a)` cuenta 6 unidades. Es una medida léxica propia. |
-| Tamaño del contexto recuperado | [`evidence_context.py`](../src/codetrace/evidence_context.py) · `build_multi_chunk_context()` estima tokens por extracto con `(len(content) + 3) // 4`. | Aproxima un token por cuatro caracteres y aplica también límites de chunks y caracteres. No mide exactamente el prompt completo ni garantiza que quepa en cualquier modelo. |
-| Entrada del modelo de embeddings | [`embedding_provider.py`](../src/codetrace/embedding_provider.py) · `SentenceTransformerProvider.embed_documents()` llama a `SentenceTransformer.encode()`. | La tokenización y el límite efectivo de secuencia pertenecen al modelo cargado y a `sentence-transformers`. El presupuesto léxico de chunks no garantiza que todo su texto renderizado quepa en ese límite. |
+| Tamaño del contexto recuperado | [`evidence_context.py`](../../src/codetrace/evidence_context.py) · `build_multi_chunk_context()` estima tokens por extracto con `(len(content) + 3) // 4`. | Aproxima un token por cuatro caracteres y aplica también límites de chunks y caracteres. No mide exactamente el prompt completo ni garantiza que quepa en cualquier modelo. |
+| Entrada del modelo de embeddings | [`embedding_provider.py`](../../src/codetrace/embedding_provider.py) · `SentenceTransformerProvider.embed_documents()` llama a `SentenceTransformer.encode()`. | La tokenización y el límite efectivo de secuencia pertenecen al modelo cargado y a `sentence-transformers`. El presupuesto léxico de chunks no garantiza que todo su texto renderizado quepa en ese límite. |
 
 Por tanto, `max_tokens` de chunking, presupuesto estimado del contexto y límites de entrada/salida del modelo son controles distintos. El proyecto no aplica un único tokenizador de LLM de principio a fin.
 
@@ -69,14 +71,14 @@ Por tanto, `max_tokens` de chunking, presupuesto estimado del contexto y límite
 
 | Etapa y función | Qué hace y cómo | Librería o mecanismo |
 | --- | --- | --- |
-| [`repo_links.py`](../src/codetrace/repo_links.py) · `build_repository_links()` | Carga el índice elegido y sus dependencias transitivas, recoge evidencia de enlaces y deja procedencia de los índices utilizados. | Análisis estático propio y JSON local. |
-| [`evidence_graph.py`](../src/codetrace/evidence_graph.py) · `build_evidence_graph()` | Construye nodos y aristas con identidades deterministas a partir de índices y relaciones, incluyendo evidencias de llamadas y datos. | Código propio con diccionarios, listas y hashes; grafo persistido dentro del JSON de relaciones. |
-| [`prepare_embeddings.py`](../src/codetrace/prepare_embeddings.py) · `prepare()` | Resuelve rutas/modelo, carga el grafo y prepara dos representaciones: base v1 y enriquecida v2. | Configuración propia; `VectorStore` y proveedor de embeddings. |
-| [`embedding_enrichment.py`](../src/codetrace/embedding_enrichment.py) · `enrich_chunks_from_graph()` | Añade claves relacionadas, tipos de acceso y etiquetas de relaciones a los metadatos de chunks. | Recorrido propio del grafo. |
-| [`embedding_text.py`](../src/codetrace/embedding_text.py) · `chunk_embedding_text()` | Convierte contenido y metadatos en el texto que representará el vector. | Renderizador determinista propio. v1/v2 distinguen base y enriquecimiento; ambas usan el renderizador actual. |
-| [`embedding_index.py`](../src/codetrace/embedding_index.py) · `update_embedding_store()` | Compara hash del texto renderizado y versión, reutiliza vectores, genera los pendientes y elimina IDs ausentes. | `hashlib` y código propio. `prepare()` descarta registros si los metadatos del almacén son incompatibles. |
+| [`repo_links.py`](../../src/codetrace/repo_links.py) · `build_repository_links()` | Carga el índice elegido y sus dependencias transitivas, recoge evidencia de enlaces y deja procedencia de los índices utilizados. | Análisis estático propio y JSON local. |
+| [`evidence_graph.py`](../../src/codetrace/evidence_graph.py) · `build_evidence_graph()` | Construye nodos y aristas con identidades deterministas a partir de índices y relaciones, incluyendo evidencias de llamadas y datos. | Código propio con diccionarios, listas y hashes; grafo persistido dentro del JSON de relaciones. |
+| [`prepare_embeddings.py`](../../src/codetrace/prepare_embeddings.py) · `prepare()` | Resuelve rutas/modelo, carga el grafo y prepara dos representaciones: base v1 y enriquecida v2. | Configuración propia; `VectorStore` y proveedor de embeddings. |
+| [`embedding_enrichment.py`](../../src/codetrace/embedding_enrichment.py) · `enrich_chunks_from_graph()` | Añade claves relacionadas, tipos de acceso y etiquetas de relaciones a los metadatos de chunks. | Recorrido propio del grafo. |
+| [`embedding_text.py`](../../src/codetrace/embedding_text.py) · `chunk_embedding_text()` | Convierte contenido y metadatos en el texto que representará el vector. | Renderizador determinista propio. v1/v2 distinguen base y enriquecimiento; ambas usan el renderizador actual. |
+| [`embedding_index.py`](../../src/codetrace/embedding_index.py) · `update_embedding_store()` | Compara hash del texto renderizado y versión, reutiliza vectores, genera los pendientes y elimina IDs ausentes. | `hashlib` y código propio. `prepare()` descarta registros si los metadatos del almacén son incompatibles. |
 | `SentenceTransformerProvider` · `embed_documents()` | Codifica lotes de textos y devuelve listas de números de dimensión fija; valida los vectores. | **sentence-transformers**, dependencia opcional `embeddings`. Modelo seleccionado por configuración. |
-| [`vector_store.py`](../src/codetrace/vector_store.py) · `VectorStore.save()`, `search()` | Guarda vectores y metadatos en JSON; compara una consulta con los registros mediante similitud coseno y ordena los resultados. | Código propio con `json` y `math`; búsqueda por recorrido de registros, sin índice aproximado externo. |
+| [`vector_store.py`](../../src/codetrace/vector_store.py) · `VectorStore.save()`, `search()` | Guarda vectores y metadatos en JSON; compara una consulta con los registros mediante similitud coseno y ordena los resultados. | Código propio con `json` y `math`; búsqueda por recorrido de registros, sin índice aproximado externo. |
 
 Los embeddings acercan textos según la representación del modelo; la similitud no prueba equivalencia ni ejecución. La representación enriquecida puede cambiar si cambian las relaciones aunque no se modifique el código del chunk.
 
@@ -86,8 +88,8 @@ Los embeddings acercan textos según la representación del modelo; la similitud
 flowchart TD
     A["Pregunta del usuario"] --> B["skills/code-trace/scripts/query.py<br/>o skills/code-trace-inventory/scripts/query.py<br/>main() → build_command()"]
     B --> C{"Punto de entrada"}
-    C -->|code-rag por defecto| D["__main__.py · main(), rama answer"]
-    C -->|code-inventory o evidence| E["agent_query.py · run()<br/>Routing, readiness y paginación si procede"]
+    C -->|code-trace| D["__main__.py · main(), rama answer"]
+    C -->|code-trace-inventory| E["agent_query.py · run()<br/>Routing, readiness y paginación si procede"]
     D --> F["repository_routing.py · select_repository()<br/>Resolver referencias o repositorio de respaldo"]
     E --> F
     F --> G["rag_pipeline.py · answer()<br/>Orquestar recuperación y contexto"]
@@ -99,9 +101,9 @@ flowchart TD
     L --> M{"¿Quién redacta?"}
     M -->|Proveedor de CodeTrace| N["answering.py · answer_query()<br/>Prompt, seguridad, generación y validación"]
     N --> O["answer_display.py · render_answer()<br/>Markdown con evidencias"]
-    O --> P["Skill code-rag: devolver stdout literalmente"]
+    O --> P["Skill code-trace: devolver stdout literalmente"]
     M -->|Agente consumidor| Q["agent_query.py · render_query()<br/>Entregar JSON de evidencia sin generación"]
-    Q --> R["Skill code-inventory: agente interpreta y cita"]
+    Q --> R["Skill code-trace-inventory: agente interpreta y cita"]
 ```
 
 El diagrama reúne las rutas normales de consulta, no un único árbol de llamadas literal: `agent_query.run()` usa `render_query()` para construir la salida y desde este recorrido llama al pipeline. La ruta `answer` tiene su propio manejo de CLI; no hereda automáticamente todas las comprobaciones o flags de `query`. `--resolve-only` termina tras resolver el repositorio, antes de cargar índices/modelos.
@@ -111,16 +113,16 @@ El diagrama reúne las rutas normales de consulta, no un único árbol de llamad
 | Etapa y función | Qué hace y cómo | Librería o mecanismo |
 | --- | --- | --- |
 | Launchers de las skills · `build_command()` | Lee `config.local.json`, valida checkout/entorno y construye el comando con el Python de CodeTrace y el `config.json` central. | `pathlib`, `json`, `subprocess`; ejecución sin shell. |
-| [`repository_routing.py`](../src/codetrace/repository_routing.py) · `select_repository()` | Resuelve nombres, aliases y referencias acotadas por descripción; usa el respaldo cuando corresponde. La ambigüedad se comunica. | Código determinista con `re` y `unicodedata`; sin clasificación por LLM. |
-| [`preparation.py`](../src/codetrace/preparation.py) · `inspect_preparation()`, `evaluate_readiness()` | En `query`, comprueba coherencia y evalúa vigencia: metadatos en quick o hashes en full. `--require-fresh` exige fuentes actuales. | Código propio, metadatos de archivos y SHA-256. No reconstruye índices. |
-| [`query_planning.py`](../src/codetrace/query_planning.py) · `plan_query()` | Extrae términos y variantes deterministas, identifica anclas y conserva el texto para las fuentes pertinentes. | `re`, `unicodedata` y reglas propias. |
-| [`lexical_search.py`](../src/codetrace/lexical_search.py) · `search_index()` | Busca términos en símbolos, rutas o contenido utilizando el índice preparado. | Recuperación propia; no debe describirse como BM25 por el diagrama antiguo de arquitectura objetivo. |
-| [`structural_search.py`](../src/codetrace/structural_search.py) · `search_graph()` | Recupera evidencias según nodos, relaciones y claves del grafo, incluyendo perfiles de acceso. | Recorrido y puntuación propios sobre el grafo JSON. |
-| [`semantic_search.py`](../src/codetrace/semantic_search.py) · `search_vectors()` | Representa la pregunta con el proveedor de embeddings y busca vectores cercanos. | `sentence-transformers` para codificación; `VectorStore.search()` para coseno. |
-| [`search.py`](../src/codetrace/search.py) · `search_hybrid()` | Coordina fuentes activas y el perfil semántico; combina resultados v1/v2 cuando corresponde. | Código propio; [`two_stage_retrieval.py`](../src/codetrace/two_stage_retrieval.py) · `two_stage_retrieve()` para el perfil de dos etapas. |
-| [`hybrid_search.py`](../src/codetrace/hybrid_search.py) · `hybrid_search()` | Fusiona fuentes y ordena candidatos según las reglas y señales de ranking aplicables. | Fusión/ranking propios; no llama a un servicio externo de reranking en esta función. |
-| [`context_api.py`](../src/codetrace/context_api.py) · `build_context()` | Expone la API de contexto, delega selección por intención y añade evaluación si hay etiquetas relevantes. | Código propio; `intent_context.build_context_for_query()`. |
-| [`evidence_context.py`](../src/codetrace/evidence_context.py) · `build_multi_chunk_context()` | Deduplica, incorpora evidencia relacionada cuando se permite y selecciona extractos bajo presupuestos; devuelve citas y exclusiones. | Código propio sobre chunks y grafo. La paginación desactiva expansión para separar páginas. |
+| [`repository_routing.py`](../../src/codetrace/repository_routing.py) · `select_repository()` | Resuelve nombres, aliases y referencias acotadas por descripción; usa el respaldo cuando corresponde. La ambigüedad se comunica. | Código determinista con `re` y `unicodedata`; sin clasificación por LLM. |
+| [`preparation.py`](../../src/codetrace/preparation.py) · `inspect_preparation()`, `evaluate_readiness()` | En `query`, comprueba coherencia y evalúa vigencia: metadatos en quick o hashes en full. `--require-fresh` exige fuentes actuales. | Código propio, metadatos de archivos y SHA-256. No reconstruye índices. |
+| [`query_planning.py`](../../src/codetrace/query_planning.py) · `plan_query()` | Extrae términos y variantes deterministas, identifica anclas y conserva el texto para las fuentes pertinentes. | `re`, `unicodedata` y reglas propias. |
+| [`lexical_search.py`](../../src/codetrace/lexical_search.py) · `search_index()` | Busca términos en símbolos, rutas o contenido utilizando el índice preparado. | Recuperación propia; no debe describirse como BM25 por el diagrama antiguo de arquitectura objetivo. |
+| [`structural_search.py`](../../src/codetrace/structural_search.py) · `search_graph()` | Recupera evidencias según nodos, relaciones y claves del grafo, incluyendo perfiles de acceso. | Recorrido y puntuación propios sobre el grafo JSON. |
+| [`semantic_search.py`](../../src/codetrace/semantic_search.py) · `search_vectors()` | Representa la pregunta con el proveedor de embeddings y busca vectores cercanos. | `sentence-transformers` para codificación; `VectorStore.search()` para coseno. |
+| [`search.py`](../../src/codetrace/search.py) · `search_hybrid()` | Coordina fuentes activas y el perfil semántico; combina resultados v1/v2 cuando corresponde. | Código propio; [`two_stage_retrieval.py`](../../src/codetrace/two_stage_retrieval.py) · `two_stage_retrieve()` para el perfil de dos etapas. |
+| [`hybrid_search.py`](../../src/codetrace/hybrid_search.py) · `hybrid_search()` | Fusiona fuentes y ordena candidatos según las reglas y señales de ranking aplicables. | Fusión/ranking propios; no llama a un servicio externo de reranking en esta función. |
+| [`context_api.py`](../../src/codetrace/context_api.py) · `build_context()` | Expone la API de contexto, delega selección por intención y añade evaluación si hay etiquetas relevantes. | Código propio; `intent_context.build_context_for_query()`. |
+| [`evidence_context.py`](../../src/codetrace/evidence_context.py) · `build_multi_chunk_context()` | Deduplica, incorpora evidencia relacionada cuando se permite y selecciona extractos bajo presupuestos; devuelve citas y exclusiones. | Código propio sobre chunks y grafo. La paginación desactiva expansión para separar páginas. |
 
 **Recuperación** selecciona candidatos; **contexto** decide cuáles de sus evidencias caben. Por eso un match puede aparecer como metadato sin extracto incluido. El ranking explica un orden, no una probabilidad de verdad. Ni el límite de recuperación ni el presupuesto de contexto acreditan exhaustividad.
 
@@ -128,22 +130,23 @@ El diagrama reúne las rutas normales de consulta, no un único árbol de llamad
 
 | Etapa y función | Qué hace y cómo | Librería o mecanismo |
 | --- | --- | --- |
-| [`generation_factory.py`](../src/codetrace/generation_factory.py) · `build_generation_provider()` | Construye el adaptador según configuración de generación. | Adaptadores propios para Ollama o Anthropic; credenciales desde entorno cuando corresponde. |
-| [`grounded_prompt.py`](../src/codetrace/grounded_prompt.py) · `build_grounded_prompt()` | Construye instrucciones y evidencia para pedir respuesta estructurada, citas y reconocimiento de evidencia insuficiente. | Plantilla propia. El código recuperado se trata como datos no confiables. |
-| [`answering.py`](../src/codetrace/answering.py) · `answer_query()` | Valida seguridad, construye el prompt, llama a `provider.generate()` y valida el resultado. | Orquestación propia. |
-| [`ollama_provider.py`](../src/codetrace/ollama_provider.py) · `OllamaProvider.generate()` | Envía la petición al endpoint Ollama configurado e interpreta la respuesta. | HTTP con `urllib.request` y JSON; el modelo se ejecuta en Ollama. |
-| [`anthropic_provider.py`](../src/codetrace/anthropic_provider.py) · `AnthropicProvider.generate()` | Llama al proveedor Anthropic y transforma su salida al contrato de generación. | SDK **anthropic**, dependencia opcional `llm`. |
-| [`generation.py`](../src/codetrace/generation.py) · `validate_generation_result()` | Comprueba claims, citas, rutas, rangos y certeza frente al contexto disponible. | Validación propia; no sustituye una evaluación semántica de calidad. |
-| [`answer_display.py`](../src/codetrace/answer_display.py) · `render_answer()` | Presenta respuesta y evidencia en Markdown, con referencias y metadatos. | Formateo propio. La skill `code-trace` entrega la salida literalmente. |
-| [`agent_query.py`](../src/codetrace/agent_query.py) · `render_query()` | En modo evidence devuelve el sobre JSON con resultados, citas, contexto y límites. | Sin llamada al proveedor generativo de CodeTrace; el agente de `code-trace-inventory` redacta después. |
+| [`generation_factory.py`](../../src/codetrace/generation_factory.py) · `build_generation_provider()` | Construye el adaptador según configuración de generación. | Adaptadores para Ollama, Anthropic, OpenAI y Azure OpenAI. La factoría lee las credenciales del entorno o de `.env` según el proveedor. |
+| [`grounded_prompt.py`](../../src/codetrace/grounded_prompt.py) · `build_grounded_prompt()` | Construye instrucciones y evidencia para pedir respuesta estructurada, citas y reconocimiento de evidencia insuficiente. | Plantilla propia. El código recuperado se trata como datos no confiables. |
+| [`answering.py`](../../src/codetrace/answering.py) · `answer_query()` | Valida seguridad, construye el prompt, llama a `provider.generate()` y valida el resultado. | Orquestación propia. |
+| [`ollama_provider.py`](../../src/codetrace/ollama_provider.py) · `OllamaProvider.generate()` | Envía la petición al endpoint Ollama configurado e interpreta la respuesta. | HTTP con `urllib.request` y JSON; el modelo se ejecuta en Ollama. |
+| [`anthropic_provider.py`](../../src/codetrace/anthropic_provider.py) · `AnthropicProvider.generate()` | Llama al proveedor Anthropic y transforma su salida al contrato de generación. | SDK **anthropic**, dependencia opcional `llm`. |
+| [`openai_provider.py`](../../src/codetrace/openai_provider.py) · `OpenAIProvider.generate()` | Usa Chat Completions en modo JSON para OpenAI y Azure OpenAI. | SDK **openai**, dependencia opcional `llm`. |
+| [`generation.py`](../../src/codetrace/generation.py) · `validate_generation_result()` | Comprueba claims, citas, rutas, rangos y certeza frente al contexto disponible. | Validación propia; no sustituye una evaluación semántica de calidad. |
+| [`answer_display.py`](../../src/codetrace/answer_display.py) · `render_answer()` | Presenta respuesta y evidencia en Markdown, con referencias y metadatos. | Formateo propio. La skill `code-trace` entrega la salida literalmente. |
+| [`agent_query.py`](../../src/codetrace/agent_query.py) · `render_query()` | En modo evidence devuelve el sobre JSON con resultados, citas, contexto y límites. | Sin llamada al proveedor generativo de CodeTrace; el agente de `code-trace-inventory` redacta después. |
 
 ## 3. Rama exhaustiva: inventario acotado
 
-El modo `inventory` de `code-trace` sigue un camino distinto a la recuperación limitada. La skill llamada `code-trace-inventory` usa búsquedas de evidencia y no activa este inventario automáticamente.
+`codetrace inventory` es un comando independiente para recuentos dentro de un alcance explícito. La skill `code-trace-inventory` usa búsquedas de evidencia con `codetrace query`.
 
 ```mermaid
 flowchart TD
-    A["skills/code-trace/scripts/query.py<br/>build_command(), modo inventory"] --> B["inventory.py · main()<br/>Resolver repositorio y cargar instantánea indexada"]
+    A["codetrace inventory"] --> B["inventory.py · main()<br/>Resolver repositorio y cargar instantánea indexada"]
     B --> C{"Tipo solicitado"}
     C -->|Lista YAML/JSON| D["inventory.py · inventory()<br/>parse_configuration() y walk(): localizar lista"]
     D --> E{"¿Alcance inequívoco?"}
@@ -152,10 +155,10 @@ flowchart TD
     C -->|Decorador Python| H["python_inventory.py · python_inventory()<br/>AST de funciones y decorator_name()"]
     G --> I["inventory.py · page_result()<br/>Paginar después de calcular el total"]
     H --> I
-    I --> J["inventory.py · markdown()<br/>Salida literal de la skill sin LLM"]
+    I --> J["inventory.py · markdown()<br/>Salida de la CLI sin LLM"]
 ```
 
-Las listas se identifican por archivo y ruta estructural; `--where` filtra valores escalares exactos antes de `--unique-by`, y `--group-by` agrupa si se solicita. Para Python se usa `ast` sobre la fuente guardada en el índice y se cuentan funciones con un decorador explícito en un archivo. No se importan módulos ni se resuelven registros dinámicos. Véanse [`inventory.py`](../src/codetrace/inventory.py) y [`python_inventory.py`](../src/codetrace/python_inventory.py).
+Las listas se identifican por archivo y ruta estructural; `--where` filtra valores escalares exactos antes de `--unique-by`, y `--group-by` agrupa si se solicita. Para Python se usa `ast` sobre la fuente guardada en el índice y se cuentan funciones con un decorador explícito en un archivo. No se importan módulos ni se resuelven registros dinámicos. Véanse [`inventory.py`](../../src/codetrace/inventory.py) y [`python_inventory.py`](../../src/codetrace/python_inventory.py).
 
 ## Artefactos y dependencias de un vistazo
 
@@ -167,9 +170,9 @@ Las listas se identifican por archivo y ruta estructural; `--where` filtra valor
 | `indexes/NAME.vectors-v2.json` | Vectores de la representación enriquecida. Lo consume la búsqueda semántica según perfil. |
 | Sesiones e informes opcionales | Persisten páginas o resultados; pueden contener extractos de fuentes. No reemplazan los índices. |
 
-Los nombres anteriores son las rutas estándar junto a la configuración central; los vectores admiten overrides. Las dependencias declaradas están en [`pyproject.toml`](../pyproject.toml): **PyYAML** es base; **tree-sitter-language-pack**, **sentence-transformers** y **anthropic** son opcionales. Chunking, índice léxico, grafo, fusión, almacén vectorial y gestión de contexto se implementan en el propio proyecto.
+Los nombres anteriores son las rutas estándar junto a la configuración central; los vectores admiten overrides. Las dependencias declaradas están en [`pyproject.toml`](../../pyproject.toml): **PyYAML** y **python-dotenv** son dependencias base. **tree-sitter-language-pack**, **sentence-transformers**, **anthropic** y **openai** son opcionales. Chunking, índice léxico, grafo, fusión, almacén vectorial y gestión de contexto se implementan en el propio proyecto.
 
-Para ejemplos operativos y detalles de cada entrada: [preparación](code-rag-preparacion.md), [skill code-rag](skill-code-rag.md) y [skill code-inventory](skill-code-inventory.md). Esta guía debe actualizarse cuando cambien funciones, artefactos o mecanismos del recorrido.
+Para ejemplos operativos y detalles de cada entrada: [preparación](code-rag-preparacion.md), [skill code-trace](skill-code-rag.md) y [skill code-trace-inventory](skill-code-inventory.md). Esta guía debe actualizarse cuando cambien funciones, artefactos o mecanismos del recorrido.
 
 ## Flujos estáticos en respuestas (0.9.21)
 

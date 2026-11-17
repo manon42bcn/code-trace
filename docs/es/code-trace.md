@@ -1,5 +1,7 @@
 # CodeTrace · code-trace (0.9.23)
 
+[English](../en/code-trace.md)
+
 El proyecto se llama **code-trace**, con la identidad visual **CodeTrace**. El paquete Python se distribuye como `code-trace` y ofrece el comando `code-trace` y el módulo `codetrace`.
 
 ## Instalación y uso
@@ -33,4 +35,4 @@ El módulo `codetrace` y sus imports siguen disponibles. Los scripts, los lanzad
 
 Las skills se llaman `code-trace` y `code-trace-inventory`, usan `python -m codetrace` y las configuraciones nuevas incluyen `code_trace_root`. Las conexiones existentes con `code_rag_root` siguen admitidas. Se gestionan con `make skills-install`, `make skills-update` y `make skills-status`; ver [la guía de instalación](skills-instalacion.md).
 
-No se mueve el checkout local ni se modifica `config.json`. Si se cambia manualmente el nombre de su directorio, habrá que actualizar las rutas absolutas que lo referencian, incluidas las conexiones de las skills y los entornos virtuales. Los archivos de documentación que conservan `code-rag` en el nombre mantienen sus enlaces existentes.
+No se mueve el checkout local ni se modifica `config.json`. Si se cambia manualmente el nombre de su directorio, habrá que actualizar las rutas absolutas que lo referencian, incluidas las conexiones de las skills y los entornos virtuales.
