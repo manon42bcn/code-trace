@@ -24,6 +24,8 @@ Declare `"framework": "toolium"` on repositories that provide Toolium or Toolium
 
 In `auto` mode, CodeTrace enables analysis when the repository or a transitive dependency declares the framework, or when the repository’s indexed Python imports `toolium` or `toolium_telefonica`. Repository identifiers are arbitrary. Use `analysis.toolium` to set `enabled` or `disabled` globally or per repository. After changing the declarations, regenerate relationships with `make indexes-incremental REPOS="acceptance"`.
 
+CodeTrace analyzes `behave.context` reads and writes in repositories with Behave steps even when Toolium is disabled. Toolium storage and marker rules apply when Toolium analysis is enabled. New reports store the flow in `context_flow`; CodeTrace also reads the older `toolium.context_flow` field. Regenerate relationships to collect the new evidence.
+
 ## Build artifacts
 
 ```mermaid

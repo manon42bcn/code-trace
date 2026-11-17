@@ -10,6 +10,7 @@ import hashlib
 import json
 from collections import Counter
 
+from .context_flow import report_context_flow
 from .execution_paths import call_graph
 
 GRAPH_SCHEMA_VERSION = 1
@@ -120,7 +121,7 @@ def build_evidence_graph(indexes, report):
                     limitations=['static_match_not_runtime_registration'],
                     observed_behave_match=(evidence.get('match_evidence') == 'matched_definition'),
                 )
-    flow = report.get('toolium', {}).get('context_flow', {})
+    flow = report_context_flow(report)
     for access_type, kind in (('producers', 'writes'), ('consumers', 'reads')):
         for record in flow.get(access_type, []):
             parent = symbols.get((record['repository'], record['chunk_id']))

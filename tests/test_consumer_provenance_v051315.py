@@ -48,8 +48,12 @@ def fixture_report(tier='preceding_scenario_step_candidate', temporal='prior_ste
     }
 
 
-def test_prior_writer_is_explained():
-    result = query_context_consumers(fixture_report(), key='id')
+@pytest.mark.parametrize('legacy', [True, False])
+def test_prior_writer_is_explained(legacy):
+    report = fixture_report()
+    if not legacy:
+        report['context_flow'] = report['toolium'].pop('context_flow')
+    result = query_context_consumers(report, key='id')
     assert result['consumers'][0]['status'] == 'plausible_prior_producer'
     assert result['consumers'][0]['candidates'][0]['evidence']['producer_step_line'] == 10
     assert not result['consumers'][0]['runtime_verified']

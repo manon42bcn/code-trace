@@ -318,9 +318,13 @@ def build_repository_links(config: dict, config_path: Path, repo: str) -> dict:
                 record['example_values'] = variant['example_values']
                 rows_total += 1
             results.append(record)
+    from .context_flow import behave_context_flow
     from .toolium_analysis import analyze_toolium
 
     toolium = analyze_toolium(config, config_path, repo, indexes[repo], results, indexes=indexes)
+    flow = toolium.pop('context_flow', None)
+    if flow is None and (source or defs[repo]):
+        flow = behave_context_flow(indexes, results)
     counts = Counter(x['status'] for x in results)
     from .capability_contract import attach_capability_contract
 
@@ -358,6 +362,8 @@ def build_repository_links(config: dict, config_path: Path, repo: str) -> dict:
             'registro de pasos Behave; el runtime no se verifica.'
         ),
     }
+    if flow is not None:
+        report['context_flow'] = flow
     return attach_capability_contract(report, indexes)
 
 

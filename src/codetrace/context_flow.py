@@ -91,7 +91,8 @@ def _walk_accesses(tree):
             yield node, namespace, key, kind
 
 
-def context_inventory(index, repository):
+def context_inventory(index, repository, *, include_toolium=True):
+    """Collect static accesses, with Toolium storage and calls enabled by default."""
     producers, consumers, maps = [], [], []
     for chunk in index.get('chunks', []):
         if chunk.get('language') != 'python' or chunk.get('strategy') != 'python_ast':
@@ -153,6 +154,8 @@ def context_inventory(index, repository):
                         write_values[(*result, sub.lineno, sub.col_offset)] = rhs
         seen = set()
         for node, namespace, key, access in _walk_accesses(tree):
+            if not include_toolium and namespace != 'behave.context':
+                continue
             loc = (namespace, key, node.lineno, node.col_offset)
             if loc in seen:
                 continue
@@ -183,6 +186,8 @@ def context_inventory(index, repository):
                 consumers.append(record)
             else:
                 consumers.append(record)
+        if not include_toolium:
+            continue
         # Toolium's public writer: context.store_key_in_storage(key, value)
         # or dataset.store_key_in_storage(context, key, value).
         # FEATURE/RUN prefixes designate other ChainMap layers.
@@ -783,6 +788,31 @@ def _propagated_parameter_writers(indexes):
     for identity in chunks:
         visit(identity, {}, (identity,), 0)
     return output
+
+
+def behave_context_flow(indexes, relations):
+    """Collect Behave context evidence independently of Toolium analysis."""
+    producers, consumers = [], []
+    for repository, index in indexes.items():
+        writes, reads, _ = context_inventory(index, repository, include_toolium=False)
+        producers.extend(writes)
+        consumers.extend(reads)
+    environments = scoped_environments(indexes, relations, [])
+    return {
+        'producers': producers,
+        'consumers': consumers,
+        'scoped_environments': [
+            {'repository': repo, 'feature_path': path, **environment}
+            for (repo, path), environment in sorted(environments.items())
+        ],
+    }
+
+
+def report_context_flow(report):
+    """Read current context evidence or its location in older relationship artifacts."""
+    if 'context_flow' in report:
+        return report['context_flow']
+    return (report.get('toolium') or {}).get('context_flow') or {}
 
 
 def context_flow(indexes, references, relations):

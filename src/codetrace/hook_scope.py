@@ -163,11 +163,14 @@ def environment_scope(indexes, feature_path, repository, lifecycle=(), catalog=N
             new_chain = [*chain, here]
             chunk = methods.get((repo, path, name))
             if chunk:
-                if (repo, path, name) in target_sites or (not lifecycle and name == hook):
+                storage_target = (repo, path, name) in target_sites
+                if storage_target or (not lifecycle and name == hook):
                     found.append(
                         {
                             'chain': new_chain,
-                            'evidence': 'storage_lifecycle_target',
+                            'evidence': 'storage_lifecycle_target'
+                            if storage_target
+                            else 'static_hook_definition',
                             'conditions': sorted(set(conditions)),
                             'reachability': 'conditional_static'
                             if uncertain

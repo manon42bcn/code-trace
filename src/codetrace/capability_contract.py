@@ -6,6 +6,8 @@ imports, or successful test execution. It is descriptive and conservative.
 
 from collections import Counter
 
+from .context_flow import report_context_flow
+
 CONTRACT_VERSION = 1
 
 
@@ -28,7 +30,7 @@ def build_capability_contract(indexes, report, *, dry_run_supplied=False, test_p
     gherkin = languages.get('gherkin', 0)
     python = languages.get('python', 0)
     definitions = [r for r in report.get('relations', []) if r.get('definitions')]
-    flow = report.get('toolium', {}).get('context_flow', {})
+    flow = report_context_flow(report)
     producers = flow.get('producers', [])
     consumers = flow.get('consumers', [])
     scoped = flow.get('scoped_environments', [])
