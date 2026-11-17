@@ -87,12 +87,10 @@ def check_provider(raw, *, allow_remote=False):
         )
     if config.base_url is not None and not isinstance(config.base_url, str):
         raise ProviderCheckError('invalid_endpoint', 'Use an HTTP(S) endpoint string.')
-    local = (
-        is_loopback(config.base_url or 'http://localhost:11434')
-        if config.provider == 'ollama'
-        else False
+    local = config.provider == 'mlx' or (
+        config.provider == 'ollama' and is_loopback(config.base_url or 'http://localhost:11434')
     )
-    if config.base_url and config.provider != 'ollama':
+    if config.base_url and config.provider not in {'ollama', 'mlx'}:
         is_loopback(config.base_url)  # Validate a custom endpoint without exposing it in output.
     if not local and not allow_remote:
         raise ProviderCheckError(

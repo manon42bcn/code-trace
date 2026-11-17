@@ -17,6 +17,7 @@ codetrace = "codetrace.__main__:main"
 parsers = ["tree-sitter-language-pack>=0.10"]
 embeddings = ["sentence-transformers>=3.0"]
 llm = ["anthropic>=1.0", "openai>=1.55"]
+mlx = ["mlx-lm; sys_platform == 'darwin' and platform_machine == 'arm64'"]
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff==0.15.16", "pre-commit>=4.0,<5"]

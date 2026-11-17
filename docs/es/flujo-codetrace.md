@@ -27,7 +27,7 @@ flowchart TD
         enabled -->|No| prompt["Construir el prompt y devolver contexto y prompt en JSON"]
         enabled -->|Sí| permission["Comprobar permisos de generación y nombres de archivo sensibles"]
         permission --> grounded["Construir el prompt con fragmentos y rangos citables"]
-        grounded --> llm["Generar con Ollama, Anthropic, OpenAI, Azure OpenAI, OpenRouter o Groq"]
+        grounded --> llm["Generar con Ollama, MLX, Anthropic, OpenAI, Azure OpenAI, OpenRouter o Groq"]
         llm --> validate["Validar la respuesta estructurada contra el contexto"]
         validate --> output["Mostrar la respuesta en JSON, texto o Markdown"]
     end
