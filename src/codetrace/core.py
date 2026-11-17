@@ -549,64 +549,71 @@ def build_chunks(path: str, lang: str, source: str, cfg: dict, diagnostics: list
     lines = source.splitlines()
     if not lines:
         return []
-    opts = cfg['chunking']
-    maximum = opts['max_tokens']
-    overlap = opts['overlap_tokens']
-    if maximum < 1 or not 0 <= overlap < maximum:
+    language = lang
+    chunking_options = cfg['chunking']
+    max_tokens = chunking_options['max_tokens']
+    overlap_tokens = chunking_options['overlap_tokens']
+    if max_tokens < 1 or not 0 <= overlap_tokens < max_tokens:
         raise ValueError('max_tokens debe ser > 0 y overlap_tokens entre 0 y max_tokens-1')
     units = units_for(
         source,
-        lang,
-        opts['on_missing_parser'],
-        opts.get('on_syntax_error', 'error'),
+        language,
+        chunking_options['on_missing_parser'],
+        chunking_options.get('on_syntax_error', 'error'),
         diagnostics,
         filename=path,
     )
     if units is None:
         return []
-    units = attach_leading_docs(lines, units, lang)
-    rows = []
-    # For individual symbols, preserve full block when it fits, then bound/split.
-    for start, end, u in partition(lines, units):
-        symbol = u[2] if u else None
-        strategy = (
-            u[3]
-            if u
-            else (
-                f'{lang}_document'
-                if lang in {'yaml', 'json'}
-                else 'lock_document'
-                if lang == 'lock'
-                else 'surrounding_code'
-            )
-        )
-        for a, b, content in split_budget(lines, start, end, maximum, overlap):
+    units = attach_leading_docs(lines, units, language)
+    fallback_strategy = {
+        'yaml': 'yaml_document',
+        'json': 'json_document',
+        'lock': 'lock_document',
+    }.get(language, 'surrounding_code')
+    chunks = []
+    for range_start, range_end, unit in partition(lines, units):
+        if unit is None:
+            symbol, strategy = None, fallback_strategy
+        else:
+            _, _, symbol, strategy = unit
+        for start_line, end_line, content in split_budget(
+            lines, range_start, range_end, max_tokens, overlap_tokens
+        ):
             if not content.strip():
                 continue
-            prefix = symbol.rsplit('.', 1)[0] if symbol and '.' in symbol else None
-            h = hashlib.sha256(f'{path}\0{a}\0{b}\0{content}'.encode()).hexdigest()
-            rows.append(
+            parent_symbol = symbol.rsplit('.', 1)[0] if symbol and '.' in symbol else None
+            chunk_hash = hashlib.sha256(
+                f'{path}\0{start_line}\0{end_line}\0{content}'.encode()
+            ).hexdigest()
+            chunks.append(
                 {
-                    'id': h[:16],
+                    'id': chunk_hash[:16],
                     'path': path,
-                    'language': lang,
+                    'language': language,
                     'strategy': strategy,
-                    'symbol': symbol if opts['preserve_symbols'] else None,
-                    'parent_symbol': prefix if opts['include_parent_context'] else None,
-                    'start_line': a,
-                    'end_line': b,
+                    'symbol': symbol if chunking_options['preserve_symbols'] else None,
+                    'parent_symbol': parent_symbol
+                    if chunking_options['include_parent_context']
+                    else None,
+                    'start_line': start_line,
+                    'end_line': end_line,
                     'content': content,
                     'estimated_tokens': token_count(content),
                     'sha256': hashlib.sha256(content.encode()).hexdigest(),
                 }
             )
-    if lang in {'yaml', 'json'}:
-        for row in rows:
+    if language in {'yaml', 'json'}:
+        for row in chunks:
             row['configuration_chunking_version'] = CONFIGURATION_CHUNKING_VERSION
             row['data_path'] = row['symbol']
-            if opts['include_parent_context'] and row['symbol'] and '/' in row['symbol']:
+            if (
+                chunking_options['include_parent_context']
+                and row['symbol']
+                and '/' in row['symbol']
+            ):
                 row['parent_symbol'] = row['symbol'].rsplit('/', 1)[0]
-    if lang == 'gherkin':
+    if language == 'gherkin':
         # Enrich scenario chunks with their feature context (including inherited tags).
         feature = None
         feature_tags = []
@@ -632,7 +639,7 @@ def build_chunks(path: str, lang: str, source: str, cfg: dict, diagnostics: list
                 pending_tags = []
             elif stripped and not stripped.startswith('#'):
                 pending_tags = []
-        for row in rows:
+        for row in chunks:
             if row['symbol'] and row['symbol'].startswith(
                 (
                     'scenario:',
@@ -653,7 +660,7 @@ def build_chunks(path: str, lang: str, source: str, cfg: dict, diagnostics: list
                     name, tags = ancestors[-1]
                     row['parent_symbol'] = 'feature: ' + name
                     row['feature_tags'] = tags
-    return rows
+    return chunks
 
 
 def index_repository(
