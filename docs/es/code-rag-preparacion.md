@@ -16,6 +16,28 @@ cp config.example.json config.json
 
 `config.json` está ignorado por Git y contiene las rutas, los ajustes de recuperación y las instalaciones de skills de cada entorno. La generación se configura aparte mediante `.env` o variables exportadas. Ajustarlo antes de preparar los repositorios; no se sobrescribe al actualizar la plantilla. En una instalación existente, el cambio de seguimiento conserva el archivo local. Como Git registra la retirada del antiguo archivo versionado, conviene guardar una copia antes de incorporar esta actualización en otros checkouts con configuraciones personalizadas.
 
+## Dependencias de Toolium
+
+Declara `"framework": "toolium"` en los repositorios que proporcionan Toolium o Toolium Telefónica y registra las dependencias directas en `relationships`. En este ejemplo, el repositorio de tests solo declara la extensión.
+
+```json
+{
+  "repositories": {
+    "framework-base": {"path": "../toolium", "framework": "toolium"},
+    "framework-extension": {"path": "../toolium-telefonica", "framework": "toolium"},
+    "acceptance": {"path": "../acceptance"}
+  },
+  "relationships": {
+    "framework-extension": {"dependencies": ["framework-base"]},
+    "acceptance": {"dependencies": ["framework-extension"]}
+  }
+}
+```
+
+En modo `auto`, CodeTrace activa el análisis si el repositorio o alguna dependencia transitiva declara el framework, o si el código Python indexado del repositorio importa `toolium` o `toolium_telefonica`. Los nombres de las claves son libres. `analysis.toolium` admite `enabled` y `disabled`, globalmente o por repositorio. Tras cambiar las declaraciones, regenera las relaciones con `make indexes-incremental REPOS="acceptance"`.
+
+CodeTrace analiza las lecturas y escrituras de `behave.context` en repositorios con pasos de Behave aunque Toolium esté desactivado. Las reglas de almacenamiento y marcadores de Toolium se aplican cuando ese análisis está habilitado. Los informes nuevos guardan el flujo en `context_flow`; CodeTrace también lee el campo anterior `toolium.context_flow`. Regenera las relaciones para obtener la evidencia nueva.
+
 ## 1. Del repositorio a los artefactos de consulta
 
 El punto de entrada es `make indexes`, que ejecuta `scripts/build_indexes.py`. Sin selección explícita se preparan todos los repositorios configurados; con `REPOS` se incluyen también sus dependencias transitivas.

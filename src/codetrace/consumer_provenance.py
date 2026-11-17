@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from collections import Counter
 
+from .context_flow import report_context_flow
+
 
 def query_context_consumers(
     report,
@@ -24,7 +26,7 @@ def query_context_consumers(
     if any(x is not None and (not isinstance(x, str) or not x) for x in (key, feature, scenario)):
         raise ValueError('Los filtros deben ser cadenas no vacías')
     toolium = report.get('toolium') or {}
-    flow = toolium.get('context_flow') or {}
+    flow = report_context_flow(report)
     references = toolium.get('references')
     links = flow.get('reference_producer_links')
     producers = flow.get('producers')

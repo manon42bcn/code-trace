@@ -1,6 +1,7 @@
 import json
 
 from codetrace.behave_links import build_behave_relations
+from codetrace.evidence_graph import build_evidence_graph
 from codetrace.repo_links import build_repository_links, save_links
 
 
@@ -182,3 +183,35 @@ def test_multiple_decorators_one_function_is_not_ambiguous(tmp_path):
     res = build_repository_links(cfg, tmp_path / 'config.json', 'app')
     assert res['summary']['resolved_local'] == 1
     assert len(res['relations'][0]['definitions']) == 1
+
+
+def test_behave_context_is_indexed_with_toolium_disabled(tmp_path):
+    feature = {
+        'id': 'scenario',
+        'path': 'features/example.feature',
+        'language': 'gherkin',
+        'symbol': 'scenario: Example',
+        'start_line': 1,
+        'content': 'Scenario: Example\n Given a context value',
+    }
+    step = _func('context_value', 'features/steps/example.py', 'a context value')
+    step['content'] += (
+        '\n context.token = "value"\n print(context.token)'
+        '\n context.store_key_in_storage("storage_only", "value")'
+    )
+    chunks = [feature, step]
+    _make_index(tmp_path, 'app', chunks)
+    config = {'repositories': {'app': {}}, 'analysis': {'toolium': 'disabled'}}
+
+    report = build_repository_links(config, tmp_path / 'config.json', 'app')
+    assert not report['toolium']['enabled']
+    assert report['summary']['resolved_local'] == 1
+
+    graph = build_evidence_graph({'app': {'chunks': chunks}}, report)
+    data_keys = {node['id']: node for node in graph['nodes'] if node['kind'] == 'data_key'}
+    assert {node['namespace'] for node in data_keys.values()} == {'behave.context'}
+    assert {
+        edge['type']
+        for edge in graph['edges']
+        if edge['target'] in data_keys and data_keys[edge['target']]['key'] == 'token'
+    } == {'reads', 'writes'}

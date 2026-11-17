@@ -15,7 +15,7 @@ from pathlib import Path, PurePosixPath
 
 from .artifact_state import file_stamp, link_signature
 from .behave_links import _definitions
-from .repository_paths import index_output, repository_index_path
+from .repository_paths import index_output, repository_index_path, transitive_dependencies
 
 
 def _scope(path: str) -> str:
@@ -32,28 +32,6 @@ def _definition_in_scope(path: str, scope: str) -> bool:
     pp = PurePosixPath(path)
     candidates = (scope + '/steps/', scope.rsplit('/features', 1)[0] + '/steps/')
     return any(path.startswith(c) for c in candidates) or (scope == '.' and 'steps' in pp.parts)
-
-
-def _deps(config: dict, repo: str) -> list[str]:
-    relationship = config.get('relationships', {}).get(repo, {})
-    if isinstance(relationship, list):
-        return relationship
-    return relationship.get('dependencies', [])
-
-
-def _transitive(config: dict, root: str) -> list[str]:
-    ordered = []
-    seen = {root}
-
-    def walk(node):
-        for dep in _deps(config, node):
-            if dep not in seen:
-                seen.add(dep)
-                ordered.append(dep)
-                walk(dep)
-
-    walk(root)
-    return ordered
 
 
 def _matches(definitions, text, effective_keyword):
@@ -215,7 +193,7 @@ def build_repository_links(config: dict, config_path: Path, repo: str) -> dict:
     repos = config.get('repositories', {})
     if repo not in repos:
         raise ValueError(f'Repositorio no configurado: {repo}')
-    names = [repo, *_transitive(config, repo)]
+    names = [repo, *transitive_dependencies(config, repo)]
     indexes = {}
     index_stamps = {}
     missing = []
@@ -340,9 +318,13 @@ def build_repository_links(config: dict, config_path: Path, repo: str) -> dict:
                 record['example_values'] = variant['example_values']
                 rows_total += 1
             results.append(record)
+    from .context_flow import behave_context_flow
     from .toolium_analysis import analyze_toolium
 
     toolium = analyze_toolium(config, config_path, repo, indexes[repo], results, indexes=indexes)
+    flow = toolium.pop('context_flow', None)
+    if flow is None and (source or defs[repo]):
+        flow = behave_context_flow(indexes, results)
     counts = Counter(x['status'] for x in results)
     from .capability_contract import attach_capability_contract
 
@@ -380,6 +362,8 @@ def build_repository_links(config: dict, config_path: Path, repo: str) -> dict:
             'registro de pasos Behave; el runtime no se verifica.'
         ),
     }
+    if flow is not None:
+        report['context_flow'] = flow
     return attach_capability_contract(report, indexes)
 
 

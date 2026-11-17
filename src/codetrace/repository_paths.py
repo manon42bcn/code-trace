@@ -23,3 +23,26 @@ def repository_index_path(config, config_path, repo):
 
 def repository_relationships_path(config_path, repo):
     return Path(config_path).resolve().parent / 'indexes' / f'{repo}.relationships.json'
+
+
+def _deps(config: dict, repo: str) -> list[str]:
+    relationship = config.get('relationships', {}).get(repo, {})
+    if isinstance(relationship, list):
+        return relationship
+    return relationship.get('dependencies', [])
+
+
+def transitive_dependencies(config: dict, root: str) -> list[str]:
+    """Return declared dependencies in depth-first order, visiting each once."""
+    ordered = []
+    seen = {root}
+
+    def walk(node):
+        for dep in _deps(config, node):
+            if dep not in seen:
+                seen.add(dep)
+                ordered.append(dep)
+                walk(dep)
+
+    walk(root)
+    return ordered
