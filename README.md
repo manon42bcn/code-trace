@@ -52,13 +52,35 @@ make check-provider
 make chat
 ```
 
-`make indexes` genera chunks, relaciones y los vectores semánticos habilitados. La primera preparación puede requerir descargar el modelo de embeddings configurado. `make doctor` diagnostica la preparación y `make check-provider` comprueba el proveedor generativo. Si se elige Anthropic, instalar también el extra `llm`, conservando los extras de preparación:
+`make indexes` genera chunks, relaciones y los vectores semánticos habilitados. La primera preparación puede requerir descargar el modelo de embeddings configurado. `make doctor` diagnostica la preparación y `make check-provider` comprueba el proveedor generativo. Si se elige Anthropic, OpenAI o Azure OpenAI, instalar también el extra `llm`, conservando los extras de preparación:
 
 ```bash
 uv sync --extra parsers --extra embeddings --extra llm --group dev
 ```
 
-Configurar sus credenciales mediante `ANTHROPIC_API_KEY` o `ANTHROPIC_AUTH_TOKEN` en el entorno del proceso.
+Configura el proveedor en `config.json`. Desde la raíz del proyecto, copia
+[la plantilla de credenciales](.env.example):
+
+```sh
+cp .env.example .env
+```
+
+Rellena en `.env` solo las variables del proveedor elegido y ejecuta CodeTrace
+desde ese directorio. El archivo se carga automáticamente y Git lo ignora.
+Las variables ya exportadas tienen prioridad. OpenAI y Azure OpenAI requieren
+que exista `.env`. Anthropic también admite una configuración con solo variables
+exportadas.
+
+| `generation.provider` | `generation.model` | Credenciales y endpoint |
+| --- | --- | --- |
+| `anthropic` | Nombre del modelo | `ANTHROPIC_API_KEY` o `ANTHROPIC_AUTH_TOKEN`. |
+| `openai` | Nombre del modelo | `OPENAI_API_KEY` y, opcionalmente, `generation.base_url`. |
+| `azure_openai` | Nombre del despliegue en Azure | `AZURE_OPENAI_API_KEY` y la URL del recurso en `generation.base_url` o `AZURE_OPENAI_ENDPOINT`. |
+
+OpenAI y Azure OpenAI requieren un modelo o despliegue que admita Chat Completions en modo JSON.
+Para probar la configuración con una consulta sintética, ejecuta
+`codetrace check-provider --allow-remote`. Para enviar evidencias de un repositorio
+desde la CLI interactiva, inicia la sesión con `codetrace --repo demo --allow-remote`.
 
 El chat se abre en `http://127.0.0.1:8765`. Seleccionar un repositorio, escribir una pregunta y desplegar las evidencias o el estado del índice. Detener el servidor con `Ctrl+C`.
 

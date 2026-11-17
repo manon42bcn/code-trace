@@ -7,7 +7,7 @@ name = "code-trace"
 version = "0.9.27-dev.0"
 description = "Local code indexing, grounded answers and static code flows"
 requires-python = ">=3.10"
-dependencies = ["PyYAML>=6.0"]
+dependencies = ["PyYAML>=6.0", "python-dotenv>=1.0"]
 
 [project.scripts]
 code-trace = "codetrace.__main__:main"
@@ -16,7 +16,7 @@ codetrace = "codetrace.__main__:main"
 [project.optional-dependencies]
 parsers = ["tree-sitter-language-pack>=0.10"]
 embeddings = ["sentence-transformers>=3.0"]
-llm = ["anthropic>=1.0"]
+llm = ["anthropic>=1.0", "openai>=1.55"]
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff==0.15.16", "pre-commit>=4.0,<5"]
