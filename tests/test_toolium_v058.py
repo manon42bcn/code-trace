@@ -1,3 +1,6 @@
+import pytest
+
+from codetrace.artifact_state import link_signature
 from codetrace.toolium_analysis import analyze_toolium
 
 
@@ -53,10 +56,41 @@ def test_auto_detection_and_disabled(tmp_path):
     rel = [{'resolved_text': '[LANG:pix.common.deep_link]'}]
     index = {'chunks': []}
     assert not analyze_toolium(config, tmp_path / 'c.json', 'r', index, rel)['enabled']
-    config['relationships'] = {'r': {'dependencies': ['toolium']}}
-    assert analyze_toolium(config, tmp_path / 'c.json', 'r', index, rel)['enabled']
-    config['analysis']['toolium'] = 'disabled'
+    config['repositories']['toolium-in-name-only'] = {'path': 'unrelated'}
+    config['relationships'] = {'r': {'dependencies': ['toolium-in-name-only']}}
     assert not analyze_toolium(config, tmp_path / 'c.json', 'r', index, rel)['enabled']
+    assert not analyze_toolium(config, tmp_path / 'c.json', 'toolium-in-name-only', index, rel)[
+        'enabled'
+    ]
+
+    config['relationships']['toolium-in-name-only'] = ['framework-base']
+    config['repositories']['framework-base'] = {'path': 'framework'}
+    original_signature = link_signature(config, 'r')
+    config['repositories']['framework-base']['framework'] = 'toolium'
+    assert link_signature(config, 'r') != original_signature
+    assert analyze_toolium(config, tmp_path / 'c.json', 'r', index, rel)['enabled']
+    assert analyze_toolium(config, tmp_path / 'c.json', 'framework-base', index, rel)['enabled']
+    config['analysis']['toolium'] = {'r': 'disabled'}
+    assert not analyze_toolium(config, tmp_path / 'c.json', 'r', index, rel)['enabled']
+
+
+@pytest.mark.parametrize('package', ['toolium', 'toolium_telefonica'])
+def test_auto_detects_framework_import_without_configured_dependency(tmp_path, package):
+    _, config = _setup(tmp_path, mode='auto')
+    index = {
+        'chunks': [
+            {
+                'id': 'import',
+                'path': 'features/environment.py',
+                'language': 'python',
+                'start_line': 1,
+                'end_line': 1,
+                'content': f'from {package}.utils import dataset',
+            }
+        ]
+    }
+
+    assert analyze_toolium(config, tmp_path / 'c.json', 'r', index, [])['enabled']
 
 
 def test_examples_resolved_text_used(tmp_path):

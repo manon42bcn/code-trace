@@ -5,6 +5,8 @@ from __future__ import annotations
 import configparser
 import re
 
+from .repository_paths import transitive_dependencies
+
 MARKER = re.compile(r'\[(LANG|CONF|CONTEXT):([^\]\r\n]+)\]')
 MAP_CALL = re.compile(r'\bcontext\s*\.\s*map_param\s*\(')
 
@@ -55,11 +57,11 @@ def _toolium_mode(config, repo):
 
 
 def _detected(config, repo, index):
-    if 'toolium' in repo.lower():
-        return True
-    deps = config.get('relationships', {}).get(repo, {})
-    dependencies = deps if isinstance(deps, list) else deps.get('dependencies', [])
-    if any('toolium' in name.lower() for name in dependencies):
+    repositories = config.get('repositories', {})
+    if any(
+        repositories.get(name, {}).get('framework') == 'toolium'
+        for name in (repo, *transitive_dependencies(config, repo))
+    ):
         return True
     for chunk in index.get('chunks', []):
         if chunk.get('language') != 'python':

@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+from .repository_paths import transitive_dependencies
+
 
 def file_stamp(path):
     stat = Path(path).stat()
@@ -12,21 +14,16 @@ def link_signature(config, repo):
     import hashlib
     import json
 
-    selected = {}
-
-    def include(name):
-        if name in selected:
-            return
-        relation = config.get('relationships', {}).get(name, {})
-        selected[name] = {
-            'relationship': relation,
-            'source_path': config.get('repositories', {}).get(name, {}).get('path'),
+    repositories = config.get('repositories', {})
+    relationships = config.get('relationships', {})
+    selected = {
+        name: {
+            'relationship': relationships.get(name, {}),
+            'source_path': repositories.get(name, {}).get('path'),
+            'framework': repositories.get(name, {}).get('framework'),
         }
-        dependencies = relation if isinstance(relation, list) else relation.get('dependencies', [])
-        for dependency in dependencies:
-            include(dependency)
-
-    include(repo)
+        for name in (repo, *transitive_dependencies(config, repo))
+    }
     return hashlib.sha256(
         json.dumps(
             {'repositories': selected, 'analysis': config.get('analysis', {})}, sort_keys=True

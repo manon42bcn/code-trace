@@ -4,6 +4,26 @@
 
 Preparation turns local repositories into searchable snapshots before any question is asked. Copy `config.example.json` to the gitignored `config.json` and configure repository paths, indexing, and retrieval. Set the generation provider separately in `.env` or the process environment. Keep your local settings when updating the example.
 
+## Toolium dependencies
+
+Declare `"framework": "toolium"` on repositories that provide Toolium or Toolium Telefónica, and list direct dependencies under `relationships`. In this example, the test repository lists the extension as its only direct dependency.
+
+```json
+{
+  "repositories": {
+    "framework-base": {"path": "../toolium", "framework": "toolium"},
+    "framework-extension": {"path": "../toolium-telefonica", "framework": "toolium"},
+    "acceptance": {"path": "../acceptance"}
+  },
+  "relationships": {
+    "framework-extension": {"dependencies": ["framework-base"]},
+    "acceptance": {"dependencies": ["framework-extension"]}
+  }
+}
+```
+
+In `auto` mode, CodeTrace enables analysis when the repository or a transitive dependency declares the framework, or when the repository’s indexed Python imports `toolium` or `toolium_telefonica`. Repository identifiers are arbitrary. Use `analysis.toolium` to set `enabled` or `disabled` globally or per repository. After changing the declarations, regenerate relationships with `make indexes-incremental REPOS="acceptance"`.
+
 ## Build artifacts
 
 ```mermaid

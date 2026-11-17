@@ -3,7 +3,11 @@ import json
 from pathlib import Path
 
 from .core import analyze_index, index_repository, inspect_index
-from .repository_paths import repository_index_path, repository_relationships_path
+from .repository_paths import (
+    repository_index_path,
+    repository_relationships_path,
+    transitive_dependencies,
+)
 
 
 def main(argv=None):
@@ -216,9 +220,8 @@ def main(argv=None):
             apply_reconciliation(report, dry_run_path=args.behave_dry_run, plan_path=args.test_plan)
             out = args.output or repository_relationships_path(config_path, args.repo)
             from .evidence_graph import build_evidence_graph
-            from .repo_links import _transitive
 
-            repos_to_load = [args.repo, *_transitive(conf, args.repo)]
+            repos_to_load = [args.repo, *transitive_dependencies(conf, args.repo)]
             indexes = {}
             for name in repos_to_load:
                 settings = conf.get('repositories', {}).get(name)
