@@ -51,11 +51,35 @@ def retrieve(
     available, pass the surviving chunk IDs so vector search respects that same
     source scope.
     """
-    config = config or RetrievalConfig()
     index, graph = scope_sources(index, graph, filters)
-    allowed = (
+    allowed_chunk_ids = (
         {chunk['id'] for chunk in index.get('chunks', [])} if filters and filters.active else None
     )
+    return retrieve_scoped(
+        index,
+        graph,
+        term,
+        config=config,
+        exact=exact,
+        semantic_store=semantic_store,
+        provider=provider,
+        allowed_chunk_ids=allowed_chunk_ids,
+    )
+
+
+def retrieve_scoped(
+    index,
+    graph,
+    term,
+    *,
+    config=None,
+    exact=False,
+    semantic_store=None,
+    provider=None,
+    allowed_chunk_ids=None,
+):
+    """Search prepared inputs with the same chunk scope for external vector stores."""
+    config = config or RetrievalConfig()
     return search_hybrid(
         index,
         graph,
@@ -70,6 +94,6 @@ def retrieve(
         limit=config.limit,
         semantic_store=semantic_store,
         provider=provider,
-        allowed_chunk_ids=allowed,
+        allowed_chunk_ids=allowed_chunk_ids,
         mode=config.mode,
     )
