@@ -10,11 +10,10 @@ import sys
 import time
 from contextlib import redirect_stdout
 from dataclasses import replace
-from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 
-from .generation_config import GenerationConfig, GenerationSetupError
+from .generation_config import GenerationConfig, GenerationSetupError, generation_environment
 from .generation_factory import build_generation_provider
 
 PROBE = (
@@ -60,7 +59,7 @@ def check_provider(raw, *, allow_remote=False):
     """
     if not isinstance(raw, dict) or not isinstance(raw.get('generation'), dict):
         raise ProviderCheckError(
-            'not_configured', 'Configure the generation object in config.json.'
+            'not_configured', 'Set CODETRACE_GENERATION_PROVIDER to enable generation.'
         )
     try:
         config = GenerationConfig.from_mapping(raw['generation'])
@@ -74,7 +73,7 @@ def check_provider(raw, *, allow_remote=False):
         raise ProviderCheckError('invalid_model', 'Configure a non-empty generation model.')
     if not raw['generation'].get('model'):
         raise ProviderCheckError(
-            'invalid_model', 'Set generation.model explicitly before checking it.'
+            'invalid_model', 'Set CODETRACE_GENERATION_MODEL before checking the provider.'
         )
     if (
         not isinstance(config.max_tokens, int)
@@ -165,25 +164,21 @@ def check_provider(raw, *, allow_remote=False):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', type=Path, default=Path('config.json'))
     parser.add_argument('--allow-remote', action='store_true')
     args = parser.parse_args(argv)
     started = time.perf_counter()
     output = {'schema_version': '1', 'status': 'error', 'generation_verified': False, 'error': None}
     exit_code = 0
     try:
-        raw = json.loads(args.config.read_text(encoding='utf-8'))
+        raw = {'generation': generation_environment()}
         with redirect_stdout(sys.stderr):
             output.update(check_provider(raw, allow_remote=args.allow_remote))
         output['status'] = 'ok'
     except ProviderCheckError as exc:
         output['error'] = {'code': exc.code, 'message': str(exc)}
         exit_code = 2
-    except (OSError, ValueError):
-        output['error'] = {
-            'code': 'configuration_unreadable',
-            'message': 'Cannot read a valid JSON configuration.',
-        }
+    except GenerationSetupError as exc:
+        output['error'] = {'code': 'invalid_configuration', 'message': str(exc)}
         exit_code = 2
     output['latency_seconds'] = round(time.perf_counter() - started, 3)
     print(json.dumps(output, ensure_ascii=False))  # noqa: T201 - CLI output

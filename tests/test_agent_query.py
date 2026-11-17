@@ -83,6 +83,8 @@ def test_missing_argument_is_json():
 
 
 def test_generation_preserves_claim_links_and_redirects_progress(inputs, monkeypatch, capsys):
+    monkeypatch.setenv('CODETRACE_GENERATION_PROVIDER', 'ollama')
+    monkeypatch.setenv('CODETRACE_GENERATION_MODEL', 'test')
     argv, config = inputs
 
     class Provider:

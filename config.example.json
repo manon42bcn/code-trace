@@ -91,13 +91,5 @@
   "context": {
     "max_chunks": 3,
     "max_tokens": 2500
-  },
-  "generation": {
-    "provider": "ollama",
-    "model": "qwen2.5-coder:14b",
-    "base_url": "http://localhost:11434",
-    "timeout_seconds": 120,
-    "max_tokens": 4096,
-    "effort": "medium"
   }
 }

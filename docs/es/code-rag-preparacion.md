@@ -14,7 +14,7 @@ Solo se versiona `config.example.json`. Después de clonar el repositorio, crear
 cp config.example.json config.json
 ```
 
-`config.json` está ignorado por Git y contiene las rutas, proveedores e instalaciones de skills de cada entorno. Ajustarlo antes de preparar los repositorios; no se sobrescribe al actualizar la plantilla. En una instalación existente, el cambio de seguimiento conserva el archivo local. Como Git registra la retirada del antiguo archivo versionado, conviene guardar una copia antes de incorporar esta actualización en otros checkouts con configuraciones personalizadas.
+`config.json` está ignorado por Git y contiene las rutas, los ajustes de recuperación y las instalaciones de skills de cada entorno. La generación se configura aparte mediante `.env` o variables exportadas. Ajustarlo antes de preparar los repositorios; no se sobrescribe al actualizar la plantilla. En una instalación existente, el cambio de seguimiento conserva el archivo local. Como Git registra la retirada del antiguo archivo versionado, conviene guardar una copia antes de incorporar esta actualización en otros checkouts con configuraciones personalizadas.
 
 ## 1. Del repositorio a los artefactos de consulta
 

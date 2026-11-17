@@ -31,7 +31,7 @@ From the CodeTrace checkout:
   "Which tools participate in handoff?" --repo fabrica
 ```
 
-On Windows use `.venv/Scripts/python.exe`. The launcher's `--config PATH` selects a different connection file. Retrieval, budgets, and generation come from the checkout's central configuration. Explicit `--limit`, `--max-chunks`, and `--max-chars` are forwarded. Use `--allow-remote` when explicitly authorizing a remote provider. Provider setup or request errors end the request.
+On Windows use `.venv/Scripts/python.exe`. The launcher's `--config PATH` selects a different connection file. Retrieval and context budgets come from the checkout's central configuration. Generation settings come from exported variables or the checkout's `.env`. Explicit `--limit`, `--max-chunks`, and `--max-chars` are forwarded. Use `--allow-remote` when explicitly authorizing a remote provider. Provider setup or request errors end the request.
 
 ## Repository selection and evidence
 

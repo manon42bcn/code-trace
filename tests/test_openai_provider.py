@@ -20,7 +20,13 @@ class ApiTimeoutError(ApiError):
 def sdk(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     (tmp_path / '.env').touch()
-    for name in ('OPENAI_API_KEY', 'AZURE_OPENAI_API_KEY', 'AZURE_OPENAI_ENDPOINT'):
+    for name in (
+        'OPENAI_API_KEY',
+        'AZURE_OPENAI_API_KEY',
+        'AZURE_OPENAI_ENDPOINT',
+        'OPENROUTER_API_KEY',
+        'GROQ_API_KEY',
+    ):
         monkeypatch.delenv(name, raising=False)
     client = Mock()
     module = SimpleNamespace(
@@ -34,15 +40,22 @@ def sdk(monkeypatch, tmp_path):
 
 
 @pytest.mark.parametrize(
-    ('provider_name', 'base_url'),
-    [('openai', None), ('azure_openai', 'https://example.openai.azure.com/openai/v1/')],
+    ('provider_name', 'api_key', 'base_url'),
+    [
+        ('openai', 'openai-test-key', None),
+        ('azure_openai', 'azure-test-key', 'https://example.openai.azure.com/openai/v1/'),
+        ('openrouter', 'openrouter-test-key', 'https://openrouter.ai/api/v1'),
+        ('groq', 'groq-test-key', 'https://api.groq.com/openai/v1'),
+    ],
 )
-def test_generation_uses_the_selected_service(tmp_path, sdk, provider_name, base_url):
+def test_generation_uses_the_selected_service(tmp_path, sdk, provider_name, api_key, base_url):
     module, create = sdk
     (tmp_path / '.env').write_text(
         'OPENAI_API_KEY=openai-test-key\n'
         'AZURE_OPENAI_API_KEY=azure-test-key\n'
-        'AZURE_OPENAI_ENDPOINT=https://example.openai.azure.com\n',
+        'AZURE_OPENAI_ENDPOINT=https://example.openai.azure.com\n'
+        'OPENROUTER_API_KEY=openrouter-test-key\n'
+        'GROQ_API_KEY=groq-test-key\n',
         encoding='utf-8',
     )
     config = GenerationConfig.from_mapping(
@@ -59,9 +72,9 @@ def test_generation_uses_the_selected_service(tmp_path, sdk, provider_name, base
 
     result = build_generation_provider(config).generate('JSON prompt')
 
-    options = {'timeout': 120.0, 'api_key': 'openai-test-key'}
+    options = {'timeout': 120.0, 'api_key': api_key}
     if base_url:
-        options.update(api_key='azure-test-key', base_url=base_url)
+        options['base_url'] = base_url
     module.OpenAI.assert_called_once_with(**options)
     create.assert_called_once_with(
         model='configured-model',
@@ -100,13 +113,32 @@ def test_azure_requires_its_own_key(monkeypatch, sdk):
     module.OpenAI.assert_not_called()
 
 
-def test_env_file_is_required_even_with_an_exported_key(monkeypatch, sdk, tmp_path):
+def test_exported_key_works_without_env_file(monkeypatch, sdk, tmp_path):
     module, _create = sdk
     (tmp_path / '.env').unlink()
     monkeypatch.setenv('OPENAI_API_KEY', 'openai-test-key')
     config = GenerationConfig.from_mapping({'provider': 'openai', 'model': 'configured-model'})
 
-    with pytest.raises(ValueError, match=r'Copy \.env\.example to \.env'):
+    build_generation_provider(config)
+
+    module.OpenAI.assert_called_once_with(api_key='openai-test-key', timeout=120.0)
+
+
+@pytest.mark.parametrize(
+    ('provider_name', 'key_name'),
+    [('openrouter', 'OPENROUTER_API_KEY'), ('groq', 'GROQ_API_KEY')],
+)
+def test_new_services_require_explicit_models_and_their_own_keys(
+    monkeypatch, sdk, provider_name, key_name
+):
+    module, _create = sdk
+    monkeypatch.setenv('OPENAI_API_KEY', 'unrelated-key')
+
+    with pytest.raises(ValueError, match=r'Set generation\.model explicitly'):
+        GenerationConfig.from_mapping({'provider': provider_name})
+
+    config = GenerationConfig.from_mapping({'provider': provider_name, 'model': 'configured-model'})
+    with pytest.raises(ValueError, match=key_name):
         build_generation_provider(config)
 
     module.OpenAI.assert_not_called()

@@ -96,13 +96,15 @@ def test_empty_and_refused_probes_fail(monkeypatch, answer, refusal):
         provider_check.check_provider(configuration())
 
 
-def test_cli_returns_json_for_unreadable_config(tmp_path, capsys):
+def test_cli_returns_json_for_invalid_environment(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('CODETRACE_GENERATION_MAX_TOKENS', 'invalid')
     with pytest.raises(SystemExit) as exc:
-        provider_check.main(['--config', str(tmp_path / 'missing.json')])
+        provider_check.main([])
     assert exc.value.code == 2
     result = json.loads(capsys.readouterr().out)
     assert result['status'] == 'error'
-    assert result['error']['code'] == 'configuration_unreadable'
+    assert result['error']['code'] == 'invalid_configuration'
 
 
 def test_explicit_remote_consent_allows_probe(monkeypatch):

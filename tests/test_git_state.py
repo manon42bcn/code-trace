@@ -298,9 +298,9 @@ def test_answer_exposes_commit_state_without_rewriting_provider_text(
     from codetrace.answer_display import render_answer
     from codetrace.generation import GenerationResult
 
-    repo, config, raw, index, _, data, _, _ = prepared
-    raw['generation'] = {'provider': 'ollama', 'model': 'test'}
-    config.write_text(json.dumps(raw))
+    repo, config, _, index, _, data, _, _ = prepared
+    monkeypatch.setenv('CODETRACE_GENERATION_PROVIDER', 'ollama')
+    monkeypatch.setenv('CODETRACE_GENERATION_MODEL', 'test')
     (repo / 'README.md').write_text('new documentation')
     git(repo, 'add', '.')
     git(repo, 'commit', '-m', 'docs')

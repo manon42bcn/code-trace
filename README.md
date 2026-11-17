@@ -40,7 +40,6 @@ Editar en `config.json`:
 | `indexing` | Lenguajes, exclusiones y generación de chunks. |
 | `retrieval` | Recuperación y embeddings opcionales. |
 | `context` | Límites de evidencias enviadas al modelo. |
-| `generation` | Proveedor, modelo y parámetros de generación. |
 | `skills.installations` | Destinos y repositorios de las skills instaladas. |
 
 Después de ajustar la configuración:
@@ -52,32 +51,35 @@ make check-provider
 make chat
 ```
 
-`make indexes` genera chunks, relaciones y los vectores semánticos habilitados. La primera preparación puede requerir descargar el modelo de embeddings configurado. `make doctor` diagnostica la preparación y `make check-provider` comprueba el proveedor generativo. Si se elige Anthropic, OpenAI o Azure OpenAI, instalar también el extra `llm`, conservando los extras de preparación:
+`make indexes` genera chunks, relaciones y los vectores semánticos habilitados. La primera preparación puede requerir descargar el modelo de embeddings configurado. `make doctor` diagnostica la preparación y `make check-provider` comprueba el proveedor generativo. Si se elige Anthropic, OpenAI, Azure OpenAI, OpenRouter o Groq, instalar también el extra `llm`, conservando los extras de preparación:
 
 ```bash
 uv sync --extra parsers --extra embeddings --extra llm --group dev
 ```
 
-Configura el proveedor en `config.json`. Desde la raíz del proyecto, copia
-[la plantilla de credenciales](.env.example):
+Configura la generación con variables exportadas o copia [la plantilla](.env.example)
+a `.env` en el directorio desde el que ejecutas CodeTrace:
 
 ```sh
 cp .env.example .env
 ```
 
-Rellena en `.env` solo las variables del proveedor elegido y ejecuta CodeTrace
-desde ese directorio. El archivo se carga automáticamente y Git lo ignora.
-Las variables ya exportadas tienen prioridad. OpenAI y Azure OpenAI requieren
-que exista `.env`. Anthropic también admite una configuración con solo variables
-exportadas.
+Define `CODETRACE_GENERATION_PROVIDER` y `CODETRACE_GENERATION_MODEL`, además de las
+credenciales del proveedor cuando corresponda. Las variables exportadas tienen
+prioridad sobre `.env`. La generación queda desactivada si no eliges proveedor.
+Si ya tienes un bloque `generation` en `config.json`, traslada sus valores a
+`.env` o al entorno y elimina el bloque. CodeTrace ya lo ignora.
 
-| `generation.provider` | `generation.model` | Credenciales y endpoint |
+| `CODETRACE_GENERATION_PROVIDER` | `CODETRACE_GENERATION_MODEL` | Credenciales y endpoint |
 | --- | --- | --- |
+| `ollama` | Nombre del modelo local | Endpoint por defecto `http://localhost:11434`. |
 | `anthropic` | Nombre del modelo | `ANTHROPIC_API_KEY` o `ANTHROPIC_AUTH_TOKEN`. |
-| `openai` | Nombre del modelo | `OPENAI_API_KEY` y, opcionalmente, `generation.base_url`. |
-| `azure_openai` | Nombre del despliegue en Azure | `AZURE_OPENAI_API_KEY` y la URL del recurso en `generation.base_url` o `AZURE_OPENAI_ENDPOINT`. |
+| `openai` | Nombre del modelo | `OPENAI_API_KEY` y, opcionalmente, `CODETRACE_GENERATION_BASE_URL`. |
+| `azure_openai` | Nombre del despliegue en Azure | `AZURE_OPENAI_API_KEY` y la URL del recurso en `CODETRACE_GENERATION_BASE_URL` o `AZURE_OPENAI_ENDPOINT`. |
+| `openrouter` | ID del modelo con su prefijo, por ejemplo `openai/gpt-4o` | `OPENROUTER_API_KEY`. Endpoint por defecto `https://openrouter.ai/api/v1`. |
+| `groq` | ID del modelo en Groq | `GROQ_API_KEY`. Endpoint por defecto `https://api.groq.com/openai/v1`. |
 
-OpenAI y Azure OpenAI requieren un modelo o despliegue que admita Chat Completions en modo JSON.
+Estos cuatro proveedores requieren un modelo o despliegue que admita Chat Completions en modo JSON. OpenRouter y Groq admiten un endpoint HTTPS alternativo mediante `CODETRACE_GENERATION_BASE_URL`.
 Para probar la configuración con una consulta sintética, ejecuta
 `codetrace check-provider --allow-remote`. Para enviar evidencias de un repositorio
 desde la CLI interactiva, inicia la sesión con `codetrace --repo demo --allow-remote`.
@@ -95,8 +97,8 @@ codetrace --repo demo
 Escribe una pregunta y pulsa Intro para ver la respuesta. Dentro de la sesión,
 usa `codetrace --repo otro_repo` para cambiar de repositorio, `/repos` para
 ver los repositorios configurados y `codetrace --exit` o Ctrl+C para salir.
-La sesión usa el proveedor de generación de `config.json`. Puedes seleccionar
-otro archivo con `--config ruta/config.json`.
+La sesión usa el proveedor configurado en el entorno o en `.env`. Puedes seleccionar
+otro catálogo de repositorios con `--config ruta/config.json`.
 
 
 ## CLI

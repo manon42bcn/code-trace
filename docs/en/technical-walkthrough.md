@@ -14,7 +14,7 @@ CodeTrace first prepares a repository snapshot, then retrieves and selects evide
 | Link repositories | [repo_links.py](../../src/codetrace/repo_links.py) and [evidence_graph.py](../../src/codetrace/evidence_graph.py) | Relates indexed sources and normalizes static relationships as graph nodes and edges. |
 | Prepare vectors | [prepare_embeddings.py](../../src/codetrace/prepare_embeddings.py), [embedding_enrichment.py](../../src/codetrace/embedding_enrichment.py), and [embedding_index.py](../../src/codetrace/embedding_index.py) | Builds v1 vectors from base text and v2 vectors from graph-enriched text. Reuses embeddings for unchanged rendered inputs when compatible. |
 
-Chunking uses a lexical token count. Embedding uses the embedding model's input limits, and answer context has a separate evidence budget. Generation uses the provider output limit `generation.max_tokens`.
+Chunking uses a lexical token count. Embedding uses the embedding model's input limits, and answer context has a separate evidence budget. Generation uses the provider output limit `CODETRACE_GENERATION_MAX_TOKENS`.
 
 | Artifact | Contents and consumers |
 | --- | --- |
@@ -43,7 +43,7 @@ Retrieval ranks candidates. Context budgets determine which excerpts the answer 
 
 [rag_pipeline.py](../../src/codetrace/rag_pipeline.py) orchestrates retrieval and context selection. In evidence mode, `render_query()` returns JSON for the consuming agent. With a generation provider, [answering.py](../../src/codetrace/answering.py) checks permissions and sensitive filenames, builds a [grounded prompt](../../src/codetrace/grounded_prompt.py), calls the selected adapter, and validates citations against the context.
 
-[generation_factory.py](../../src/codetrace/generation_factory.py) selects Ollama, Anthropic, OpenAI, or Azure OpenAI. Ollama uses HTTP through urllib, Anthropic uses its SDK, and OpenAI and Azure share the OpenAI SDK's Chat Completions JSON mode. Credential and endpoint rules depend on the provider. [generation.py](../../src/codetrace/generation.py) checks claims, certainty, paths, and citation ranges. These checks establish whether references are valid within the supplied context. [answer_display.py](../../src/codetrace/answer_display.py) formats the answer and optional evidence, and the skill forwards its output verbatim.
+[generation_factory.py](../../src/codetrace/generation_factory.py) selects Ollama, Anthropic, OpenAI, Azure OpenAI, OpenRouter, or Groq. Ollama uses HTTP through urllib, Anthropic uses its SDK, and OpenAI, Azure OpenAI, OpenRouter, and Groq share the OpenAI SDK's Chat Completions JSON mode. Generation settings come from exported `CODETRACE_GENERATION_*` variables or the working directory’s `.env`. Credential and endpoint rules depend on the provider. [generation.py](../../src/codetrace/generation.py) checks claims, certainty, paths, and citation ranges. These checks establish whether references are valid within the supplied context. [answer_display.py](../../src/codetrace/answer_display.py) formats the answer and optional evidence, and the skill forwards its output verbatim.
 
 For [static flows](static-code-flows.md), generation enables intent-aware analysis of candidate HTTP handlers or explicit starting symbols. Traversal follows statically resolved `calls` edges. Context selection keeps edges only when both endpoints survive its budgets. The prompt and presentation expose the resulting partial graph.
 
