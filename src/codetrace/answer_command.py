@@ -15,7 +15,7 @@ def run_answer(args):
         with redirect_stdout(sys.stderr):
             import time
 
-            from .generation_config import GenerationConfig
+            from .generation_config import load_generation_config
             from .generation_factory import build_generation_provider
             from .rag_pipeline import answer
 
@@ -93,7 +93,7 @@ def run_answer(args):
                 value = getattr(args, key)
                 if value is not None:
                     context_limits[key] = min(context_limits.get(key, value), value)
-            generation = GenerationConfig.from_mapping(raw.get('generation'))
+            generation = load_generation_config()
             if args.output_format in {'text', 'markdown'} and generation.provider == 'none':
                 raise ValueError('Text output requires a configured generation provider')
             provider = build_generation_provider(generation)

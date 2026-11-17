@@ -2,7 +2,7 @@
 
 [Español](../es/code-rag-preparacion.md)
 
-Preparation turns local repositories into searchable snapshots before any question is asked. Copy `config.example.json` to the gitignored `config.json` and configure repository paths, indexing, retrieval, and providers. Keep your local settings when updating the example.
+Preparation turns local repositories into searchable snapshots before any question is asked. Copy `config.example.json` to the gitignored `config.json` and configure repository paths, indexing, and retrieval. Set the generation provider separately in `.env` or the process environment. Keep your local settings when updating the example.
 
 ## Build artifacts
 

@@ -72,7 +72,9 @@ def test_no_evidence_leaves_answer_unchanged():
 
 
 @pytest.fixture
-def configured(tmp_path):
+def configured(tmp_path, monkeypatch):
+    monkeypatch.setenv('CODETRACE_GENERATION_PROVIDER', 'ollama')
+    monkeypatch.setenv('CODETRACE_GENERATION_MODEL', 'test')
     (tmp_path / 'indexes').mkdir()
     (tmp_path / 'indexes/demo.chunks.json').write_text(
         json.dumps(
@@ -94,7 +96,7 @@ def configured(tmp_path):
     path = tmp_path / 'config.json'
     path.write_text(
         json.dumps(
-            {'repositories': {'demo': {}}, 'generation': {'provider': 'ollama', 'model': 'test'}}
+            {'repositories': {'demo': {}}, 'generation': {'provider': 'ignored-legacy-config'}}
         )
     )
     return path
@@ -159,9 +161,7 @@ def test_answer_cli_routing_reports_and_verbatim_text(
 def test_text_output_without_provider_fails_instead_of_synthesizing(
     configured, monkeypatch, capsys
 ):
-    data = json.loads(configured.read_text())
-    data['generation']['provider'] = 'none'
-    configured.write_text(json.dumps(data))
+    monkeypatch.setenv('CODETRACE_GENERATION_PROVIDER', 'none')
     monkeypatch.setattr(
         sys,
         'argv',

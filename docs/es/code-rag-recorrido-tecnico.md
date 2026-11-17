@@ -130,7 +130,7 @@ El diagrama reúne las rutas normales de consulta, no un único árbol de llamad
 
 | Etapa y función | Qué hace y cómo | Librería o mecanismo |
 | --- | --- | --- |
-| [`generation_factory.py`](../../src/codetrace/generation_factory.py) · `build_generation_provider()` | Construye el adaptador según configuración de generación. | Adaptadores para Ollama, Anthropic, OpenAI, Azure OpenAI, OpenRouter y Groq. La factoría lee las credenciales del entorno o de `.env` según el proveedor. |
+| [`generation_factory.py`](../../src/codetrace/generation_factory.py) · `build_generation_provider()` | Construye el adaptador a partir de las variables `CODETRACE_GENERATION_*` exportadas o definidas en `.env`. | Adaptadores para Ollama, Anthropic, OpenAI, Azure OpenAI, OpenRouter y Groq. La factoría lee las credenciales del entorno o de `.env` según el proveedor. |
 | [`grounded_prompt.py`](../../src/codetrace/grounded_prompt.py) · `build_grounded_prompt()` | Construye instrucciones y evidencia para pedir respuesta estructurada, citas y reconocimiento de evidencia insuficiente. | Plantilla propia. El código recuperado se trata como datos no confiables. |
 | [`answering.py`](../../src/codetrace/answering.py) · `answer_query()` | Valida seguridad, construye el prompt, llama a `provider.generate()` y valida el resultado. | Orquestación propia. |
 | [`ollama_provider.py`](../../src/codetrace/ollama_provider.py) · `OllamaProvider.generate()` | Envía la petición al endpoint Ollama configurado e interpreta la respuesta. | HTTP con `urllib.request` y JSON; el modelo se ejecuta en Ollama. |

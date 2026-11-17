@@ -34,7 +34,7 @@ On Windows use `.venv/Scripts/python.exe`. The child process uses the same inter
 
 ## Repository and central configuration
 
-`<code_trace_root>/config.json` determines repository paths, aliases, relationships, retrieval configuration, embeddings, context budgets and generation provider/model. Do not duplicate those settings in the skill or choose another provider. The launcher adds no default retrieval/context caps; explicit `--limit`, `--max-chunks` and `--max-chars` are forwarded only if requested. Preserve configured remote-processing consent requirements; pass `--allow-remote` only when authorized.
+`<code_trace_root>/config.json` determines repository paths, aliases, relationships, retrieval configuration, embeddings, and context budgets. The generation provider and model come from exported variables or `<code_trace_root>/.env`. Do not duplicate those settings in the skill or choose another provider. The launcher adds no default retrieval/context caps; explicit `--limit`, `--max-chunks` and `--max-chars` are forwarded only if requested. Preserve configured remote-processing consent requirements; pass `--allow-remote` only when authorized.
 
 Pass the original question unchanged. Use a user-supplied `--repo NAME` as a launcher argument, never as a search term or inferred from the working directory. The required local `repo` remains a fallback rather than a restriction. Names/aliases can select another repository; descriptions can resolve a conservative leading scoped reference. An unquoted trailing `--repo NAME`/`--repo=NAME` inside a raw question is also recognized centrally. Unknown or conflicting targets fail explicitly. Do not silently switch repositories or drop an override.
 

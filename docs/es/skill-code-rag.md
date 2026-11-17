@@ -39,7 +39,7 @@ Usar siempre el entorno de CodeTrace:
   "cuantas tools intervienen en el handoff" --repo fabrica
 ```
 
-En Windows, utilizar `.venv/Scripts/python.exe`. `--config PATH` selecciona otro archivo de conexión de la skill. El pipeline procede siempre del `config.json` del checkout indicado: repositorios, recuperación, relaciones, embeddings, presupuestos y proveedor/modelo de generación. El launcher ya no introduce topes predeterminados propios de candidatos, chunks o caracteres; solo reenvía `--limit`, `--max-chunks` y `--max-chars` si se proporcionan explícitamente. Los valores omitidos los resuelve `codetrace answer` con su configuración y valores internos.
+En Windows, utilizar `.venv/Scripts/python.exe`. `--config PATH` selecciona otro archivo de conexión de la skill. El `config.json` del checkout indica repositorios, recuperación, relaciones, embeddings y presupuestos de contexto. El proveedor y el modelo se leen de las variables exportadas o del `.env` del checkout. El launcher ya no introduce topes predeterminados propios de candidatos, chunks o caracteres; solo reenvía `--limit`, `--max-chunks` y `--max-chars` si se proporcionan explícitamente. Los valores omitidos los resuelve `codetrace answer` con su configuración y valores internos.
 
 No se instala ni prepara nada automáticamente al consultar. Una configuración sin proveedor generativo habilitado produce un error, en lugar de cambiar a inventario. El procesamiento remoto sigue requiriendo autorización explícita cuando corresponda.
 

@@ -218,7 +218,7 @@ def test_cli_without_provider_uses_real_answer_subprocess(application, tmp_path)
         application.answer({'question': 'hola', 'repo': 'demo'})
 
 
-def test_chat_through_real_cli_retrieval_and_http_provider(server, tmp_path):
+def test_chat_through_real_cli_retrieval_and_http_provider(server, tmp_path, monkeypatch):
     from http.server import BaseHTTPRequestHandler, HTTPServer
 
     received = []
@@ -277,17 +277,11 @@ def test_chat_through_real_cli_retrieval_and_http_provider(server, tmp_path):
         thread = threading.Thread(target=provider.serve_forever, daemon=True)
         thread.start()
         try:
-            server.application.config.write_text(
-                json.dumps(
-                    {
-                        'repositories': {'demo': {}},
-                        'generation': {
-                            'provider': 'ollama',
-                            'model': 'test-only',
-                            'base_url': f'http://127.0.0.1:{provider.server_port}',
-                        },
-                    }
-                )
+            server.application.config.write_text(json.dumps({'repositories': {'demo': {}}}))
+            monkeypatch.setenv('CODETRACE_GENERATION_PROVIDER', 'ollama')
+            monkeypatch.setenv('CODETRACE_GENERATION_MODEL', 'test-only')
+            monkeypatch.setenv(
+                'CODETRACE_GENERATION_BASE_URL', f'http://127.0.0.1:{provider.server_port}'
             )
             status, _, body = request(
                 server,

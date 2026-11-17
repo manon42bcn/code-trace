@@ -307,7 +307,7 @@ def main(argv=None):
         elif args.command == 'evaluate-rag':
             import time
 
-            from .generation_config import GenerationConfig
+            from .generation_config import load_generation_config
             from .generation_factory import build_generation_provider
             from .rag_batch import evaluate_rag_dataset
             from .rag_dataset import load_rag_dataset
@@ -324,7 +324,7 @@ def main(argv=None):
             retrieval, stores, embedding_provider = load_retrieval(
                 raw, args.config or Path.cwd() / 'config.json', args.index
             )
-            generation = GenerationConfig.from_mapping(raw.get('generation'))
+            generation = load_generation_config()
             provider = build_generation_provider(generation)
             started = time.perf_counter()
 

@@ -11,7 +11,7 @@ from dataclasses import asdict, replace
 from pathlib import Path
 
 from .config_context import context_limits_from_mapping
-from .generation_config import GenerationConfig
+from .generation_config import GenerationConfig, load_generation_config
 from .generation_factory import build_generation_provider
 from .match_ranking import RANKING_PROFILE
 from .query_planning import PLANNING_PROFILE, active_sources, plan_query
@@ -371,7 +371,6 @@ def run(args):
         query=query,
         index=index,
         relationships=relationships,
-        raw=raw,
         routing=routing,
         retrieval=retrieval,
         configured_limit=configured_limit,
@@ -430,7 +429,6 @@ def resume_session(args, filters, cursor, request, started):
         query=payload['query'],
         index=payload['index'],
         relationships=payload['relationships'],
-        raw={},
         routing=payload['routing'],
         retrieval=RetrievalConfig(**payload['retrieval_config']),
         configured_limit=payload['configured_limit'],
@@ -455,7 +453,6 @@ def render_query(
     query,
     index,
     relationships,
-    raw,
     routing,
     retrieval,
     configured_limit,
@@ -473,9 +470,7 @@ def render_query(
     readiness=None,
 ):
     paging = pagination is not None
-    generation = GenerationConfig.from_mapping(
-        raw.get('generation') if args.mode == 'answer' else None
-    )
+    generation = load_generation_config() if args.mode == 'answer' else GenerationConfig()
     if args.mode == 'answer' and generation.provider == 'none':
         raise ValueError('answer mode requires a configured generation provider')
     provider = build_generation_provider(generation)

@@ -504,7 +504,8 @@ def test_code_rag_uses_central_model_and_budgets_for_the_original_count_question
     pipeline['repositories']['fabrica'] = {}
     pipeline['retrieval'] = {'limit': 22, 'mode': 'lexical'}
     pipeline['context'] = {'max_chunks': 7, 'max_chars': 20000, 'max_tokens': 6000}
-    pipeline['generation'] = {'provider': 'ollama', 'model': 'configured-model'}
+    monkeypatch.setenv('CODETRACE_GENERATION_PROVIDER', 'ollama')
+    monkeypatch.setenv('CODETRACE_GENERATION_MODEL', 'configured-model')
     pipeline_path.write_text(json.dumps(pipeline))
     content = 'def human_handoff():\n    return "handoff"\n' + '# tool detail\n' * 1000 + '# END'
     (root / 'indexes/fabrica.chunks.json').write_text(

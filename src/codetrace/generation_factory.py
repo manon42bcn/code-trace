@@ -3,13 +3,10 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 from urllib.parse import urlsplit
 
-from dotenv import dotenv_values
-
 from .anthropic_provider import AnthropicProvider
-from .generation_config import GenerationConfig, GenerationSetupError
+from .generation_config import GenerationConfig, GenerationSetupError, read_generation_dotenv
 from .ollama_provider import OllamaProvider
 from .openai_provider import OpenAIProvider
 
@@ -26,8 +23,7 @@ def build_generation_provider(config: GenerationConfig):
 
     Disabled generation returns None, and Ollama uses its configuration
     directly. For hosted providers, environment variables take precedence over
-    values in the working directory's .env file. Providers using the shared
-    Chat Completions adapter require that file.
+    values in the working directory's optional .env file.
     """
     if config.provider == 'none':
         return None
@@ -38,16 +34,7 @@ def build_generation_provider(config: GenerationConfig):
             timeout=config.timeout_seconds,
             max_tokens=config.max_tokens,
         )
-    dotenv_path = Path('.env')
-    settings = {}
-    if dotenv_path.is_file():
-        try:
-            # Read settings without modifying the environment of the running process.
-            settings = dotenv_values(dotenv_path, interpolate=False)
-        except (OSError, UnicodeError) as exc:
-            raise GenerationSetupError('Cannot read .env as UTF-8') from exc
-    elif config.provider in _CHAT_PROVIDERS:
-        raise GenerationSetupError('Copy .env.example to .env in the working directory')
+    settings = read_generation_dotenv()
 
     if config.provider == 'anthropic':
         return AnthropicProvider(
@@ -66,7 +53,7 @@ def build_generation_provider(config: GenerationConfig):
         key_name, default_base_url = _CHAT_PROVIDERS[config.provider]
         api_key = os.getenv(key_name, settings.get(key_name))
         if not api_key or not api_key.strip():
-            raise GenerationSetupError(f'Set {key_name} in .env')
+            raise GenerationSetupError(f'Set {key_name} in the environment or .env')
         base_url = config.base_url or default_base_url
         if azure:
             base_url = base_url or os.getenv(
@@ -74,7 +61,7 @@ def build_generation_provider(config: GenerationConfig):
             )
             if not base_url:
                 raise GenerationSetupError(
-                    'Set generation.base_url or AZURE_OPENAI_ENDPOINT in .env'
+                    'Set CODETRACE_GENERATION_BASE_URL or AZURE_OPENAI_ENDPOINT'
                 )
         if base_url:
             parsed = urlsplit(base_url)

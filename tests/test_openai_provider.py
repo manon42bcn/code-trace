@@ -113,16 +113,15 @@ def test_azure_requires_its_own_key(monkeypatch, sdk):
     module.OpenAI.assert_not_called()
 
 
-def test_env_file_is_required_even_with_an_exported_key(monkeypatch, sdk, tmp_path):
+def test_exported_key_works_without_env_file(monkeypatch, sdk, tmp_path):
     module, _create = sdk
     (tmp_path / '.env').unlink()
     monkeypatch.setenv('OPENAI_API_KEY', 'openai-test-key')
     config = GenerationConfig.from_mapping({'provider': 'openai', 'model': 'configured-model'})
 
-    with pytest.raises(ValueError, match=r'Copy \.env\.example to \.env'):
-        build_generation_provider(config)
+    build_generation_provider(config)
 
-    module.OpenAI.assert_not_called()
+    module.OpenAI.assert_called_once_with(api_key='openai-test-key', timeout=120.0)
 
 
 @pytest.mark.parametrize(

@@ -2,7 +2,7 @@
 
 [English](../en/local-chat.md)
 
-El chat permite consultar los repositorios desde el navegador sin instalar una skill. CodeTrace recupera las evidencias y llama al proveedor y al modelo definidos en `config.json`; la interfaz muestra su respuesta sin una segunda interpretación por otro modelo.
+El chat permite consultar los repositorios desde el navegador sin instalar una skill. CodeTrace recupera las evidencias y llama al proveedor y al modelo configurados mediante el entorno o `.env`; la interfaz muestra su respuesta sin una segunda interpretación por otro modelo.
 
 ## Preparación y arranque
 
@@ -13,7 +13,7 @@ make setup
 cp config.example.json config.json
 ```
 
-Editar `config.json` para definir repositorios, recuperación y generación. La plantilla es un ejemplo; elegir el proveedor y el modelo que se quieran probar. Preparar los artefactos y verificar el proveedor:
+Editar `config.json` para definir repositorios y recuperación. Para habilitar la generación, copiar `.env.example` a `.env` en el directorio de ejecución y definir `CODETRACE_GENERATION_PROVIDER`, `CODETRACE_GENERATION_MODEL` y las credenciales necesarias. Los valores exportados tienen prioridad sobre `.env`. Preparar los artefactos y verificar el proveedor:
 
 ```bash
 make indexes
@@ -31,7 +31,7 @@ make chat CONFIG=/ruta/a/config.json CHAT_ARGS="--port 8877 --no-browser"
 .venv/bin/python -m codetrace chat --config config.json --port 0 --no-browser
 ```
 
-El puerto `0` elige uno libre y muestra la dirección en la terminal. `--timeout 600` fija el tiempo máximo total por consulta en segundos, por defecto diez minutos; el tiempo del proveedor sigue siendo el de `generation.timeout_seconds` y puede agotarse antes. Se utiliza el mismo Python que inicia el servidor, por defecto `.venv/bin/python` con Make.
+El puerto `0` elige uno libre y muestra la dirección en la terminal. `--timeout 600` fija el tiempo máximo total por consulta en segundos, por defecto diez minutos; el tiempo del proveedor sigue siendo el de `CODETRACE_GENERATION_TIMEOUT_SECONDS` y puede agotarse antes. Se utiliza el mismo Python que inicia el servidor, por defecto `.venv/bin/python` con Make.
 
 ## Uso
 
@@ -58,7 +58,7 @@ Esta primera versión conserva el historial solo en memoria de la pestaña. **La
 
 El servidor admite una consulta activa a la vez y devuelve un aviso si otra pestaña intenta consultar simultáneamente. No hay streaming ni cancelación desde el navegador. Cerrar la pestaña no cancela una consulta en curso; esta termina o agota su tiempo máximo. El proceso hijo vuelve a cargar los recursos en cada pregunta, igual que una llamada independiente a la CLI.
 
-El servidor lee `config.json` al listar repositorios y ejecutar consultas. Tras cambiar la lista de repositorios, recargar la página. Los cambios de proveedor y límites se aplican a la siguiente consulta.
+El servidor lee `config.json` al listar repositorios y ejecutar consultas. Tras cambiar la lista de repositorios, recargar la página. Los cambios en `.env` se aplican a la siguiente consulta. Para cambiar las variables exportadas que hereda el servidor, reiniciarlo.
 
 ## Acceso local
 

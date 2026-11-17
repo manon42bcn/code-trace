@@ -49,7 +49,7 @@ hooks-run:
 	$(PYTHON) -m pre_commit run --all-files
 
 check-provider:
-	$(PYTHON) -m codetrace check-provider --config "$(CONFIG)" $(PROVIDER_ARGS)
+	$(PYTHON) -m codetrace check-provider $(PROVIDER_ARGS)
 
 doctor:
 	$(PYTHON) -m codetrace doctor --config "$(CONFIG)" $(REPO_ARGS)
