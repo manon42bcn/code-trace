@@ -1,8 +1,11 @@
-"""Optional local sentence-transformers embedding provider."""
+"""Local sentence-transformers embedding provider."""
 
 from __future__ import annotations
 
+import os
 from collections.abc import Sequence
+
+from dotenv import dotenv_values
 
 from .embeddings import EmbeddingMetadata, validate_vectors
 
@@ -24,9 +27,14 @@ class SentenceTransformerProvider:
             from sentence_transformers import SentenceTransformer
         except ImportError as exc:
             raise RuntimeError(
-                'sentence-transformers is required; install with: uv sync --extra embeddings'
+                'Could not import sentence-transformers. Check the CodeTrace installation.'
             ) from exc
         kwargs = {'device': device} if device else {}
+        token = os.environ.get('HF_TOKEN')
+        if token is None:
+            token = dotenv_values('.env', interpolate=False).get('HF_TOKEN')
+        if token:
+            kwargs['token'] = token
         self._model = SentenceTransformer(model_id, **kwargs)
         dimensions = self._model.get_embedding_dimension()
         self.metadata = EmbeddingMetadata(model_id, dimensions, config_version)

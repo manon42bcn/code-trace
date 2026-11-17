@@ -16,13 +16,13 @@ REPO_ARGS = $(foreach repo,$(REPOS),--repo "$(repo)")
 .PHONY: chat setup indexes indexes-incremental indexes-plan format format-check lint lint-python lint-json hooks-install hooks-run check-provider doctor evaluate-real skills-install skills-update skills-status
 
 setup:
-	uv sync --extra parsers --extra embeddings --group dev
+	uv sync --no-editable --reinstall-package code-trace --extra parsers --group dev
 
 indexes:
-	$(PYTHON) scripts/build_indexes.py --config "$(CONFIG)" $(REPO_ARGS)
+	@$(PYTHON) scripts/build_indexes.py --config "$(CONFIG)" $(REPO_ARGS)
 
 indexes-incremental:
-	$(PYTHON) scripts/build_indexes.py --config "$(CONFIG)" $(REPO_ARGS) --incremental
+	@$(PYTHON) scripts/build_indexes.py --config "$(CONFIG)" $(REPO_ARGS) --incremental
 
 indexes-plan:
 	$(PYTHON) scripts/build_indexes.py --config "$(CONFIG)" $(REPO_ARGS) --dry-run

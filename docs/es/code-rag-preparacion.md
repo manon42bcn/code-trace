@@ -124,6 +124,8 @@ flowchart TD
 
 La preparación no inicia Ollama ni comprueba el proveedor generativo. El modelo de embeddings puede necesitar una descarga inicial si no está en caché. `make check-provider` comprueba el proveedor de generación mediante una petición sintética independiente; no verifica la calidad de las respuestas RAG.
 
+Para autenticar la descarga del modelo de embeddings desde Hugging Face, configura `HF_TOKEN=hf_tu_token` en el archivo `.env` de la raíz del proyecto. El token es opcional para modelos públicos. Si exportas `HF_TOKEN` en la terminal, ese valor tiene prioridad.
+
 ## Recorrido práctico
 
 Desde la raíz del proyecto, después de ajustar `config.json` a directorios existentes:

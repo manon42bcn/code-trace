@@ -85,6 +85,8 @@ make indexes-incremental REPOS="demo"
 
 Generation has a separate synthetic check, `make check-provider`. For remote providers add `PROVIDER_ARGS=--allow-remote`. Semantic preparation can download the embedding model on first use. Once preparation is complete, run `make chat` to open the [local browser interface](local-chat.md).
 
+To authenticate the embedding model download from Hugging Face, set `HF_TOKEN=hf_your_token` in the `.env` file at the project root. This setting is optional for public models. If you export `HF_TOKEN` in your shell, that value takes precedence.
+
 ## Python parser diagnostics
 
 The first parse of a full Python file records warnings under `diagnostics` with the original relative path, line, category, message, severity, language, and type `python_syntax_warning`. The CLI prints them once to stderr with absolute paths. Isolated parser workers return diagnostics to the main process. Derived analyses avoid re-emitting the same warnings at chunk-local line numbers. Syntax errors retain the configured fail-or-skip policy. Incremental runs keep diagnostics for reused files and remove them when a file is corrected or removed. Older indexes without `python_diagnostics_version` reparse Python files on their next update.
