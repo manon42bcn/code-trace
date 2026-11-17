@@ -373,3 +373,35 @@ def test_semantic_only_retains_similarity_order_without_literal_coverage_bias():
         provider=Provider(),
     )
     assert [row['chunk_id'] for row in results] == ['synonym', 'literal']
+
+
+def test_spanish_step_question_recovers_english_definition():
+    question = 'que step se usa para enviar una petición a fábrica de agentes?'
+    index = {
+        'chunks': [
+            {
+                'id': 'metrics',
+                'path': 'steps/metrics.py',
+                'symbol': 'fetch_aggregated_metrics',
+                'content': '@step("Recuperar métricas de agentes")',
+            },
+            {
+                'id': 'factory',
+                'path': 'steps/agents_factory.py',
+                'symbol': 'send_request_to_agents_factory',
+                'content': (
+                    "@step('Autopilot sends a request to Agents Factory using model "
+                    '"{request_model}" and params\')\n'
+                    'def send_request_to_agents_factory(context, request_model): ...'
+                ),
+            },
+        ]
+    }
+    results = retrieve(index, {}, question, config=RetrievalConfig(mode='lexical', limit=1))
+    assert results[0]['chunk_id'] == 'factory'
+    plan = plan_query(question)
+    assert plan['semantic_query'] == question
+    assert plan['structural_query'] == question
+    assert (
+        'factory' not in plan_query('¿Dónde se fabrica el producto?')['lexical_variants']['fabrica']
+    )
