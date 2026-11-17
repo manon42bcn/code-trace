@@ -23,7 +23,7 @@ Chunking uses a lexical token count. Embedding uses the embedding model's input 
 | `NAME.vectors-v1.json`, `NAME.vectors-v2.json` | Semantic vectors for the base and enriched representations. Loaded according to the configured profile. |
 | Optional sessions and reports | Store paginated search state or results and can contain source excerpts. |
 
-The standard artifact directory is `indexes/` beside the configuration. [Repository preparation](repository-preparation.md) covers operational checks. [pyproject.toml](../../pyproject.toml) declares PyYAML and python-dotenv as base dependencies and optional extras for Tree-sitter, sentence-transformers, Anthropic, and OpenAI.
+The standard artifact directory is `indexes/` beside the configuration. [Repository preparation](repository-preparation.md) covers operational checks. [pyproject.toml](../../pyproject.toml) declares PyYAML, python-dotenv, and sentence-transformers as base dependencies, with extras for Tree-sitter and model providers.
 
 ## Route, retrieve, and select evidence
 

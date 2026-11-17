@@ -8,9 +8,15 @@ import shlex
 import signal
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+PHASE_LABELS = {
+    'index': 'Indexing files',
+    'link': 'Building relationships',
+    'embed': 'Generating embeddings',
+}
 
 
 def build_plan(config_path, selected=None, *, incremental=False):
@@ -111,11 +117,14 @@ def main(argv=None):
 
             if importlib.util.find_spec('sentence_transformers') is None:
                 raise ValueError('Embedding dependencies missing; run make setup first')
+        started = time.monotonic()
         for position, command in enumerate(commands, 1):
             launch = [sys.executable, '-X', 'faulthandler', *command]
-            print(  # noqa: T201 - CLI output
-                f'[{position}/{len(commands)}] {shlex.join(launch)}', flush=True
-            )
+            if args.dry_run:
+                label = shlex.join(launch)
+            else:
+                label = f'{command[6]} · {PHASE_LABELS[command[2]]}'
+            print(f'[{position}/{len(commands)}] {label}', flush=True)  # noqa: T201
             if not args.dry_run:
                 subprocess.run(launch, cwd=ROOT, check=True)
     except subprocess.CalledProcessError as exc:
@@ -140,7 +149,11 @@ def main(argv=None):
         print(f'Error: {exc}', file=sys.stderr)  # noqa: T201 - CLI output
         return 2
     if not args.dry_run:
-        print('Preparation complete: selected repositories are ready to query.', flush=True)  # noqa: T201 - CLI output
+        print(  # noqa: T201 - CLI output
+            f'Preparation complete in {time.monotonic() - started:.1f}s. '
+            'Selected repositories are ready to query.',
+            flush=True,
+        )
     return 0
 
 

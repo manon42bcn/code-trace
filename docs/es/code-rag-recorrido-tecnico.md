@@ -77,7 +77,7 @@ Por tanto, `max_tokens` de chunking, presupuesto estimado del contexto y límite
 | [`embedding_enrichment.py`](../../src/codetrace/embedding_enrichment.py) · `enrich_chunks_from_graph()` | Añade claves relacionadas, tipos de acceso y etiquetas de relaciones a los metadatos de chunks. | Recorrido propio del grafo. |
 | [`embedding_text.py`](../../src/codetrace/embedding_text.py) · `chunk_embedding_text()` | Convierte contenido y metadatos en el texto que representará el vector. | Renderizador determinista propio. v1/v2 distinguen base y enriquecimiento; ambas usan el renderizador actual. |
 | [`embedding_index.py`](../../src/codetrace/embedding_index.py) · `update_embedding_store()` | Compara hash del texto renderizado y versión, reutiliza vectores, genera los pendientes y elimina IDs ausentes. | `hashlib` y código propio. `prepare()` descarta registros si los metadatos del almacén son incompatibles. |
-| `SentenceTransformerProvider` · `embed_documents()` | Codifica lotes de textos y devuelve listas de números de dimensión fija; valida los vectores. | **sentence-transformers**, dependencia opcional `embeddings`. Modelo seleccionado por configuración. |
+| `SentenceTransformerProvider` · `embed_documents()` | Codifica lotes de textos y devuelve listas de números de dimensión fija; valida los vectores. | **sentence-transformers**, dependencia base. Modelo seleccionado por configuración. |
 | [`vector_store.py`](../../src/codetrace/vector_store.py) · `VectorStore.save()`, `search()` | Guarda vectores y metadatos en JSON; compara una consulta con los registros mediante similitud coseno y ordena los resultados. | Código propio con `json` y `math`; búsqueda por recorrido de registros, sin índice aproximado externo. |
 
 Los embeddings acercan textos según la representación del modelo; la similitud no prueba equivalencia ni ejecución. La representación enriquecida puede cambiar si cambian las relaciones aunque no se modifique el código del chunk.
@@ -171,7 +171,7 @@ Las listas se identifican por archivo y ruta estructural; `--where` filtra valor
 | `indexes/NAME.vectors-v2.json` | Vectores de la representación enriquecida. Lo consume la búsqueda semántica según perfil. |
 | Sesiones e informes opcionales | Persisten páginas o resultados; pueden contener extractos de fuentes. No reemplazan los índices. |
 
-Los nombres anteriores son las rutas estándar junto a la configuración central; los vectores admiten overrides. Las dependencias declaradas están en [`pyproject.toml`](../../pyproject.toml): **PyYAML** y **python-dotenv** son dependencias base. **tree-sitter-language-pack**, **sentence-transformers**, **anthropic** y **openai** son opcionales. Chunking, índice léxico, grafo, fusión, almacén vectorial y gestión de contexto se implementan en el propio proyecto.
+Los nombres anteriores son las rutas estándar junto a la configuración central; los vectores admiten overrides. Las dependencias declaradas están en [`pyproject.toml`](../../pyproject.toml): **PyYAML**, **python-dotenv** y **sentence-transformers** son dependencias base. **tree-sitter-language-pack**, **anthropic** y **openai** son opcionales. Chunking, índice léxico, grafo, fusión, almacén vectorial y gestión de contexto se implementan en el propio proyecto.
 
 Para ejemplos operativos y detalles de cada entrada: [preparación](code-rag-preparacion.md), [skill code-trace](skill-code-rag.md) y [skill code-trace-inventory](skill-code-inventory.md). Esta guía debe actualizarse cuando cambien funciones, artefactos o mecanismos del recorrido.
 

@@ -20,7 +20,7 @@ El proyecto está en desarrollo. El proveedor y el modelo de generación se elig
 
 ## Arranque local
 
-Requisitos: Python 3.10 o posterior, `uv` y `make` para los comandos de esta guía. No se necesita Docker. El proveedor de generación elegido debe estar configurado y accesible para producir respuestas.
+Requisitos para los comandos de esta guía: `uv` y `make`. `make setup` usa Python 3.13, la misma versión que CI, y `uv` lo descarga si hace falta. No se necesita Docker. El proveedor de generación elegido debe estar configurado y accesible para producir respuestas.
 
 Desde el checkout:
 
@@ -30,6 +30,8 @@ cp config.example.json config.json
 ```
 
 En una instalación existente, conservar el `config.json` propio. Este archivo está ignorado por Git; la plantilla versionada es [config.example.json](config.example.json).
+
+`make setup` instala CodeTrace en `.venv` como paquete. Vuelve a ejecutar `make setup` cuando actualices el código del repositorio.
 
 Editar en `config.json`:
 
@@ -54,7 +56,7 @@ make chat
 `make indexes` genera chunks, relaciones y los vectores semánticos habilitados. La primera preparación puede requerir descargar el modelo de embeddings configurado. `make doctor` diagnostica la preparación y `make check-provider` comprueba el proveedor generativo. Si se elige Anthropic, OpenAI, Azure OpenAI, OpenRouter o Groq, instalar también el extra `llm`, conservando los extras de preparación:
 
 ```bash
-uv sync --extra parsers --extra embeddings --extra llm --group dev
+uv sync --no-editable --extra parsers --extra llm --group dev
 ```
 
 Configura la generación con variables exportadas o copia [la plantilla](.env.example)
@@ -92,8 +94,8 @@ Más detalles en [preparación de repositorios](docs/es/code-rag-preparacion.md)
 
 ### MLX LM en Mac
 
-En Apple silicon, instala el extra con `uv sync --extra mlx`. Añade también los extras de preparación
-que uses, como `--extra parsers --extra embeddings`. Configura `mlx` y la ruta al directorio de un
+En Apple silicon, instala el extra con `uv sync --no-editable --extra mlx`. Añade también los extras de preparación
+que uses, como `--extra parsers`. Configura `mlx` y la ruta al directorio de un
 modelo MLX LM ya descargado:
 
 ```dotenv

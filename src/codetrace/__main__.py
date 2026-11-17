@@ -204,6 +204,8 @@ def main(argv=None):
             )
             if result['skipped_files']:
                 print(f'Advertencia: {len(result["skipped_files"])} archivos omitidos')  # noqa: T201 - CLI output
+                for skipped in result['skipped_files']:
+                    print(f'  - {source / skipped["path"]}')  # noqa: T201 - CLI output
             if result['excluded_paths']:
                 print(  # noqa: T201 - CLI output
                     f'Exclusiones aplicadas: {len(result["excluded_paths"])} rutas '
