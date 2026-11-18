@@ -94,8 +94,8 @@ Más detalles en [preparación de repositorios](docs/es/code-rag-preparacion.md)
 
 ### MLX LM en Mac
 
-En Apple silicon, instala el extra con `uv sync --no-editable --extra mlx`. Añade también los extras de preparación
-que uses, como `--extra parsers`. Configura `mlx` y la ruta al directorio de un
+En Apple silicon, instala el extra con `make setup EXTRAS=mlx`. La sincronización conserva los extras
+ya instalados. Configura `mlx` y la ruta al directorio de un
 modelo MLX LM ya descargado:
 
 ```dotenv

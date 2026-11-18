@@ -2,6 +2,8 @@
 
 [Español](../es/code-rag-chat.md)
 
+Set `CHAT_LANG=en` in `.env` and restart the chat to use the English interface. The default is `es` (Spanish). This setting controls interface text only.
+
 The browser interface delegates each question to `codetrace answer`. It displays the configured provider's answer, evidence, limitations, and index status.
 
 ## Setup and startup

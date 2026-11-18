@@ -183,6 +183,39 @@ h2 {
   padding:15px 18px;
   border-radius:12px
 }
+.pending-answer {
+  color:var(--muted);
+  font-size:13px;
+  padding:0 18px
+}
+.pending-track {
+  overflow:hidden;
+  width:100%;
+  max-width:220px;
+  height:4px;
+  margin-top:8px;
+  border-radius:4px;
+  background:var(--line)
+}
+.pending-track::before {
+  content:"";
+  display:block;
+  width:38%;
+  height:100%;
+  border-radius:inherit;
+  background:var(--green);
+  animation:pending-slide 1.4s ease-in-out infinite alternate
+}
+@keyframes pending-slide {
+  to {
+    transform:translateX(163%)
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .pending-track::before {
+    animation:none
+  }
+}
 .answer-text,.question-text {
   white-space:pre-wrap;
   font-size:14px;

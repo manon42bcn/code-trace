@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shlex
 import signal
 import subprocess
@@ -117,6 +118,11 @@ def main(argv=None):
 
             if importlib.util.find_spec('sentence_transformers') is None:
                 raise ValueError('Embedding dependencies missing; run make setup first')
+        env = os.environ.copy()
+        python_path = [str(ROOT / 'src')]
+        if env.get('PYTHONPATH'):
+            python_path.append(env['PYTHONPATH'])
+        env['PYTHONPATH'] = os.pathsep.join(python_path)
         started = time.monotonic()
         for position, command in enumerate(commands, 1):
             launch = [sys.executable, '-X', 'faulthandler', *command]
@@ -126,7 +132,7 @@ def main(argv=None):
                 label = f'{command[6]} · {PHASE_LABELS[command[2]]}'
             print(f'[{position}/{len(commands)}] {label}', flush=True)  # noqa: T201
             if not args.dry_run:
-                subprocess.run(launch, cwd=ROOT, check=True)
+                subprocess.run(launch, cwd=ROOT, env=env, check=True)
     except subprocess.CalledProcessError as exc:
         if exc.returncode < 0:
             number = -exc.returncode
