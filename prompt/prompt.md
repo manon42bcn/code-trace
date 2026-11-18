@@ -51,16 +51,7 @@ A largo plazo, el sistema deberá combinar:
 
 El núcleo debe funcionar independientemente del nombre y estructura de los repositorios utilizados para probarlo.
 
-No implementar reglas que dependan de:
-
-- `aicc-tests`
-- `toolium`
-- `toolium-telefonica`
-- `toolium-examples`
-- Claves concretas como `dataset_id`.
-- Rutas o nombres de funciones exclusivos de esos proyectos.
-
-Son repositorios de validación, **no requisitos codificados en el motor**.
+Evita reglas ligadas a nombres de repositorios, claves, rutas o funciones particulares de los proyectos de validación.
 
 Las particularidades de tecnologías como Behave o Toolium deben modelarse mediante adaptadores o módulos especializados, manteniendo las capacidades generales independientes de ellas.
 
@@ -275,48 +266,9 @@ No presupongas las responsabilidades internas exactas de cada módulo por su nom
 
 ---
 
-# 4. Validaciones realizadas
+# 4. Validación
 
-Los repositorios de prueba utilizados hasta la fecha son:
-
-- `aicc-tests`
-- `toolium-telefonica`
-- `toolium-examples`
-- `toolium`
-
-Su finalidad es validar el funcionamiento del motor sobre proyectos reales, incluyendo relaciones entre repositorios y convenciones de frameworks.
-
-No forman parte de la arquitectura obligatoria del sistema.
-
-## 4.1 Resultados de referencia
-
-En una validación de v0.5.13.16 se obtuvieron los siguientes valores por informe:
-
-| Repositorio | Chunks | Nodos del grafo | Aristas |
-|---|---:|---:|---:|
-| aicc-tests | 3.342 | 29.274 | 27.020 |
-| toolium-telefonica | 3.661 | 9.809 | 9.480 |
-| toolium-examples | 298 | 3.079 | 2.551 |
-| toolium | 1.307 | 2.498 | 2.155 |
-
-En esa validación no se detectaron referencias inválidas entre nodos y aristas.
-
-Estas cifras son una referencia histórica de los datos probados, no métricas universales ni objetivos que deban codificarse en las pruebas.
-
-## 4.2 Mejora observada en AICC
-
-Frente a v0.5.13.15, el análisis v0.5.13.16 identificó:
-
-- 528 → 1.079 registros de productores estáticos.
-- 714 → 1.014 referencias con candidatos.
-- 307 → 644 rutas estáticas candidatas.
-- 352 → 711 testigos de steps anteriores.
-
-También, para un conjunto concreto de consumidores de `dataset_id`, se pasó de cero a tres candidatos con evidencia de precedencia.
-
-Estos resultados indican una mejora de **cobertura estática**, no una mejora de precisión demostrada mediante un conjunto etiquetado de verdad de referencia.
-
-Evita utilizar únicamente un aumento de candidatos como criterio de calidad.
+Usa los repositorios de ejemplo distribuidos con CodeTrace para comprobar la indexación, las relaciones entre repositorios y las convenciones de frameworks. Comprueba la integridad del grafo y contrasta los resultados con evidencia etiquetada. Mide cobertura y precisión por separado.
 
 ---
 

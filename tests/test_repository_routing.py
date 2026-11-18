@@ -9,8 +9,8 @@ from codetrace.repository_routing import RepositoryRoutingError, select_reposito
 def catalog():
     return {
         'home': {'description': 'Frontend de escritorio'},
-        'aicc-tests': {
-            'aliases': ['tests de AICC', 'ensayos Ágiles'],
+        'sample-tests': {
+            'aliases': ['tests de Sample', 'ensayos Ágiles'],
             'description': 'Pruebas de aceptación y validación de integraciones API',
         },
         'toolium': {'description': 'Framework compartido de automatización'},
@@ -21,13 +21,13 @@ def catalog():
 @pytest.mark.parametrize(
     ('query', 'expected'),
     [
-        ('En AICC tests, order_id', 'aicc-tests'),
-        ('en tests de AICC order_id', 'aicc-tests'),
-        ('Sobre ENSAYOS AGILES: order_id', 'aicc-tests'),
+        ('En Sample tests, order_id', 'sample-tests'),
+        ('en tests de Sample order_id', 'sample-tests'),
+        ('Sobre ENSAYOS AGILES: order_id', 'sample-tests'),
         ('¿En toolium-examples, order_id?', 'toolium-examples'),
         ('¿Dónde se usa toolium?', 'toolium'),
         ('Where is the API called?', 'home'),
-        ('aicc_testsmith', 'home'),
+        ('sample_testsmith', 'home'),
     ],
 )
 def test_names_aliases_boundaries_and_default(catalog, query, expected):
@@ -35,14 +35,16 @@ def test_names_aliases_boundaries_and_default(catalog, query, expected):
 
 
 def test_leading_selector_is_removed_but_question_is_preserved(catalog):
-    routed = select_repository('En los tests de AICC, ¿Dónde se escribe order_id?', catalog, 'home')
+    routed = select_repository(
+        'En los tests de Sample, ¿Dónde se escribe order_id?', catalog, 'home'
+    )
     assert routed['query'] == '¿Dónde se escribe order_id?'
     assert routed['reason'] == 'alias'
 
 
 def test_description_requires_a_scoped_multiword_reference(catalog):
     routed = select_repository('En las pruebas de aceptación, order_id', catalog, 'home')
-    assert routed['repository'] == 'aicc-tests'
+    assert routed['repository'] == 'sample-tests'
     assert routed['reason'] == 'description'
     assert routed['query'] == 'order_id'
     assert select_repository('Hay pruebas de aceptación', catalog, 'home')['repository'] == 'home'
@@ -55,7 +57,7 @@ def test_explicit_names_precede_descriptions(catalog):
 
 
 @pytest.mark.parametrize(
-    'query', ['En toolium y aicc-tests, order_id', 'Compare toolium with toolium-examples']
+    'query', ['En toolium y sample-tests, order_id', 'Compare toolium with toolium-examples']
 )
 def test_multiple_explicit_repositories_require_clarification(catalog, query):
     with pytest.raises(RepositoryRoutingError, match='Several repositories') as exc:
@@ -65,14 +67,14 @@ def test_multiple_explicit_repositories_require_clarification(catalog, query):
 
 
 def test_alias_collision_is_not_resolved_by_default(catalog):
-    catalog['home']['aliases'] = ['tests de AICC']
+    catalog['home']['aliases'] = ['tests de Sample']
     with pytest.raises(RepositoryRoutingError, match='Several repositories') as exc:
-        select_repository('En tests de AICC, order_id', catalog, 'home')
-    assert exc.value.candidates == ['aicc-tests', 'home']
+        select_repository('En tests de Sample, order_id', catalog, 'home')
+    assert exc.value.candidates == ['home', 'sample-tests']
 
 
 def test_description_tie_requires_clarification(catalog):
-    catalog['home']['description'] = catalog['aicc-tests']['description']
+    catalog['home']['description'] = catalog['sample-tests']['description']
     with pytest.raises(RepositoryRoutingError, match='Description matches several'):
         select_repository('En las pruebas de aceptación, order_id', catalog, 'home')
 
@@ -90,16 +92,16 @@ def test_invalid_alias_metadata_is_rejected(catalog, aliases):
         select_repository('order_id', catalog, 'home')
 
 
-@pytest.mark.parametrize('suffix', ['--repo fabrica', '--repo=fabrica'])
+@pytest.mark.parametrize('suffix', ['--repo portico', '--repo=portico'])
 def test_embedded_selector_and_trailing_scope_do_not_enter_retrieval(catalog, suffix):
-    catalog['fabrica'] = {'aliases': ['fábrica']}
+    catalog['portico'] = {'aliases': ['pórtico']}
     routed = select_repository(
-        f'en que tools se incluye en handoff en fábrica {suffix}', catalog, 'home'
+        f'en que tools se incluye en handoff en pórtico {suffix}', catalog, 'home'
     )
     assert routed == {
-        'repository': 'fabrica',
+        'repository': 'portico',
         'reason': 'explicit',
-        'matched': 'fabrica',
+        'matched': 'portico',
         'query': 'en que tools se incluye en handoff',
     }
 
@@ -107,15 +109,15 @@ def test_embedded_selector_and_trailing_scope_do_not_enter_retrieval(catalog, su
 @pytest.mark.parametrize(
     'question',
     [
-        '¿Qué tools en fábrica incluyen handoff?',
-        '¿Qué tools incluyen handoff en el repositorio fábrica?',
-        '¿Qué tools incluyen handoff en fábrica?',
+        '¿Qué tools en pórtico incluyen handoff?',
+        '¿Qué tools incluyen handoff en el repositorio pórtico?',
+        '¿Qué tools incluyen handoff en pórtico?',
     ],
 )
 def test_repository_scopes_can_be_removed_from_middle_or_end(catalog, question):
-    catalog['fabrica'] = {'aliases': ['fábrica']}
+    catalog['portico'] = {'aliases': ['pórtico']}
     routed = select_repository(question, catalog, 'home')
-    assert 'fábrica' not in routed['query']
+    assert 'pórtico' not in routed['query']
     assert 'handoff' in routed['query']
     assert 'tools' in routed['query']
 
@@ -155,11 +157,11 @@ def test_malformed_or_empty_directives_do_not_become_search_terms(catalog, quest
 
 
 def test_domain_alias_is_not_erased_from_the_actual_question(catalog):
-    catalog['fabrica'] = {'aliases': ['Pix']}
-    question = '¿Qué tools incluyen handoff en Pix?'
+    catalog['portico'] = {'aliases': ['Acceso']}
+    question = '¿Qué tools incluyen handoff en Acceso?'
     assert select_repository(question, catalog, 'home')['query'] == question
     scoped = select_repository(
-        '¿Qué tools incluyen handoff en el repositorio Pix?', catalog, 'home'
+        '¿Qué tools incluyen handoff en el repositorio Acceso?', catalog, 'home'
     )
-    assert 'Pix' not in scoped['query']
-    assert scoped['repository'] == 'fabrica'
+    assert 'Acceso' not in scoped['query']
+    assert scoped['repository'] == 'portico'

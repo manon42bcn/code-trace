@@ -16,7 +16,7 @@ Read `config.local.json` beside this file. If missing, copy `config.example.json
 ```json
 {
   "code_trace_root": "/absolute/path/to/code-trace",
-  "repo": "aicc-tests"
+  "repo": "demo"
 }
 ```
 
@@ -27,7 +27,7 @@ Resolve the launcher relative to this skill's directory and use CodeTrace's own 
 ```bash
 "/absolute/path/to/code-trace/.venv/bin/python" \
   "/absolute/path/to/code-trace/scripts/query.py" \
-  "cuantas tools intervienen en el handoff" --repo fabrica
+  "¿Cómo se valida el inicio de sesión?" --repo demo
 ```
 
 On Windows use `.venv/Scripts/python.exe`. The child process uses the same interpreter. If the environment is missing, explain that `make setup` is required in the checkout; do not run `uv run` from the consuming repository or install dependencies automatically.

@@ -18,13 +18,13 @@ cp config.example.json config.json
 
 ## Dependencias de Toolium
 
-Declara `"framework": "toolium"` en los repositorios que proporcionan Toolium o Toolium Telefónica y registra las dependencias directas en `relationships`. En este ejemplo, el repositorio de tests solo declara la extensión.
+Declara `"framework": "toolium"` en los repositorios que proporcionan Toolium y registra las dependencias directas en `relationships`. En este ejemplo, el repositorio de tests solo declara la extensión.
 
 ```json
 {
   "repositories": {
-    "framework-base": {"path": "../toolium", "framework": "toolium"},
-    "framework-extension": {"path": "../toolium-telefonica", "framework": "toolium"},
+    "framework-base": {"path": "../framework-base", "framework": "toolium"},
+    "framework-extension": {"path": "../framework-extension", "framework": "toolium"},
     "acceptance": {"path": "../acceptance"}
   },
   "relationships": {
@@ -34,7 +34,7 @@ Declara `"framework": "toolium"` en los repositorios que proporcionan Toolium o 
 }
 ```
 
-En modo `auto`, CodeTrace activa el análisis si el repositorio o alguna dependencia transitiva declara el framework, o si el código Python indexado del repositorio importa `toolium` o `toolium_telefonica`. Los nombres de las claves son libres. `analysis.toolium` admite `enabled` y `disabled`, globalmente o por repositorio. Tras cambiar las declaraciones, regenera las relaciones con `make indexes-incremental REPOS="acceptance"`.
+En modo `auto`, CodeTrace activa el análisis si el repositorio o alguna dependencia transitiva declara el framework, o si el código Python indexado del repositorio importa `toolium`. Los nombres de las claves son libres. `analysis.toolium` admite `enabled` y `disabled`, globalmente o por repositorio. Tras cambiar las declaraciones, regenera las relaciones con `make indexes-incremental REPOS="acceptance"`.
 
 CodeTrace analiza las lecturas y escrituras de `behave.context` en repositorios con pasos de Behave aunque Toolium esté desactivado. Las reglas de almacenamiento y marcadores de Toolium se aplican cuando ese análisis está habilitado. Los informes nuevos guardan el flujo en `context_flow`; CodeTrace también lee el campo anterior `toolium.context_flow`. Regenera las relaciones para obtener la evidencia nueva.
 
@@ -187,8 +187,8 @@ Las sesiones paginadas conservan su instantánea y pueden reutilizar la evaluaci
 `codetrace answer`, utilizado por `/code-trace`, añade `index_state` al JSON y a los metadatos del informe. La salida con evidencias incluye un bloque determinista «Estado del índice» con commits, ramas, cambios locales, verificación de fuentes y necesidad de actualización. No altera el texto generado por el proveedor ni cambia el modelo. Este bloque comprueba fuentes/Git; no equivale a la validación completa de relaciones y vectores de `doctor`.
 
 ```bash
-.venv/bin/python -m codetrace doctor --config config.json --repo fabrica --output-format json
-.venv/bin/python -m codetrace query "handoff" --config config.json --repo fabrica
+.venv/bin/python -m codetrace doctor --config config.json --repo demo --output-format json
+.venv/bin/python -m codetrace query "AuthService" --config config.json --repo demo
 ```
 
 `doctor` incorpora un check `git` con ambas referencias y su diagnóstico. Un directorio sin Git sigue siendo utilizable. Un índice antiguo sin estos metadatos puede consultarse, pero su commit indexado será desconocido; la frescura de fuentes se verifica independientemente si tiene manifiesto.
@@ -196,7 +196,7 @@ Las sesiones paginadas conservan su instantánea y pueden reutilizar la evaluaci
 ### Actualización explícita
 
 ```bash
-make indexes-incremental REPOS="fabrica"
+make indexes-incremental REPOS="demo"
 ```
 
 La preparación existente actualiza chunks, relaciones y vectores habilitados de los repositorios seleccionados y sus dependencias. Los archivos sin cambios reutilizan sus chunks; los vectores sin cambios conservan la lógica incremental existente. Si solo se quiere avanzar la referencia Git registrada tras un commit sin cambios indexables, esa misma preparación registra el nuevo SHA. Las consultas no reconstruyen artefactos automáticamente.
@@ -220,8 +220,8 @@ Los análisis derivados de chunks (relaciones Behave, contexto, hooks, rutas de 
 Los diagnósticos se conservan al reutilizar archivos sin cambios en una indexación incremental y desaparecen si la fuente se corrige o se elimina. Los índices anteriores al campo `python_diagnostics_version` necesitan una pasada de actualización para recoger estos avisos: los archivos Python se vuelven a analizar una vez y después vuelven a poder reutilizarse.
 
 ```bash
-make indexes-incremental REPOS="sav"
-.venv/bin/python -m codetrace analyze --config config.json --repo sav --output /tmp/sav-analysis.json
+make indexes-incremental REPOS="demo"
+.venv/bin/python -m codetrace analyze --config config.json --repo demo --output /tmp/demo-analysis.json
 ```
 
 La primera orden actualiza los artefactos con la preparación habitual; la segunda permite consultar los diagnósticos persistidos. No es necesario corregir automáticamente el repositorio indexado para obtener ubicaciones útiles del aviso.

@@ -214,7 +214,7 @@ def environment_scope(indexes, feature_path, repository, lifecycle=(), catalog=N
                             )
                         )
             else:
-                # Resolve a reexport, including AICC's `from common.environment import *`.
+                # Resolve a reexport such as `from common.environment import *`.
                 binding = imports[(repo, path)].get(name)
                 mods = [binding[0]] if binding and binding[1] == name else stars[(repo, path)]
                 for mod in mods:

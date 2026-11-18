@@ -20,6 +20,7 @@ SPANISH_LEXICAL_EQUIVALENTS = {
     'enviar': ('send', 'sends'),
     'peticion': ('request',),
     'solicitud': ('request',),
+    'mock': ('mocked',),
 }
 
 
@@ -51,8 +52,20 @@ def plan_query(text, *, kind='any', exact=False):
         dict.fromkeys(word for word in words(text) if word not in STOPWORDS and len(word) > 1)
     )
     equivalents = SPANISH_LEXICAL_EQUIVALENTS
-    if {'fabrica', 'agentes'} <= set(terms):
-        equivalents = {**equivalents, 'fabrica': ('factory',)}
+    if natural:
+        normalized = ' '.join(words(text))
+        preparation = ('build', 'built', 'prepare', 'setup', 'requires', 'required')
+        equivalents = {
+            **equivalents,
+            'inputs': ('input', 'payload'),
+            **dict.fromkeys(
+                ('antes', 'previamente', 'previo', 'before', 'prerequisite'), preparation
+            ),
+        }
+        if re.search(
+            r'\b(?:que debo hacer|que tengo que hacer|how do i|what should i do)\b', normalized
+        ):
+            terms = list(dict.fromkeys([*terms, 'step', 'prerequisite', 'inputs']))
     anchors = []
     if natural:
         anchors = [

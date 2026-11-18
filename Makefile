@@ -10,12 +10,14 @@ EVALUATION_OUTPUT ?= indexes/real-evaluation.json
 CHAT_ARGS ?=
 SKILL_ARGS ?=
 JSON_PATHS ?=
-# Example: make indexes REPOS="aicc-tests toolium-examples"
+# Example: make indexes REPOS="demo demo_library"
 REPO_ARGS = $(foreach repo,$(REPOS),--repo "$(repo)")
 
-.PHONY: chat setup indexes indexes-incremental indexes-plan format format-check lint lint-python lint-json hooks-install hooks-run check-provider doctor evaluate-real skills-install skills-update skills-status
+.PHONY: chat setup reinstall indexes indexes-incremental indexes-plan format format-check lint lint-python lint-json hooks-install hooks-run check-provider doctor evaluate-real skills-install skills-update skills-status
 
-setup:
+setup: reinstall
+
+reinstall:
 	uv sync --no-editable --reinstall-package code-trace --extra parsers --group dev
 
 indexes:

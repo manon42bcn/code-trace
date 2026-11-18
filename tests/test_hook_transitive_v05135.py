@@ -13,7 +13,7 @@ def ck(path, sym, content):
     }
 
 
-def test_aicc_retry_indirection_to_toolium_hook():
+def test_feature_retry_indirection_to_toolium_hook():
     src = 'features/environment.py'
     helper = 'common/environment.py'
     dep = 'toolium/behave/environment.py'

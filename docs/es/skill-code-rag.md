@@ -27,7 +27,7 @@ El `config.local.json` instalado contiene `code_trace_root` y `repo`. Las rutas 
 ```json
 {
   "code_trace_root": "/absolute/path/to/code-trace",
-  "repo": "aicc-tests"
+  "repo": "demo"
 }
 ```
 
@@ -36,7 +36,7 @@ Usar siempre el entorno de CodeTrace:
 ```bash
 "/absolute/path/to/code-trace/.venv/bin/python" \
   "/absolute/path/to/code-trace/scripts/query.py" \
-  "cuantas tools intervienen en el handoff" --repo fabrica
+  "¿Cómo se valida el inicio de sesión?" --repo demo
 ```
 
 En Windows, utilizar `.venv/Scripts/python.exe`. `--config PATH` selecciona otro archivo de conexión de la skill. El `config.json` del checkout indica repositorios, recuperación, relaciones, embeddings y presupuestos de contexto. El proveedor y el modelo se leen de las variables exportadas o del `.env` del checkout. El launcher ya no introduce topes predeterminados propios de candidatos, chunks o caracteres; solo reenvía `--limit`, `--max-chunks` y `--max-chars` si se proporcionan explícitamente. Los valores omitidos los resuelve `codetrace answer` con su configuración y valores internos.
@@ -65,25 +65,23 @@ No se necesitan índices nuevos por este cambio. Las instrucciones ejecutables d
 
 ## Relevancia y selección explícita (0.9.15)
 
-La petición que motivó esta corrección era `/code-rag en que tools se incluye en handoff en fábrica --repo fabrica`. Antes, el sufijo `--repo fabrica` entraba en la búsqueda como texto y favorecía claves como `repo_url` y `repo_name`. Además, «en fábrica» permanecía en la pregunta y competía con el concepto buscado.
+Ahora ambas skills, `codetrace answer` y `codetrace query` aceptan `--repo demo`. La selección explícita puede acompañar al repositorio de respaldo (`--default-repo`); una contradicción con otro selector o una referencia explícita a otro repositorio produce `conflicting_repository`. Un repositorio desconocido produce `unknown_repository`. Se mantiene la validación de la configuración local de la skill.
 
-Ahora ambas skills, `codetrace answer` y `codetrace query` aceptan `--repo fabrica`. La selección explícita puede acompañar al repositorio de respaldo (`--default-repo`); una contradicción con otro selector o una referencia explícita a otro repositorio produce `conflicting_repository`. Un repositorio desconocido produce `unknown_repository`. Se mantiene la validación de la configuración local de la skill.
-
-También se reconoce un selector sin comillas al final del texto de la pregunta: `--repo NOMBRE` o `--repo=NOMBRE`. Los nombres de este argumento deben ser claves del catálogo central. Para preguntar por el argumento como código, citarlo con comillas o backticks. Las cláusulas de alcance `en/in/sobre REPOSITORIO` se retiran antes de la recuperación y la generación, tanto al principio como en medio o al final. Se conservan los identificadores usados como tema de la pregunta y los fragmentos entrecomillados. Los alias de dominio en medio o al final, como `Pix`, se mantienen como términos salvo que se indiquen explícitamente como repositorio; los nombres canónicos y sus variantes equivalentes sí se retiran como alcance. La pregunta original sigue disponible en los informes y la versión normalizada en `routing.query`.
+También se reconoce un selector sin comillas al final del texto de la pregunta: `--repo NOMBRE` o `--repo=NOMBRE`. Los nombres de este argumento deben ser claves del catálogo central. Para preguntar por el argumento como código, citarlo con comillas o backticks. Las cláusulas de alcance `en/in/sobre REPOSITORIO` se retiran antes de la recuperación y la generación, tanto al principio como en medio o al final. Se conservan los identificadores usados como tema de la pregunta y los fragmentos entrecomillados. Los alias de dominio en medio o al final, como «acceso», se mantienen como términos salvo que se indiquen explícitamente como repositorio; los nombres canónicos y sus variantes equivalentes sí se retiran como alcance. La pregunta original sigue disponible en los informes y la versión normalizada en `routing.query`.
 
 ```bash
 .venv/bin/python skills/code-trace/scripts/query.py \
-  "¿Qué tools incluyen handoff?" --repo fabrica
+  "¿Cómo se valida el inicio de sesión?" --repo demo
 
-.venv/bin/python -m codetrace query "¿Qué tools incluyen handoff?" \
-  --config config.json --repo fabrica --retrieval-mode lexical
+.venv/bin/python -m codetrace query "¿Cómo se valida el inicio de sesión?" \
+  --config config.json --repo demo --retrieval-mode lexical
 ```
 
 El ranking `identifier-v2` mantiene la prioridad de identificadores y perfiles de acceso; dentro de esa prioridad, ordena las consultas naturales por cobertura de términos antes de la puntuación. La señal `ranking.term_coverage` se calcula también para candidatos híbridos, evitando que una puntuación semántica alta desplace una coincidencia literal más amplia. El modo exclusivamente semántico conserva su ordenación anterior. Esta cobertura solo describe coincidencias escritas: no demuestra relevancia semántica, ejecución o exhaustividad. Los cambios de perfiles invalidan sesiones anteriores; iniciar una consulta nueva tras actualizar.
 
 El prompt pide respuestas y limitaciones en el idioma de la pregunta, con indicaciones explícitas para preguntas claramente españolas/inglesas y peticiones explícitas de esos idiomas. Los idiomas ambiguos quedan a interpretación del proveedor. También comunica cuántos candidatos llegaron al contexto y cuántos se excluyeron, exige reconocer el alcance parcial y pide no citar fragmentos ajenos a la afirmación. La skill sigue devolviendo literalmente la salida del proveedor. La validación programática comprueba citas y rangos; no prueba que cada afirmación esté semánticamente respaldada ni garantiza el idioma de salida.
 
-`evaluations/relevance_questions.json` incorpora la pregunta original y variantes de selección. `evaluations/relevance-validation.0.9.15.json` compara la selección/ranking anterior y actual sobre los mismos artefactos y etiquetas: 9/10 en la batería original, 3/3 en la acotada y mejora de 1/5 a 5/5 en la nueva, sin regresiones. El caso pendiente de escritores/lectores de AICC continúa fallando; no se modificaron sus etiquetas. Son comprobaciones de recuperación, no una evaluación completa de respuestas generadas. Una prueba adicional con Ollama y `qwen2.5-coder:14b`, sobre ese contexto real, devolvió la lista en español, con tres citas válidas y una limitación explícita de exhaustividad. Es una observación puntual, no una garantía para todas las preguntas.
+Después de preparar los repositorios demo incluidos, ejecuta `make evaluate-real CONFIG=config.example.json` para comprobar recuperación.
 
 Ejecutar `make skills-update` para actualizar las copias instaladas. No es necesario reconstruir índices para esta corrección.
 

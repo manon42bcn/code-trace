@@ -376,7 +376,7 @@ def test_semantic_only_retains_similarity_order_without_literal_coverage_bias():
 
 
 def test_spanish_step_question_recovers_english_definition():
-    question = 'que step se usa para enviar una petición a fábrica de agentes?'
+    question = 'que step se usa para enviar una petición al servidor?'
     index = {
         'chunks': [
             {
@@ -386,22 +386,50 @@ def test_spanish_step_question_recovers_english_definition():
                 'content': '@step("Recuperar métricas de agentes")',
             },
             {
-                'id': 'factory',
-                'path': 'steps/agents_factory.py',
-                'symbol': 'send_request_to_agents_factory',
+                'id': 'sender',
+                'path': 'steps/requests.py',
+                'symbol': 'send_request_to_server',
                 'content': (
-                    "@step('Autopilot sends a request to Agents Factory using model "
+                    "@step('the client sends a request to the server using model "
                     '"{request_model}" and params\')\n'
-                    'def send_request_to_agents_factory(context, request_model): ...'
+                    'def send_request_to_server(context, request_model): ...'
                 ),
             },
         ]
     }
     results = retrieve(index, {}, question, config=RetrievalConfig(mode='lexical', limit=1))
-    assert results[0]['chunk_id'] == 'factory'
+    assert results[0]['chunk_id'] == 'sender'
     plan = plan_query(question)
     assert plan['semantic_query'] == question
     assert plan['structural_query'] == question
-    assert (
-        'factory' not in plan_query('¿Dónde se fabrica el producto?')['lexical_variants']['fabrica']
-    )
+
+
+def test_inline_prerequisite_query_can_retrieve_the_builder():
+    question = 'Para enviar una petición inline al servidor, que step debo usar previamente?'
+    index = {
+        'chunks': [
+            {
+                'id': 'prepare',
+                'path': 'steps/setup.py',
+                'symbol': 'build_inline_payload_step',
+                'content': '@step(\'an inline payload for "{builder_name}" capability is built\')',
+            },
+        ]
+    }
+    results = retrieve(index, {}, question, config=RetrievalConfig(mode='lexical'))
+    assert 'previamente' in results[0]['ranking']['matched_terms']
+
+
+@pytest.mark.parametrize(
+    'question',
+    [
+        'que debo hacer para enviar una petición mock al servidor?',
+        'How do I publish a package to the registry?',
+    ],
+)
+def test_open_procedure_expands_retrieval_to_steps_and_inputs(question):
+    plan = plan_query(question)
+
+    assert {'step', 'prerequisite', 'inputs'} <= set(plan['lexical_terms'])
+    assert plan['semantic_query'] == question
+    assert plan['structural_query'] == question

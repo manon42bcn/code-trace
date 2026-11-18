@@ -67,7 +67,7 @@ def _detected(config, repo, index):
         if chunk.get('language') != 'python':
             continue
         code = chunk.get('content', '')
-        if re.search(r'^\s*(?:from|import)\s+toolium(?:_telefonica)?(?:\.|\b)', code, re.M):
+        if re.search(r'^\s*(?:from|import)\s+toolium(?:\.|\b)', code, re.M):
             return True
     return False
 
