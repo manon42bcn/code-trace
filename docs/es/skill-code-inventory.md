@@ -82,7 +82,7 @@ La salida y los informes registran `retrieval.budget_profile` y los límites efe
 
 ```bash
 .venv/bin/python -m codetrace query "order_id" --config config.json \
-  --default-repo aicc-tests --budget-profile code-inventory
+  --default-repo demo --budget-profile code-inventory
 ```
 
 Después de actualizar CodeTrace, ejecutar `make skills-update` para que las copias instaladas seleccionen el perfil. Una copia anterior seguirá usando los presupuestos ordinarios hasta actualizarse. El perfil admite solo modo evidencia y no modifica la configuración original en disco.

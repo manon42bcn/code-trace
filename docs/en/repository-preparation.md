@@ -6,13 +6,13 @@ Preparation turns local repositories into searchable snapshots before any questi
 
 ## Toolium dependencies
 
-Declare `"framework": "toolium"` on repositories that provide Toolium or Toolium Telefónica, and list direct dependencies under `relationships`. In this example, the test repository lists the extension as its only direct dependency.
+Declare `"framework": "toolium"` on repositories that provide Toolium, and list direct dependencies under `relationships`. In this example, the test repository lists the extension as its only direct dependency.
 
 ```json
 {
   "repositories": {
-    "framework-base": {"path": "../toolium", "framework": "toolium"},
-    "framework-extension": {"path": "../toolium-telefonica", "framework": "toolium"},
+    "framework-base": {"path": "../framework-base", "framework": "toolium"},
+    "framework-extension": {"path": "../framework-extension", "framework": "toolium"},
     "acceptance": {"path": "../acceptance"}
   },
   "relationships": {
@@ -22,7 +22,7 @@ Declare `"framework": "toolium"` on repositories that provide Toolium or Toolium
 }
 ```
 
-In `auto` mode, CodeTrace enables analysis when the repository or a transitive dependency declares the framework, or when the repository’s indexed Python imports `toolium` or `toolium_telefonica`. Repository identifiers are arbitrary. Use `analysis.toolium` to set `enabled` or `disabled` globally or per repository. After changing the declarations, regenerate relationships with `make indexes-incremental REPOS="acceptance"`.
+In `auto` mode, CodeTrace enables analysis when the repository or a transitive dependency declares the framework, or when the repository’s indexed Python imports `toolium`. Repository identifiers are arbitrary. Use `analysis.toolium` to set `enabled` or `disabled` globally or per repository. After changing the declarations, regenerate relationships with `make indexes-incremental REPOS="acceptance"`.
 
 CodeTrace analyzes `behave.context` reads and writes in repositories with Behave steps even when Toolium is disabled. Toolium storage and marker rules apply when Toolium analysis is enabled. New reports store the flow in `context_flow`; CodeTrace also reads the older `toolium.context_flow` field. Regenerate relationships to collect the new evidence.
 
@@ -92,9 +92,9 @@ To authenticate the embedding model download from Hugging Face, set `HF_TOKEN=hf
 The first parse of a full Python file records warnings under `diagnostics` with the original relative path, line, category, message, severity, language, and type `python_syntax_warning`. The CLI prints them once to stderr with absolute paths. Isolated parser workers return diagnostics to the main process. Derived analyses avoid re-emitting the same warnings at chunk-local line numbers. Syntax errors retain the configured fail-or-skip policy. Incremental runs keep diagnostics for reused files and remove them when a file is corrected or removed. Older indexes without `python_diagnostics_version` reparse Python files on their next update.
 
 ```bash
-make indexes-incremental REPOS="sav"
-.venv/bin/python -m codetrace analyze --config config.json --repo sav \
-  --output /tmp/sav-analysis.json
+make indexes-incremental REPOS="demo"
+.venv/bin/python -m codetrace analyze --config config.json --repo demo \
+  --output /tmp/demo-analysis.json
 ```
 
 Follow [index construction](../../src/codetrace/core.py), [repository links](../../src/codetrace/repo_links.py), [embedding preparation](../../src/codetrace/prepare_embeddings.py), and [readiness checks](../../src/codetrace/preparation.py) in the code.

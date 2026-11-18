@@ -9,8 +9,8 @@ Declare installations in `skills.installations` in CodeTrace's `config.json`.
   "skills": {
     "installations": [
       {
-        "destination": "../aicc-tests/.claude/skills",
-        "repo": "aicc-tests",
+        "destination": "../demo/.claude/skills",
+        "repo": "demo",
         "names": ["code-trace", "code-trace-inventory"]
       }
     ]

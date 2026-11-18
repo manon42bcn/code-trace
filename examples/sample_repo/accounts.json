@@ -1,0 +1,6 @@
+{
+  "accounts": [
+    {"username": "demo", "role": "reader"},
+    {"username": "reviewer", "role": "reviewer"}
+  ]
+}

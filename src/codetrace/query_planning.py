@@ -1,4 +1,4 @@
-"""Deterministic, inspectable lexical planning without translation or generated rewrites."""
+"""Deterministic, inspectable lexical planning with bounded bilingual vocabulary."""
 
 import re
 import unicodedata
@@ -11,6 +11,17 @@ STOPWORDS = set(
 for from how i in is it la las lo los of on or para por que se the this to un una unas unos
 was what when where which who with y como can could please would me you your""".split()
 )
+
+
+# Expand query terms only. Keep the user's wording for semantic search and generation.
+SPANISH_LEXICAL_EQUIVALENTS = {
+    'agente': ('agent',),
+    'agentes': ('agent', 'agents'),
+    'enviar': ('send', 'sends'),
+    'peticion': ('request',),
+    'solicitud': ('request',),
+    'mock': ('mocked',),
+}
 
 
 def words(text):
@@ -40,6 +51,21 @@ def plan_query(text, *, kind='any', exact=False):
     terms = list(
         dict.fromkeys(word for word in words(text) if word not in STOPWORDS and len(word) > 1)
     )
+    equivalents = SPANISH_LEXICAL_EQUIVALENTS
+    if natural:
+        normalized = ' '.join(words(text))
+        preparation = ('build', 'built', 'prepare', 'setup', 'requires', 'required')
+        equivalents = {
+            **equivalents,
+            'inputs': ('input', 'payload'),
+            **dict.fromkeys(
+                ('antes', 'previamente', 'previo', 'before', 'prerequisite'), preparation
+            ),
+        }
+        if re.search(
+            r'\b(?:que debo hacer|que tengo que hacer|how do i|what should i do)\b', normalized
+        ):
+            terms = list(dict.fromkeys([*terms, 'step', 'prerequisite', 'inputs']))
     anchors = []
     if natural:
         anchors = [
@@ -60,7 +86,11 @@ def plan_query(text, *, kind='any', exact=False):
         'lexical_mode': 'token_overlap' if natural else 'literal',
         'lexical_terms': terms[:32] if natural else [],
         'identifier_anchors': anchors[:8],
-        'lexical_variants': {word: variants(word) for word in terms[:32]} if natural else {},
+        'lexical_variants': {
+            word: [*variants(word), *equivalents.get(word, ())] for word in terms[:32]
+        }
+        if natural
+        else {},
         'semantic_query': text,
         'structural_query': text,
         'semantic_transformed': False,

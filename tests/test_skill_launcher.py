@@ -390,7 +390,7 @@ def test_skill_explicit_repo_is_routing_metadata_not_search_text(checkout, skill
 @pytest.mark.parametrize(
     'question',
     [
-        'cuantas tools intervienen en el handoff --repo fabrica',
+        'cuantas tools intervienen en el handoff --repo sample-service',
         '¿Dónde se define handoff?',
         '¿Cuántas tools hay declaradas?',
     ],
@@ -501,14 +501,14 @@ def test_code_rag_uses_central_model_and_budgets_for_the_original_count_question
     root, config = checkout
     pipeline_path = root / 'config.json'
     pipeline = json.loads(pipeline_path.read_text())
-    pipeline['repositories']['fabrica'] = {}
+    pipeline['repositories']['sample-service'] = {}
     pipeline['retrieval'] = {'limit': 22, 'mode': 'lexical'}
     pipeline['context'] = {'max_chunks': 7, 'max_chars': 20000, 'max_tokens': 6000}
     monkeypatch.setenv('CODETRACE_GENERATION_PROVIDER', 'ollama')
     monkeypatch.setenv('CODETRACE_GENERATION_MODEL', 'configured-model')
     pipeline_path.write_text(json.dumps(pipeline))
     content = 'def human_handoff():\n    return "handoff"\n' + '# tool detail\n' * 1000 + '# END'
-    (root / 'indexes/fabrica.chunks.json').write_text(
+    (root / 'indexes/sample-service.chunks.json').write_text(
         json.dumps(
             {
                 'chunks': [
@@ -523,14 +523,14 @@ def test_code_rag_uses_central_model_and_budgets_for_the_original_count_question
             }
         )
     )
-    (root / 'indexes/fabrica.relationships.json').write_text('{"evidence_graph": {}}')
+    (root / 'indexes/sample-service.relationships.json').write_text('{"evidence_graph": {}}')
 
     class Provider:
         provider = 'ollama'
 
         def generate(self, prompt, *, metadata=None):  # noqa: ARG002 - provider protocol
             assert 'cuantas tools intervienen en el handoff' in prompt
-            assert '--repo fabrica' not in prompt
+            assert '--repo sample-service' not in prompt
             assert content in prompt
             return GenerationResult(
                 'Una herramienta en la evidencia; total no exhaustivo.',
@@ -564,7 +564,7 @@ def test_code_rag_uses_central_model_and_budgets_for_the_original_count_question
     assert (
         launcher.main(
             [
-                'cuantas tools intervienen en el handoff --repo fabrica',
+                'cuantas tools intervienen en el handoff --repo sample-service',
                 '--config',
                 str(config),
                 '--report',

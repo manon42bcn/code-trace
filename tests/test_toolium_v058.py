@@ -1,5 +1,3 @@
-import pytest
-
 from codetrace.artifact_state import link_signature
 from codetrace.toolium_analysis import analyze_toolium
 
@@ -74,8 +72,7 @@ def test_auto_detection_and_disabled(tmp_path):
     assert not analyze_toolium(config, tmp_path / 'c.json', 'r', index, rel)['enabled']
 
 
-@pytest.mark.parametrize('package', ['toolium', 'toolium_telefonica'])
-def test_auto_detects_framework_import_without_configured_dependency(tmp_path, package):
+def test_auto_detects_framework_import_without_configured_dependency(tmp_path):
     _, config = _setup(tmp_path, mode='auto')
     index = {
         'chunks': [
@@ -85,7 +82,7 @@ def test_auto_detects_framework_import_without_configured_dependency(tmp_path, p
                 'language': 'python',
                 'start_line': 1,
                 'end_line': 1,
-                'content': f'from {package}.utils import dataset',
+                'content': 'from toolium.utils import dataset',
             }
         ]
     }

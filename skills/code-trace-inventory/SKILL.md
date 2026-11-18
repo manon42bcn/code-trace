@@ -14,7 +14,7 @@ Read `config.local.json` beside this file. If missing, copy `config.example.json
 ```json
 {
   "code_trace_root": "/absolute/path/to/code-trace",
-  "repo": "aicc-tests"
+  "repo": "demo"
 }
 ```
 
@@ -23,7 +23,7 @@ Resolve the checkout path and start the launcher using its existing virtual envi
 ```bash
 "/absolute/path/to/code-trace/.venv/bin/python" \
   "/absolute/path/to/code-trace-inventory/scripts/query.py" \
-  "En AICC tests, ¿dónde se utiliza dataset_id?"
+  "En demo, ¿dónde se implementa el inicio de sesión?"
 ```
 
 On Windows use `.venv/Scripts/python.exe`. Resolve the launcher relative to this skill's directory, regardless of the working directory. The child process uses the same CodeTrace interpreter. Do not use `uv run` from the consuming repository. If the environment is missing, report the requirement to run `make setup` in the CodeTrace checkout; the launcher does not install dependencies or rebuild indexes.
@@ -46,8 +46,8 @@ Use repeatable `--file PATH`, `--directory PATH` and `--source-type TYPE` to con
 
 ```bash
 "/absolute/path/to/code-trace/.venv/bin/python" \
-  "/absolute/path/to/code-trace-inventory/scripts/query.py" "En aicc-tests, dataset_id" \
-  --file acceptance/common/steps/agent_evaluator/api.py --source-type python
+  "/absolute/path/to/code-trace-inventory/scripts/query.py" "En demo, AuthService" \
+  --file auth.py --source-type python
 ```
 
 Use scopes requested by the user or justified by paths discovered in evidence. State the chosen scope when answering; do not silently narrow a repository-wide question to obtain a favorable result. `retrieval.source_scope` reports the normalized filters, indexed chunk count and eligible chunk count. Eligible chunks are not matches and do not establish exhaustiveness. Source scopes apply to lexical/structural/semantic retrieval and context expansion. Keep all filters unchanged when continuing with a cursor; changing the scope requires a new search. Empty scope/results do not prove repository-wide absence.

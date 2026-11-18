@@ -20,7 +20,7 @@ The installed `config.local.json` declares `code_trace_root` and `repo`. Relativ
 ```json
 {
   "code_trace_root": "/absolute/path/to/code-trace",
-  "repo": "aicc-tests"
+  "repo": "demo"
 }
 ```
 
@@ -28,7 +28,7 @@ From the CodeTrace checkout:
 
 ```bash
 .venv/bin/python skills/code-trace/scripts/query.py \
-  "Which tools participate in handoff?" --repo fabrica
+  "How does user authentication work?" --repo demo
 ```
 
 On Windows use `.venv/Scripts/python.exe`. The launcher's `--config PATH` selects a different connection file. Retrieval and context budgets come from the checkout's central configuration. Generation settings come from exported variables or the checkout's `.env`. Explicit `--limit`, `--max-chunks`, and `--max-chars` are forwarded. Use `--allow-remote` when explicitly authorizing a remote provider. Provider setup or request errors end the request.
@@ -37,7 +37,7 @@ On Windows use `.venv/Scripts/python.exe`. The launcher's `--config PATH` select
 
 A trailing unquoted `--repo NAME` or `--repo=NAME` can select a configured repository. Scope clauses such as `in REPOSITORY` are removed from the normalized question where recognized. Quoted identifiers and terms that are the subject of the question are preserved. Conflicting selectors return `conflicting_repository`; unknown repositories return `unknown_repository`. The original question remains in reports and the normalized version is in `routing.query`.
 
-The `identifier-v2` ranking favors identifiers and access signals, then uses term coverage to order natural-language candidates within those priorities. Semantic-only mode has its own ordering. The prompt asks the provider to answer in the question's language or an explicitly requested language and to state the evidence limits. The validation checks citations against available chunks and line ranges. Semantic support and exhaustive counts require separate evaluation. The [relevance evaluation](../../evaluations/relevance-validation.0.9.15.json) records the historical retrieval comparison.
+The `identifier-v2` ranking favors identifiers and access signals, then uses term coverage to order natural-language candidates within those priorities. Semantic-only mode has its own ordering. The prompt asks the provider to answer in the question's language or an explicitly requested language and to state the evidence limits. The validation checks citations against available chunks and line ranges. Semantic support and exhaustive counts require separate evaluation. Run `make evaluate-real CONFIG=config.example.json` after preparing the bundled demo repositories to check retrieval.
 
 ## Diagnose and update
 
