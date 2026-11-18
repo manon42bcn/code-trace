@@ -1,7 +1,10 @@
 PYTHON ?= .venv/bin/python
+# Run project commands against this checkout, including before package installation.
+export PYTHONPATH := $(abspath src)$(if $(PYTHONPATH),:$(PYTHONPATH))
 CONFIG ?= config.json
 FORMAT_PATHS ?= .
 LINT_PATHS ?= .
+EXTRAS ?=
 PROVIDER_ARGS ?=
 EVALUATION_ARGS ?=
 EVALUATION_PROFILE ?= lexical
@@ -18,7 +21,7 @@ REPO_ARGS = $(foreach repo,$(REPOS),--repo "$(repo)")
 setup: reinstall
 
 reinstall:
-	uv sync --no-editable --reinstall-package code-trace --extra parsers --group dev
+	uv sync --inexact --no-editable --reinstall-package code-trace --extra parsers $(foreach extra,$(EXTRAS),--extra "$(extra)") --group dev
 
 indexes:
 	@$(PYTHON) scripts/build_indexes.py --config "$(CONFIG)" $(REPO_ARGS)
