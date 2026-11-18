@@ -1,6 +1,16 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const token = document.querySelector('meta[name="chat-token"]').content;
+const english = document.documentElement.lang === 'en';
+const t = (es, en) => english ? en : es;
+if (english) {
+  document.querySelectorAll('[data-en]').forEach(el => { el.textContent = el.dataset.en; });
+  for (const attribute of ['aria-label', 'placeholder']) {
+    document.querySelectorAll(`[data-en-${attribute}]`).forEach(el => {
+      el.setAttribute(attribute, el.getAttribute(`data-en-${attribute}`));
+    });
+  }
+}
 let repositories = [];
 let pending = false;
 function node(tag, text, className) {
@@ -12,7 +22,7 @@ function node(tag, text, className) {
 async function api(path, options = {}) {
   const response = await fetch(path, {...options, headers: {'X-CodeRAG-Token': token, 'Content-Type': 'application/json'}, cache: 'no-store'});
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'No se pudo completar la consulta.');
+  if (!response.ok) throw new Error(data.error || t('No se pudo completar la consulta.', 'The request could not be completed.'));
   return data;
 }
 function describe() {
@@ -37,7 +47,7 @@ function showAnswer(result) {
   block.append(node('div', `${result.repository || $('repo').value} · ${answer.provider} · ${answer.model}`, 'metadata'));
   // Provider and repository text stays inert: no HTML/Markdown evaluation or remote resources.
   block.append(node('div', answer.answer, 'answer-text'));
-  if (answer.refusal) block.append(node('p', 'El modelo indica que no dispone de evidencia suficiente.', 'limitations'));
+  if (answer.refusal) block.append(node('p', t('El modelo indica que no dispone de evidencia suficiente.', 'The model reports insufficient evidence.'), 'limitations'));
   const items = result.context?.items || [];
   const cited = new Set((answer.citations || []).map(c => c.chunk_id));
   if (items.length) {
@@ -45,44 +55,44 @@ function showAnswer(result) {
     items.forEach((item, i) => {
       const c = item.citation || {};
       const body = node('div');
-      body.append(node('p', `${c.symbol || ''} · ${item.certainty || 'static_candidate'} · ${cited.has(c.chunk_id) ? 'Citada' : 'Solo contexto'}`, 'metadata'));
-      if (item.content_truncated) body.append(node('p', 'Fragmento truncado; las líneas corresponden al chunk completo.', 'limitations'));
+      body.append(node('p', `${c.symbol || ''} · ${item.certainty || 'static_candidate'} · ${cited.has(c.chunk_id) ? t('Citada', 'Cited') : t('Solo contexto', 'Context only')}`, 'metadata'));
+      if (item.content_truncated) body.append(node('p', t('Fragmento truncado; las líneas corresponden al chunk completo.', 'Excerpt truncated. Line numbers refer to the full chunk.'), 'limitations'));
       body.append(node('pre', item.content || ''));
       sources.append(details(`${i + 1}. ${c.path}:${c.start_line}–${c.end_line}`, body));
     });
-    block.append(details(`Evidencias (${items.length})`, sources));
+    block.append(details(`${t('Evidencias (', 'Evidence (')}${items.length})`, sources));
   }
   const flow = result.context?.code_flow;
   if (flow) {
     const body = node('div');
-    body.append(node('p', `Entradas candidatas: ${flow.matching_entry_candidates}. Se muestran solo relaciones entre evidencias incluidas.`, 'limitations'));
+    body.append(node('p', `${t('Entradas candidatas:', 'Candidate entry points:')} ${flow.matching_entry_candidates}. ${t('Se muestran solo relaciones entre evidencias incluidas.', 'Only relationships between included evidence items are shown.')}`, 'limitations'));
     const labels = new Map(items.map(item => [item.citation.chunk_id, `${item.citation.symbol || item.citation.path} (${item.citation.path}:${item.citation.start_line}–${item.citation.end_line})`]));
     const list = node('ul', undefined, 'limitations');
-    flow.entries.forEach(entry => list.append(node('li', `Entrada candidata: ${labels.get(entry.chunk_id)} · ${(entry.methods || []).join('/')} ${entry.route || ''}`)));
+    flow.entries.forEach(entry => list.append(node('li', `${t('Entrada candidata:', 'Candidate entry point:')} ${labels.get(entry.chunk_id)} · ${(entry.methods || []).join('/')} ${entry.route || ''}`)));
     flow.edges.forEach(edge => list.append(node('li', `${labels.get(edge.source)} → ${labels.get(edge.target)}`)));
     body.append(list);
-    if (flow.ambiguous_entry) body.append(node('p', 'Hay varias entradas candidatas. Concreta método/ruta o símbolo inicial.', 'limitations warning'));
-    body.append(node('p', 'Llamadas estáticas, no orden de ejecución. Middleware, dependencias y montaje del router no resueltos.', 'limitations'));
-    block.append(details('Flujo estático del código', body));
+    if (flow.ambiguous_entry) body.append(node('p', t('Hay varias entradas candidatas. Concreta método/ruta o símbolo inicial.', 'Several entry points matched. Specify a method and route or an initial symbol.'), 'limitations warning'));
+    body.append(node('p', t('Llamadas estáticas, no orden de ejecución. Middleware, dependencias y montaje del router no resueltos.', 'Calls are static. Execution order, middleware, dependencies, and router mounting are unresolved.'), 'limitations'));
+    block.append(details(t('Flujo estático del código', 'Static code flow'), body));
   }
   const limitations = [...new Set([...(answer.limitations || []), ...items.flatMap(i => i.limitations || [])])];
   if (limitations.length) {
     const list = node('ul', undefined, 'limitations');
     limitations.forEach(text => list.append(node('li', text)));
-    block.append(details('Limitaciones', list));
+    block.append(details(t('Limitaciones', 'Limitations'), list));
   }
   const state = result.index_state;
   if (state) {
     const git = state.git || {};
-    const update = state.needs_update === true ? 'Sí' : state.needs_update === false ? 'No' : 'Sin verificar';
-    const text = `Fuentes: ${state.source?.status || 'desconocido'}\nActualización necesaria: ${update}\nCommit indexado: ${git.indexed?.commit || 'desconocido'}\nCommit actual: ${git.current?.commit || 'desconocido'}\n${git.message || ''}${state.needs_update !== false && state.remedy ? '\n' + state.remedy : ''}`;
-    block.append(details(`Estado del índice · ${state.source?.status || 'desconocido'}`, node('div', text, 'index-state')));
-    if (state.needs_update === true) block.append(node('p', 'El código ha cambiado desde la indexación. Revisa el estado del índice.', 'limitations warning'));
+    const update = state.needs_update === true ? t('Sí', 'Yes') : state.needs_update === false ? 'No' : t('Sin verificar', 'Unverified');
+    const text = `${t('Fuentes:', 'Sources:')} ${state.source?.status || t('desconocido', 'unknown')}\n${t('Actualización necesaria:', 'Update needed:')} ${update}\n${t('Commit indexado:', 'Indexed commit:')} ${git.indexed?.commit || t('desconocido', 'unknown')}\n${t('Commit actual:', 'Current commit:')} ${git.current?.commit || t('desconocido', 'unknown')}\n${git.message || ''}${state.needs_update !== false && state.remedy ? '\n' + state.remedy : ''}`;
+    block.append(details(`${t('Estado del índice ·', 'Index status ·')} ${state.source?.status || t('desconocido', 'unknown')}`, node('div', text, 'index-state')));
+    if (state.needs_update === true) block.append(node('p', t('El código ha cambiado desde la indexación. Revisa el estado del índice.', 'The code has changed since indexing. Check the index status.'), 'limitations warning'));
   }
 }
 $('repo').addEventListener('change', describe);
 $('clear').addEventListener('click', () => {
-  $('messages').replaceChildren(node('p', 'Conversación vacía. Escribe una nueva pregunta.', 'limitations'));
+  $('messages').replaceChildren(node('p', t('Conversación vacía. Escribe una nueva pregunta.', 'Conversation cleared. Ask a new question.'), 'limitations'));
   $('question').focus();
 });
 $('form').addEventListener('submit', async event => {
@@ -91,24 +101,24 @@ $('form').addEventListener('submit', async event => {
   if (pending || !question || !$('repo').value) return;
   pending = true;
   ['send', 'repo', 'remote', 'clear'].forEach(id => $(id).disabled = true);
-  message(`Tú · ${$('repo').value}`, 'question').append(node('div', question, 'question-text'));
+  message(`${t('Tú ·', 'You ·')} ${$('repo').value}`, 'question').append(node('div', question, 'question-text'));
   $('question').value = '';
   const indicator = node('div', undefined, 'message pending-answer');
   indicator.setAttribute('aria-hidden', 'true');
   indicator.append(
-    node('span', 'Preparando la respuesta…'),
+    node('span', t('Preparando la respuesta…', 'Preparing your answer…')),
     node('div', undefined, 'pending-track')
   );
   $('messages').append(indicator);
-  $('status').textContent = 'CodeTrace está buscando evidencias y consultando el modelo…';
+  $('status').textContent = t('CodeTrace está buscando evidencias y consultando el modelo…', 'CodeTrace is retrieving evidence and querying the model…');
   scroll();
   try {
     showAnswer(await api('/api/answer', {method: 'POST', body: JSON.stringify({question, repo: $('repo').value, allow_remote: $('remote').checked})}));
-    $('status').textContent = 'Consulta completada';
+    $('status').textContent = t('Consulta completada', 'Request completed');
   } catch (error) {
-    message('No se pudo responder').append(node('div', error.message, 'error'));
+    message(t('No se pudo responder', 'Could not answer')).append(node('div', error.message, 'error'));
     $('question').value = question;
-    $('status').textContent = 'Puedes corregir la configuración y volver a intentarlo';
+    $('status').textContent = t('Puedes corregir la configuración y volver a intentarlo', 'Check the configuration and try again');
   } finally {
     indicator.remove();
     pending = false;
@@ -125,5 +135,5 @@ api('/api/repositories').then(data => {
   if (repositories.some(r => r.name === data.default_repository)) $('repo').value = data.default_repository;
   describe();
   $('repo').disabled = $('send').disabled = false;
-  $('status').textContent = 'Listo para consultar';
+  $('status').textContent = t('Listo para consultar', 'Ready for questions');
 }).catch(error => { $('status').textContent = error.message; });

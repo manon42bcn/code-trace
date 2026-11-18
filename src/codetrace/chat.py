@@ -3,6 +3,7 @@
 import argparse
 import hmac
 import json
+import os
 import secrets
 import subprocess
 import sys
@@ -12,8 +13,44 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from dotenv import dotenv_values
+
 WEB = Path(__file__).with_name('web')
 MAX_REQUEST_BYTES = 32768
+ENGLISH_ERRORS = {
+    'Se esperaba un objeto JSON': 'Expected a JSON object',
+    'La pregunta debe tener entre 1 y 12000 caracteres': (
+        'The question must be between 1 and 12000 characters'
+    ),
+    'Selecciona un repositorio configurado': 'Select a configured repository',
+    'allow_remote debe ser booleano': 'allow_remote must be a boolean',
+    'Hay una consulta en curso. Espera a que termine.': 'A request is already running.',
+    'Se agotó el tiempo de la consulta. Puedes volver a intentarlo.': (
+        'The request timed out. You can try again.'
+    ),
+    (
+        'CodeTrace no devolvió JSON válido. Revisa el proveedor y los índices con codetrace doctor.'
+    ): ('CodeTrace returned invalid JSON. Check the provider and indices with codetrace doctor.'),
+    'Respuesta de CodeTrace no válida': 'Invalid response from CodeTrace',
+    'No se pudo completar la consulta': 'The request could not be completed',
+    'Configura un proveedor de generación disponible en config.json.': (
+        'Configure an available generation provider in config.json.'
+    ),
+    'Host no permitido': 'Host not allowed',
+    'Origen no permitido': 'Origin not allowed',
+    'Sesión no válida; recarga el chat': 'Invalid session. Reload the chat.',
+    'Recurso no encontrado': 'Resource not found',
+    'No se pudo leer la configuración o la interfaz local.': (
+        'Could not read the configuration or local interface.'
+    ),
+    'Se requiere application/json': 'Expected application/json',
+    'Tamaño no válido': 'Invalid request size',
+    'Petición vacía o demasiado grande': 'Empty or oversized request',
+    'JSON no válido': 'Invalid JSON',
+    'No se pudo ejecutar CodeTrace. Revisa la configuración local.': (
+        'Could not run CodeTrace. Check the local configuration.'
+    ),
+}
 
 
 class ChatError(Exception):
@@ -25,6 +62,10 @@ class ChatError(Exception):
 class ChatApplication:
     def __init__(self, config, *, timeout=600):
         self.config = Path(config).resolve()
+        dotenv = dotenv_values('.env', interpolate=False) if Path('.env').is_file() else {}
+        self.language = (os.getenv('CHAT_LANG', dotenv.get('CHAT_LANG')) or 'es').strip().lower()
+        if self.language not in {'es', 'en'}:
+            raise ValueError('CHAT_LANG must be es or en')
         self.timeout = timeout
         self.token = secrets.token_urlsafe(32)
         self.busy = threading.Lock()
@@ -145,6 +186,11 @@ class ChatHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def send_error_message(self, status, message):
+        if self.server.application.language == 'en':
+            message = ENGLISH_ERRORS.get(message, message)
+        self.send(status, {'error': message})
+
     def trusted(self, *, api=False):
         expected = urlsplit(self.server.origin).netloc
         if self.headers.get('Host') != expected:
@@ -174,12 +220,14 @@ class ChatHandler(BaseHTTPRequestHandler):
             name, content_type = files[self.path]
             body = (WEB / name).read_bytes()
             if name == 'index.html':
-                body = body.replace(b'__CHAT_TOKEN__', self.server.application.token.encode())
+                application = self.server.application
+                body = body.replace(b'__CHAT_TOKEN__', application.token.encode())
+                body = body.replace(b'__CHAT_LANG__', application.language.encode())
             self.send(200, body, content_type + '; charset=utf-8')
         except ChatError as exc:
-            self.send(exc.status, {'error': str(exc)})
+            self.send_error_message(exc.status, str(exc))
         except (OSError, ValueError, TypeError, AttributeError):
-            self.send(500, {'error': 'No se pudo leer la configuración o la interfaz local.'})
+            self.send_error_message(500, 'No se pudo leer la configuración o la interfaz local.')
 
     def do_POST(self):
         try:
@@ -200,10 +248,10 @@ class ChatHandler(BaseHTTPRequestHandler):
                 raise ChatError('JSON no válido') from exc
             self.send(200, self.server.application.answer(request))
         except ChatError as exc:
-            self.send(exc.status, {'error': str(exc)})
+            self.send_error_message(exc.status, str(exc))
         except (OSError, ValueError, TypeError, AttributeError):
-            self.send(
-                500, {'error': 'No se pudo ejecutar CodeTrace. Revisa la configuración local.'}
+            self.send_error_message(
+                500, 'No se pudo ejecutar CodeTrace. Revisa la configuración local.'
             )
 
 

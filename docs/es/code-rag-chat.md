@@ -24,6 +24,8 @@ make chat
 
 En un entorno ya preparado, basta con `make chat`. No requiere Docker, Node ni dependencias web adicionales. Abre `http://127.0.0.1:8765` en el navegador. Detener con `Ctrl+C` en la terminal.
 
+Para abrir la interfaz en inglés, añade `CHAT_LANG=en` a `.env` y reinicia el chat. El valor predeterminado es `es`. La opción solo controla los textos de la interfaz.
+
 Para cambiar puerto, configuración o evitar la apertura automática:
 
 ```bash

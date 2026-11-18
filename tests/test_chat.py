@@ -95,6 +95,32 @@ def test_http_delegates_answer_verbatim_with_current_python_and_no_shell(server,
     assert calls[1][0][-3:] == ['--allow-remote', '--', 'hola']
 
 
+@pytest.mark.parametrize(
+    ('setting', 'language', 'not_found'),
+    [(None, 'es', 'Recurso no encontrado'), ('en', 'en', 'Resource not found')],
+)
+def test_chat_language_from_dotenv(
+    application, tmp_path, monkeypatch, setting, language, not_found
+):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv('CHAT_LANG', raising=False)
+    if setting is not None:
+        (tmp_path / '.env').write_text(f'CHAT_LANG={setting}\n', encoding='utf-8')
+    with chat.ChatServer(('127.0.0.1', 0), chat.ChatApplication(application.config)) as server:
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            status, _, body = request(server, 'GET', '/')
+            assert status == 200
+            assert f'<html lang="{language}">'.encode() in body
+            status, _, body = request(server, 'GET', '/missing')
+            assert status == 404
+            assert json.loads(body)['error'] == not_found
+        finally:
+            server.shutdown()
+            thread.join(timeout=3)
+
+
 def test_static_ui_and_repository_list_do_not_expose_configuration(server):
     status, headers, body = request(server, 'GET', '/')
     assert status == 200
