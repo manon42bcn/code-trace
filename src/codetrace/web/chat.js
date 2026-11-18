@@ -93,6 +93,13 @@ $('form').addEventListener('submit', async event => {
   ['send', 'repo', 'remote', 'clear'].forEach(id => $(id).disabled = true);
   message(`Tú · ${$('repo').value}`, 'question').append(node('div', question, 'question-text'));
   $('question').value = '';
+  const indicator = node('div', undefined, 'message pending-answer');
+  indicator.setAttribute('aria-hidden', 'true');
+  indicator.append(
+    node('span', 'Preparando la respuesta…'),
+    node('div', undefined, 'pending-track')
+  );
+  $('messages').append(indicator);
   $('status').textContent = 'CodeTrace está buscando evidencias y consultando el modelo…';
   scroll();
   try {
@@ -103,6 +110,7 @@ $('form').addEventListener('submit', async event => {
     $('question').value = question;
     $('status').textContent = 'Puedes corregir la configuración y volver a intentarlo';
   } finally {
+    indicator.remove();
     pending = false;
     ['send', 'repo', 'remote', 'clear'].forEach(id => $(id).disabled = false);
     scroll();
