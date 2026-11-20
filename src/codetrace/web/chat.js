@@ -22,7 +22,11 @@ function node(tag, text, className) {
 async function api(path, options = {}) {
   const response = await fetch(path, {...options, headers: {'X-CodeRAG-Token': token, 'Content-Type': 'application/json'}, cache: 'no-store'});
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || t('No se pudo completar la consulta.', 'The request could not be completed.'));
+  if (!response.ok) {
+    const error = new Error(data.error || t('No se pudo completar la consulta.', 'The request could not be completed.'));
+    error.candidates = data.candidates;
+    throw error;
+  }
   return data;
 }
 function describe() {
@@ -112,19 +116,32 @@ $('form').addEventListener('submit', async event => {
   $('messages').append(indicator);
   $('status').textContent = t('CodeTrace está buscando evidencias y consultando el modelo…', 'CodeTrace is retrieving evidence and querying the model…');
   scroll();
+  let focus = 'question';
   try {
     showAnswer(await api('/api/answer', {method: 'POST', body: JSON.stringify({question, repo: $('repo').value, allow_remote: $('remote').checked})}));
     $('status').textContent = t('Consulta completada', 'Request completed');
   } catch (error) {
-    message(t('No se pudo responder', 'Could not answer')).append(node('div', error.message, 'error'));
     $('question').value = question;
-    $('status').textContent = t('Puedes corregir la configuración y volver a intentarlo', 'Check the configuration and try again');
+    if (Array.isArray(error.candidates) && error.candidates.length > 1) {
+      const block = message('CodeTrace');
+      const list = node('ul', undefined, 'limitations');
+      error.candidates.forEach(name => {
+        const description = repositories.find(repo => repo.name === name)?.description;
+        list.append(node('li', description ? `${name} · ${description}` : name));
+      });
+      block.append(node('p', error.message), list);
+      $('status').textContent = t('Selecciona un repositorio para volver a enviar la pregunta', 'Select a repository to submit the question again');
+      focus = 'repo';
+    } else {
+      message(t('No se pudo responder', 'Could not answer')).append(node('div', error.message, 'error'));
+      $('status').textContent = t('Puedes corregir la configuración y volver a intentarlo', 'Check the configuration and try again');
+    }
   } finally {
     indicator.remove();
     pending = false;
     ['send', 'repo', 'remote', 'clear'].forEach(id => $(id).disabled = false);
     scroll();
-    $('question').focus();
+    $(focus).focus();
   }
 });
 api('/api/repositories').then(data => {

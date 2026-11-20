@@ -382,3 +382,88 @@ def test_chat_and_cli_share_request_metrics(configured, monkeypatch, capsys):
     assert all('generation_seconds' in event['timings'] for event in events)
     assert 'order_id' not in payload
     assert 'Respuesta' not in payload
+
+
+def test_chat_keeps_selected_repository_when_question_mentions_another(
+    configured, monkeypatch, capsys
+):
+    from types import SimpleNamespace
+
+    from codetrace import chat
+
+    config = json.loads(configured.read_text(encoding='utf-8'))
+    config['repositories']['agent-factory'] = {'aliases': ['Fábrica de Agentes']}
+    configured.write_text(json.dumps(config), encoding='utf-8')
+    question = '¿Dónde están los steps de Fábrica de Agentes?'
+
+    class Provider:
+        provider = 'ollama'
+        model = 'test'
+
+        def generate(self, prompt, **_kwargs):
+            assert question in prompt
+            return GenerationResult(ANSWER, self.provider, self.model)
+
+    def run(command, **_kwargs):
+        code = cli.main(command[3:])
+        return SimpleNamespace(returncode=code, stdout=capsys.readouterr().out)
+
+    monkeypatch.setattr(generation_factory, 'build_generation_provider', lambda _: Provider())
+    monkeypatch.setattr(chat.subprocess, 'run', run)
+
+    output = chat.ChatApplication(configured).answer({'question': question, 'repo': 'demo'})
+
+    assert output['repository'] == 'demo'
+    assert output['answer']['answer'] == ANSWER
+
+
+def test_chat_conflict_lists_candidates_and_allows_resubmission(configured, monkeypatch, capsys):
+    from types import SimpleNamespace
+
+    from codetrace import chat
+
+    config = json.loads(configured.read_text(encoding='utf-8'))
+    config['repositories']['other-repo'] = {}
+    configured.write_text(json.dumps(config), encoding='utf-8')
+    for suffix in ('chunks', 'relationships'):
+        indexes = configured.parent / 'indexes'
+        (indexes / f'other-repo.{suffix}.json').write_bytes(
+            (indexes / f'demo.{suffix}.json').read_bytes()
+        )
+
+    calls = []
+
+    class Provider:
+        provider = 'ollama'
+        model = 'test'
+
+        def generate(self, prompt, **_kwargs):
+            calls.append(prompt)
+            return GenerationResult(ANSWER, self.provider, self.model)
+
+    def run(command, **_kwargs):
+        try:
+            code = cli.main(command[3:])
+        except SystemExit as exc:
+            code = exc.code
+        return SimpleNamespace(returncode=code, stdout=capsys.readouterr().out)
+
+    monkeypatch.setattr(generation_factory, 'build_generation_provider', lambda _: Provider())
+    monkeypatch.setattr(chat.subprocess, 'run', run)
+
+    application = chat.ChatApplication(configured)
+    question = 'En other-repo, ¿dónde se usa order_id?'
+    with pytest.raises(chat.ChatError, match='Selecciona uno') as caught:
+        application.answer({'question': question, 'repo': 'demo'})
+
+    conflict = caught.value
+    assert conflict.status == 409
+    assert conflict.details == {
+        'code': 'conflicting_repository',
+        'candidates': ['demo', 'other-repo'],
+    }
+    assert not calls
+
+    output = application.answer({'question': question, 'repo': 'other-repo'})
+    assert output['repository'] == 'other-repo'
+    assert len(calls) == 1
