@@ -467,3 +467,59 @@ def test_chat_conflict_lists_candidates_and_allows_resubmission(configured, monk
     output = application.answer({'question': question, 'repo': 'other-repo'})
     assert output['repository'] == 'other-repo'
     assert len(calls) == 1
+
+
+def test_conversation_from_chat_continues_in_agent_query(configured, monkeypatch, capsys):
+    from types import SimpleNamespace
+
+    from codetrace import chat, rag_pipeline
+
+    prompts = []
+    searches = []
+
+    class Provider:
+        provider = 'ollama'
+        model = 'test'
+
+        def generate(self, prompt, **_kwargs):
+            prompts.append(prompt)
+            return GenerationResult('El step usa `order_id`.', self.provider, self.model)
+
+    def run(command, **_kwargs):
+        code = cli.main(command[3:])
+        return SimpleNamespace(returncode=code, stdout=capsys.readouterr().out)
+
+    original = rag_pipeline.retrieve_scoped
+
+    def retrieve(index, graph, query, **kwargs):
+        searches.append(query)
+        return original(index, graph, query, **kwargs)
+
+    monkeypatch.setattr(generation_factory, 'build_generation_provider', lambda _: Provider())
+    monkeypatch.setattr('codetrace.agent_query.build_generation_provider', lambda _: Provider())
+    monkeypatch.setattr(chat.subprocess, 'run', run)
+    monkeypatch.setattr(rag_pipeline, 'retrieve_scoped', retrieve)
+
+    first = chat.ChatApplication(configured).answer(
+        {'question': '¿Qué step usa order_id?', 'repo': 'demo', 'session': 'new'}
+    )
+    session = first['session']
+    question = '¿Dónde se implementa ese step?'
+    argv = ['--config', str(configured), '--repo', 'demo']
+    cli.main(
+        ['query', '--mode', 'answer', '--readiness', 'off', *argv, '--session', session, question]
+    )
+    follow_up = json.loads(capsys.readouterr().out)
+
+    assert follow_up['session'] == session
+    assert 'Prior turns' in prompts[1]
+    assert 'El step usa `order_id`.' in prompts[1]
+    assert f'Question:\n{question}\n\nEvidence:' in prompts[1]
+    assert 'order_id = 1' in prompts[1]
+    assert 'order_id' in searches[1]
+
+    cli.main(['answer', *argv, question])
+    independent = json.loads(capsys.readouterr().out)
+    assert 'session' not in independent
+    assert 'Prior turns' not in prompts[2]
+    assert searches[2] == question

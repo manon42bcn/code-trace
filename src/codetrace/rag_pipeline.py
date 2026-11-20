@@ -6,6 +6,7 @@ from contextlib import nullcontext
 
 from .answering import answer_query
 from .context_api import build_context
+from .conversation import retrieval_question
 from .grounded_prompt import build_grounded_prompt
 from .latency import timed
 from .request_metrics import request_metrics
@@ -29,6 +30,7 @@ def answer(
     search_filters=None,
     timings=None,
     metrics_source='rag_pipeline',
+    history=None,
 ):
     """Retrieve, build grounded context, and optionally generate an answer."""
     measurement = (
@@ -49,13 +51,14 @@ def answer(
             if search_filters and search_filters.active
             else None
         )
+        search_query = retrieval_question(query, history)
         results = retrieval_results
         if results is None:
             with timed(timings, 'retrieval_seconds'):
                 results = retrieve_scoped(
                     index,
                     graph,
-                    query,
+                    search_query,
                     config=retrieval_config,
                     semantic_store=semantic_store,
                     provider=embedding_provider,
@@ -87,6 +90,11 @@ def answer(
                 'generated': False,
             }
         result = answer_query(
-            query, context, generation_provider, allow_remote=allow_remote, timings=timings
+            query,
+            context,
+            generation_provider,
+            allow_remote=allow_remote,
+            timings=timings,
+            history=history,
         )
         return {'answer': result, 'context': context, 'generated': True}

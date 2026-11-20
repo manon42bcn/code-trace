@@ -3,8 +3,25 @@
 from __future__ import annotations
 
 import os
+from ipaddress import ip_address
+from urllib.parse import urlsplit
 
 SENSITIVE_NAMES = {'.env', '.env.local', 'id_rsa', 'credentials.json'}
+
+
+def is_local_generation_provider(provider) -> bool:
+    name = getattr(provider, 'provider', None)
+    if name == 'mlx':
+        return True
+    if name != 'ollama':
+        return False
+    host = urlsplit(getattr(provider, 'base_url', 'http://localhost')).hostname
+    if host == 'localhost':
+        return True
+    try:
+        return ip_address(host).is_loopback
+    except ValueError:
+        return False
 
 
 def validate_generation_context(context: dict, *, allow_remote: bool = False) -> None:

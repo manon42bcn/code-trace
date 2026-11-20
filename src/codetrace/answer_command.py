@@ -6,6 +6,7 @@ import sys
 from contextlib import redirect_stdout
 from pathlib import Path
 
+from .conversation import Conversation
 from .repository_paths import repository_index_path, repository_relationships_path
 from .request_metrics import CHAT_REQUEST_ENV
 
@@ -42,6 +43,8 @@ def run_answer(args):
                     args.config, routing['repository']
                 )
                 query = routing['query']
+            if args.resolve_only and args.session is not None:
+                raise ValueError('--session requires a generated answer')
             if args.resolve_only:
                 if routing is None or args.report:
                     raise ValueError('--resolve-only requires routing and cannot save a report')
@@ -99,6 +102,13 @@ def run_answer(args):
             if args.output_format in {'text', 'markdown'} and generation.provider == 'none':
                 raise ValueError('Text output requires a configured generation provider')
             provider = build_generation_provider(generation)
+            conversation = None
+            if args.session is not None:
+                if provider is None:
+                    raise ValueError('--session requires a configured generation provider')
+                conversation = Conversation.open(
+                    args.session, args.config, args.index, args.relationships
+                )
             started = time.perf_counter()
             result = answer(
                 query,
@@ -110,6 +120,7 @@ def run_answer(args):
                 generation_provider=provider,
                 context_limits=context_limits,
                 allow_remote=args.allow_remote,
+                history=conversation.history() if conversation else None,
                 metrics_source='chat' if os.getenv(CHAT_REQUEST_ENV) == '1' else 'answer',
             )
             from .generation import GenerationResult
@@ -164,9 +175,15 @@ def run_answer(args):
 
                     output['answer'] = generation_result_dict(generated_answer)
                 output['latency_seconds'] = elapsed
+                if conversation:
+                    output['session'] = conversation.identifier
                 if routing is not None:
                     output.update(repository=routing['repository'], routing=routing)
                 rendered = json.dumps(output, ensure_ascii=False, indent=2) + '\n'
+            if conversation:
+                conversation.remember(query, generated_answer.answer)
+                if args.session == 'new' and args.output_format != 'json':
+                    sys.stderr.write(f'Conversation session: {conversation.identifier}\n')
         sys.stdout.write(rendered)
     except (ValueError, OSError, KeyError, json.JSONDecodeError) as exc:
         print(  # noqa: T201 - CLI output
