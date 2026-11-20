@@ -41,7 +41,7 @@ El puerto `0` elige uno libre y muestra la dirección en la terminal. `--timeout
 2. Escribir una pregunta y pulsar **Consultar**.
 3. Leer la respuesta y desplegar **Evidencias**, **Limitaciones** o **Estado del índice**.
 
-El selector equivale a `--repo`: establece explícitamente el repositorio. No es necesario escribir el argumento dentro de la pregunta. Los límites de recuperación y contexto, la selección del modelo y las comprobaciones del índice se heredan de `codetrace answer`; el chat no amplía la cobertura ni garantiza recuentos exhaustivos.
+El selector equivale a `--repo`: establece explícitamente el repositorio. No es necesario escribir el argumento dentro de la pregunta. Una mención a otro repositorio como parte de la pregunta se conserva como texto de búsqueda. Si ambos repositorios comparten un alias, la selección del chat lo resuelve. Un alcance explícito hacia otro repositorio, como «En otro-repo, …», genera una aclaración con los repositorios candidatos. El chat conserva la pregunta para que puedas elegir un repositorio compatible con el alcance escrito y volver a enviarla. Los límites de recuperación y contexto, la selección del modelo y las comprobaciones del índice se heredan de `codetrace answer`; el chat no amplía la cobertura ni garantiza recuentos exhaustivos.
 
 La respuesta se muestra como texto conservando sus saltos de línea, sin ejecutar HTML ni interpretar Markdown. Las evidencias conservan el contenido recuperado, archivo, líneas, certeza y distinción entre fuente citada y contexto. Se señala cuando un fragmento está truncado. Si las fuentes han cambiado, el estado muestra la necesidad de actualización y la orden incremental sugerida; no reconstruye índices automáticamente.
 

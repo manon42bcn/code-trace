@@ -39,6 +39,9 @@ ENGLISH_ERRORS = {
         'Configure an available generation provider in config.json.'
     ),
     'Host no permitido': 'Host not allowed',
+    'La pregunta coincide con varios repositorios. Selecciona uno y vuelve a enviarla.': (
+        'The question matches several repositories. Select one and submit it again.'
+    ),
     'Origen no permitido': 'Origin not allowed',
     'Sesión no válida; recarga el chat': 'Invalid session. Reload the chat.',
     'Recurso no encontrado': 'Resource not found',
@@ -56,9 +59,10 @@ ENGLISH_ERRORS = {
 
 
 class ChatError(Exception):
-    def __init__(self, message, status=400):
+    def __init__(self, message, status=400, **details):
         super().__init__(message)
         self.status = status
+        self.details = details
 
 
 class ChatApplication:
@@ -142,6 +146,21 @@ class ChatApplication:
                 raise ChatError('Respuesta de CodeTrace no válida', 502)
             if result.returncode or output.get('error'):
                 error = output.get('error') or {}
+                code = error.get('code')
+                if code in ('ambiguous_repository', 'conflicting_repository'):
+                    candidates = error.get('candidates', [])
+                    if isinstance(candidates, list):
+                        candidates = sorted(
+                            {name for name in candidates if isinstance(name, str) and name in names}
+                        )
+                        if len(candidates) > 1:
+                            raise ChatError(
+                                'La pregunta coincide con varios repositorios. '
+                                'Selecciona uno y vuelve a enviarla.',
+                                409,
+                                code=code,
+                                candidates=candidates,
+                            )
                 message = error.get('message', 'No se pudo completar la consulta')
                 raise ChatError(str(message), 502)
             if not output.get('generated') or not isinstance(output.get('answer'), dict):
@@ -189,10 +208,10 @@ class ChatHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def send_error_message(self, status, message):
+    def send_error_message(self, status, message, **details):
         if self.server.application.language == 'en':
             message = ENGLISH_ERRORS.get(message, message)
-        self.send(status, {'error': message})
+        self.send(status, {'error': message, **details})
 
     def trusted(self, *, api=False):
         expected = urlsplit(self.server.origin).netloc
@@ -228,7 +247,7 @@ class ChatHandler(BaseHTTPRequestHandler):
                 body = body.replace(b'__CHAT_LANG__', application.language.encode())
             self.send(200, body, content_type + '; charset=utf-8')
         except ChatError as exc:
-            self.send_error_message(exc.status, str(exc))
+            self.send_error_message(exc.status, str(exc), **exc.details)
         except (OSError, ValueError, TypeError, AttributeError):
             self.send_error_message(500, 'No se pudo leer la configuración o la interfaz local.')
 
@@ -251,7 +270,7 @@ class ChatHandler(BaseHTTPRequestHandler):
                 raise ChatError('JSON no válido') from exc
             self.send(200, self.server.application.answer(request))
         except ChatError as exc:
-            self.send_error_message(exc.status, str(exc))
+            self.send_error_message(exc.status, str(exc), **exc.details)
         except (OSError, ValueError, TypeError, AttributeError):
             self.send_error_message(
                 500, 'No se pudo ejecutar CodeTrace. Revisa la configuración local.'

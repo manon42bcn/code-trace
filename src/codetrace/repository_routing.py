@@ -63,26 +63,27 @@ def extract_repo_selector(query):
     return query, selected
 
 
+def repository_scope_span(query, match, positions):
+    start, end, name, reason, label = match
+    left, right = positions[start].start(), positions[end - 1].end()
+    if protected(query, left):
+        return None
+    prefix = tokens(query[:left])
+    if prefix and prefix[0] in {'en', 'in', 'sobre'} and all(p in STOPWORDS for p in prefix):
+        return 0, right
+    scope = SCOPE_BEFORE.search(query[:left])
+    if scope and (
+        reason == 'name'
+        or tokens(label) == tokens(name)
+        or re.search(r'\b(?:repo|repositorio|repository|proyecto|project)\b', scope[0], re.I)
+    ):
+        return scope.start(), right
+    return None
+
+
 def remove_repository_scope(query, matches, positions):
     """Remove explicit en/in/sobre selectors; preserve identifiers used as subject matter."""
-    spans = []
-    for start, end, name, reason, label in matches:
-        left, right = positions[start].start(), positions[end - 1].end()
-        if protected(query, left):
-            continue
-        prefix = tokens(query[:left])
-        if prefix and prefix[0] in {'en', 'in', 'sobre'} and all(p in STOPWORDS for p in prefix):
-            spans.append((0, right))
-        else:
-            scope = SCOPE_BEFORE.search(query[:left])
-            if scope and (
-                reason == 'name'
-                or tokens(label) == tokens(name)
-                or re.search(
-                    r'\b(?:repo|repositorio|repository|proyecto|project)\b', scope[0], re.I
-                )
-            ):
-                spans.append((scope.start(), right))
+    spans = [span for match in matches if (span := repository_scope_span(query, match, positions))]
     for left, right in sorted(set(spans), reverse=True):
         query = query[:left] + query[right:]
     return query.strip(' ,:\uff1a\n')
@@ -146,13 +147,37 @@ def select_repository(query, repositories, default, *, repo=None):
             for other in matches
         )
     ]
-    candidates = {match[2] for match in matches}
-    if explicit is not None and candidates - {explicit}:
-        raise RepositoryRoutingError(
-            'conflicting_repository',
-            'Question and --repo name different repositories.',
-            candidates | {explicit},
+    if explicit is not None:
+        selected_matches = [match for match in matches if match[2] == explicit]
+        selected_ranges = {match[:2] for match in selected_matches}
+        conflicts = {
+            match[2]
+            for match in matches
+            if match[2] != explicit
+            and match[:2] not in selected_ranges
+            and repository_scope_span(query, match, positions) is not None
+        }
+        if conflicts:
+            raise RepositoryRoutingError(
+                'conflicting_repository',
+                'Question and --repo name different repositories.',
+                conflicts | {explicit},
+            )
+        routed_query = (
+            remove_repository_scope(query, selected_matches, positions)
+            if selected_matches
+            else query
         )
+        if not routed_query.strip('¿? .,:'):
+            raise ValueError('A repository selector requires a nonempty question')
+        return {
+            'repository': explicit,
+            'reason': 'explicit',
+            'matched': explicit,
+            'query': routed_query,
+        }
+
+    candidates = {match[2] for match in matches}
     if len(candidates) > 1:
         raise RepositoryRoutingError(
             'ambiguous_repository',
@@ -167,12 +192,10 @@ def select_repository(query, repositories, default, *, repo=None):
             raise ValueError('A repository selector requires a nonempty question')
         return {
             'repository': name,
-            'reason': 'explicit' if explicit is not None else reason,
-            'matched': explicit if explicit is not None else label,
+            'reason': reason,
+            'matched': label,
             'query': routed_query,
         }
-    if explicit is not None:
-        return {'repository': explicit, 'reason': 'explicit', 'matched': explicit, 'query': query}
     scoped = PREFIX.match(query)
     if scoped:
         selector = set(tokens(scoped['selector'])) - STOPWORDS

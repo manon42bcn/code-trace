@@ -165,3 +165,31 @@ def test_domain_alias_is_not_erased_from_the_actual_question(catalog):
     )
     assert 'Acceso' not in scoped['query']
     assert scoped['repository'] == 'portico'
+
+
+@pytest.mark.parametrize(
+    ('query', 'expected'),
+    [
+        (
+            '¿Dónde están los steps de Fábrica de Agentes?',
+            '¿Dónde están los steps de Fábrica de Agentes?',
+        ),
+        ('En Fábrica de Agentes, ¿dónde están los steps?', '¿dónde están los steps?'),
+    ],
+)
+def test_selected_repository_resolves_shared_alias(catalog, query, expected):
+    catalog['aicc-tests'] = {'aliases': ['Fábrica de Agentes']}
+    catalog['agent-factory'] = {'aliases': ['Fábrica de Agentes']}
+
+    routed = select_repository(query, catalog, 'home', repo='aicc-tests')
+
+    assert routed['repository'] == 'aicc-tests'
+    assert routed['reason'] == 'explicit'
+    assert routed['query'] == expected
+
+
+def test_selected_repository_preserves_other_repository_name_used_as_subject(catalog):
+    question = '¿Qué steps llaman a toolium?'
+    routed = select_repository(question, catalog, 'home', repo='sample-tests')
+    assert routed['repository'] == 'sample-tests'
+    assert routed['query'] == question
