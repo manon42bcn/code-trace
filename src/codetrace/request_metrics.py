@@ -19,7 +19,7 @@ _logger = logging.getLogger(__name__)
 
 
 @contextmanager
-def request_metrics(source, provider, model, timings=None):
+def request_metrics(source, provider, model, timings=None, *, details=None):
     """Measure one request, allowing nested stages to share its measurements."""
     if _active.get():
         yield timings
@@ -47,6 +47,7 @@ def request_metrics(source, provider, model, timings=None):
                 'status': status,
                 'error_type': error_type,
                 'timings': measurements,
+                **(details or {}),
             }
         )
 

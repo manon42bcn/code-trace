@@ -3,9 +3,14 @@
 from __future__ import annotations
 
 
+def chunk_lookup(index):
+    chunks = index.get('chunks', [])
+    return chunks if hasattr(chunks, 'get') else {chunk['id']: chunk for chunk in chunks}
+
+
 def build_evidence_package(index, graph, chunk_id, *, related_limit=10, max_chars=12000):
     """Assemble one chunk with static relations and explicit uncertainty."""
-    chunks = {chunk['id']: chunk for chunk in index.get('chunks', [])}
+    chunks = chunk_lookup(index)
     chunk = chunks.get(chunk_id)
     if chunk is None:
         raise KeyError(f'unknown chunk: {chunk_id}')

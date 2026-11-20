@@ -5,29 +5,60 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="chat-token" content="__CHAT_TOKEN__">
   <title data-en="CodeTrace · Local chat">CodeTrace · Chat local</title>
+  <link rel="icon" type="image/svg+xml" href="/codetrace-dark-logo.svg">
   <link rel="stylesheet" href="/chat.css">
   <script src="/chat.js" defer></script>
 </head>
 <body>
-  <header><div><img class="brand-logo" src="/codetrace-logo-light.svg" alt="CodeTrace — Understand the code. Follow the evidence." width="850" height="240"><h1 data-en="Chat with your code.">Conversa con tu código.</h1><p data-en="Answers from your configured model, with evidence from the repository.">Respuestas del modelo configurado, con evidencias del repositorio.</p></div><span class="badge">127.0.0.1</span></header>
   <main>
-    <section class="settings" aria-label="Configuración de la consulta" data-en-aria-label="Query settings">
-      <label for="repo"><span data-en="Repository">Repositorio</span><select id="repo" disabled><option data-en="Loading…">Cargando…</option></select></label>
-      <p id="description"></p>
-      <label class="remote"><input id="remote" type="checkbox"> <span data-en="Allow sending context to the configured remote provider">Permitir enviar contexto al proveedor remoto configurado</span></label>
-      <button id="clear" class="secondary" type="button" data-en="New conversation">Nueva conversación</button>
-    </section>
+    <aside class="sidebar">
+      <header>
+        <div class="brand">
+          <img class="brand-icon" src="/codetrace-dark-logo.svg" alt="" width="56" height="56">
+          <span>Code<span class="brand-accent">Trace</span></span>
+        </div>
+        <h1 data-en="Chat with your code.">Conversa con tu código.</h1>
+        <p data-en="Answers from your configured model, with evidence from the repository.">Respuestas del modelo configurado, con evidencias del repositorio.</p>
+      </header>
+      <section class="settings" aria-label="Configuración de la consulta" data-en-aria-label="Query settings">
+        <label for="repo"><span data-en="Repository">Repositorio</span><select id="repo" disabled><option data-en="Loading…">Cargando…</option></select></label>
+        <p id="description"></p>
+        <section class="runtime-info" aria-labelledby="runtime-title">
+          <h2 id="runtime-title" data-en="Connection details">Datos de la conexión</h2>
+          <dl>
+            <dt data-en="Chat IP">IP del chat</dt><dd id="runtime-ip">—</dd>
+            <dt data-en="Adapter">Adaptador</dt><dd id="runtime-provider">—</dd>
+            <dt data-en="Model">Modelo</dt><dd id="runtime-model">—</dd>
+            <dt data-en="Index">Índice</dt><dd id="runtime-index">—</dd>
+          </dl>
+        </section>
+        <label class="remote"><input id="remote" type="checkbox" checked> <span data-en="Allow sending context to the configured remote provider">Permitir enviar contexto al proveedor remoto configurado</span></label>
+        <label class="theme-toggle">
+          <input id="dark-mode" type="checkbox" role="switch">
+          <span data-en="Dark mode">Modo oscuro</span>
+        </label>
+        <button id="clear" class="secondary" type="button" data-en="New conversation">Nueva conversación</button>
+        <details class="conversation-session">
+          <summary data-en="Conversation ID">ID de conversación</summary>
+          <label for="session" data-en="Copy the ID or paste one to continue a conversation">Copia el ID o pega uno para continuar una conversación</label>
+          <input id="session" type="text" maxlength="32" size="32" autocomplete="off" spellcheck="false">
+        </details>
+      </section>
+    </aside>
     <section class="workspace" aria-label="Chat">
       <div class="notice" data-en="CodeTrace keeps the last three turns per repository on this computer. CodeTrace can include that context in model requests.">CodeTrace guarda los últimos tres turnos por repositorio en este equipo. CodeTrace puede incluir ese contexto en las peticiones al modelo.</div>
-      <details class="conversation-session">
-        <summary data-en="Conversation ID">ID de conversación</summary>
-        <label for="session" data-en="Copy the ID or paste one to continue a conversation">Copia el ID o pega uno para continuar una conversación</label>
-        <input id="session" type="text" maxlength="32" size="32" autocomplete="off" spellcheck="false">
-      </details>
       <div id="messages" aria-live="polite" aria-relevant="additions"><div id="empty"><span class="eyebrow" data-en="EXPLORE THE REPOSITORY">EXPLORA EL REPOSITORIO</span><h2 data-en="Start with a specific question.">Empieza por una pregunta concreta.</h2><p data-en="For example: Where is authentication implemented, and which functions are involved?">Por ejemplo: ¿Dónde se implementa la autenticación y qué funciones intervienen?</p><p data-en="Answers and their sources will appear here.">Las respuestas aparecerán aquí, junto a sus fuentes.</p></div></div>
       <form id="form"><label for="question" data-en="Your question">Tu pregunta</label><textarea id="question" rows="3" maxlength="12000" placeholder="¿Qué quieres saber del código?" data-en-placeholder="What do you want to know about the code?" required></textarea><div class="compose-footer"><span id="status" role="status" data-en="Loading repositories…">Cargando repositorios…</span><button id="send" disabled data-en="Ask →">Consultar →</button></div></form>
     </section>
   </main>
-  <footer data-en="CodeTrace handles retrieval and generation. This interface displays the response as returned.">CodeTrace gestiona la búsqueda y la generación. La interfaz muestra la respuesta sin reinterpretarla.</footer>
+  <footer>
+    <p data-en="CodeTrace handles retrieval and generation. This interface displays the response as returned.">CodeTrace gestiona la búsqueda y la generación. La interfaz muestra la respuesta sin reinterpretarla.</p>
+    <ul class="footer-links">
+      <li>CodeTrace &copy; 2026 Manuel Porras Ojeda</li>
+      <li><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache License 2.0</a></li>
+      <li><a href="https://github.com/manon42bcn/code-trace" target="_blank" rel="noopener noreferrer">github.com/manon42bcn/code-trace</a></li>
+      <li><a href="mailto:manuel.porras.ojeda@gmail.com">manuel.porras.ojeda@gmail.com</a></li>
+    </ul>
+  </footer>
 </body>
 </html>

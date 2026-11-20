@@ -344,6 +344,7 @@ def test_answer_routing_diagnostic_needs_no_artifacts_or_generation(
 
 
 def test_chat_and_cli_share_request_metrics(configured, monkeypatch, capsys):
+    from contextvars import Context
     from types import SimpleNamespace
 
     from codetrace import chat
@@ -358,7 +359,7 @@ def test_chat_and_cli_share_request_metrics(configured, monkeypatch, capsys):
     def run(command, *, env, **_kwargs):
         with monkeypatch.context() as child:
             child.setenv('CODETRACE_CHAT_REQUEST', env['CODETRACE_CHAT_REQUEST'])
-            code = cli.main(command[3:])
+            code = Context().run(cli.main, command[3:])
         return SimpleNamespace(returncode=code, stdout=capsys.readouterr().out)
 
     monkeypatch.chdir(configured.parent)
@@ -377,9 +378,13 @@ def test_chat_and_cli_share_request_metrics(configured, monkeypatch, capsys):
     history = configured.parent / 'indexes/reports/requests.jsonl'
     payload = history.read_text(encoding='utf-8')
     events = [json.loads(line) for line in payload.splitlines()]
-    assert [event['source'] for event in events] == ['answer', 'chat']
+    assert [event['source'] for event in events] == [
+        'answer',
+        'chat',
+        'chat_request_subprocess',
+    ]
     assert all(event['provider'] == 'ollama' and event['model'] == 'test' for event in events)
-    assert all('generation_seconds' in event['timings'] for event in events)
+    assert all('generation_seconds' in event['timings'] for event in events[:2])
     assert 'order_id' not in payload
     assert 'Respuesta' not in payload
 

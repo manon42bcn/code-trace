@@ -11,13 +11,22 @@ def search_index(index, term, *, kind='any', exact=False, limit=50, query_plan=N
         raise ValueError('kind must be any, symbol, path, or content')
     if limit < 0:
         raise ValueError('limit must be non-negative')
+    corpus = index.get('chunks', [])
+    if hasattr(corpus, 'lexical_candidates'):
+        corpus = corpus.lexical_candidates(term, query_plan)
     if query_plan and query_plan['lexical_mode'] == 'token_overlap':
         from .natural_search import search_natural
 
-        return search_natural(index, query_plan, kind=kind, limit=limit)
+        return search_natural(
+            {'chunks': corpus},
+            query_plan,
+            kind=kind,
+            limit=limit,
+            document_count=len(index.get('chunks', [])),
+        )
     kinds = ('symbol', 'path', 'content') if kind == 'any' else (kind,)
     results = []
-    for chunk in index.get('chunks', []):
+    for chunk in corpus:
         matched = []
         lines = []
         for field in kinds:

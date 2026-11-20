@@ -45,7 +45,7 @@ El selector equivale a `--repo`: establece explícitamente el repositorio. No es
 
 La respuesta se muestra como texto conservando sus saltos de línea, sin ejecutar HTML ni interpretar Markdown. Las evidencias conservan el contenido recuperado, archivo, líneas, certeza y distinción entre fuente citada y contexto. Se señala cuando un fragmento está truncado. Si las fuentes han cambiado, el estado muestra la necesidad de actualización y la orden incremental sugerida; no reconstruye índices automáticamente.
 
-Para proveedores remotos, activar **Permitir enviar contexto al proveedor remoto configurado** antes de consultar. Esto transmite `--allow-remote` a `answer`; no cambia de proveedor ni de modelo. La autorización también cubre Ollama cuando el endpoint está fuera del equipo.
+La casilla **Permitir enviar contexto al proveedor remoto configurado** está marcada por defecto. Puedes desmarcarla antes de consultar. El chat pasa `--allow-remote` a `answer` cuando la casilla está marcada. La autorización también cubre Ollama cuando el endpoint está fuera del equipo.
 
 Los errores de configuración, índices o proveedor se muestran en la conversación. Si el proceso no devuelve un error JSON legible, el chat ofrece un mensaje genérico sin exponer stderr. Para diagnosticar:
 
@@ -76,7 +76,7 @@ Reemplaza `ID` por el valor `session` de la primera respuesta. La terminal
 interactiva también acepta `--session new` o `--session ID`. Las consultas
 desde la CLI sin `--session` son independientes.
 
-El servidor admite una consulta activa a la vez y devuelve un aviso si otra pestaña intenta consultar simultáneamente. No hay streaming ni cancelación desde el navegador. Cerrar la pestaña no cancela una consulta en curso; esta termina o agota su tiempo máximo. El proceso hijo vuelve a cargar los recursos en cada pregunta, igual que una llamada independiente a la CLI.
+El servidor admite una consulta activa a la vez y devuelve un aviso si otra pestaña intenta consultar simultáneamente. No hay streaming ni cancelación desde el navegador. Cerrar la pestaña no cancela una consulta en curso; esta termina o agota su tiempo máximo. Con MLX, el chat reutiliza el proceso que mantiene el modelo cargado. Los índices se vuelven a leer en cada consulta. Si el proceso agota el tiempo máximo, el chat lo termina y la siguiente consulta inicia otro.
 
 El servidor lee `config.json` al listar repositorios y ejecutar consultas. Tras cambiar la lista de repositorios, recargar la página. Los cambios en `.env` se aplican a la siguiente consulta. Para cambiar las variables exportadas que hereda el servidor, reiniciarlo.
 
@@ -86,13 +86,42 @@ El servidor escucha exclusivamente en `127.0.0.1`, valida Host y Origin y requie
 
 Está pensado para uso personal en el equipo local, sin autenticación de usuarios, publicación en red ni acceso multiusuario. La protección de sesión restringe peticiones desde otros orígenes del navegador; no a procesos del mismo usuario que puedan abrir la página local.
 
+## Índice SQLite experimental
+
+En esta rama, `make chat`, `search`, `answer` y `evaluate-rag` prefieren
+automáticamente la instantánea `.sqlite3` del repositorio. Los índices antiguos
+siguen funcionando desde JSON hasta que se genere su instantánea SQLite.
+Para preparar una instantánea a partir de un índice existente:
+
+```bash
+PYTHONPATH=src .venv/bin/python -m codetrace prepare-sqlite indexes/aicc-tests.chunks.json
+make chat
+```
+
+SQLite obtiene los candidatos léxicos y carga las evidencias por ID. El grafo sigue
+leyéndose desde su JSON. Cuando se usa SQLite, las consultas combinan recuperación
+léxica y estructural. Las métricas y las salidas JSON de `answer` y `evaluate-rag`
+identifican el backend en `index_backend`.
+
+Después de cambiar el código, el usuario puede regenerar explícitamente los índices:
+
+```bash
+make indexes REPOS="aicc-tests"
+```
+
+`make indexes` y `make indexes-incremental` generan ambas instantáneas de
+fragmentos. Se requiere SQLite con FTS5 y tokenizador trigrama.
+
 ## Preguntas sobre flujos (0.9.21)
 
 Se puede preguntar «¿Cuál es la primera función al llegar una petición?», concretar «Flujo de la petición POST /orders» o pedir «Flujo desde NOMBRE». Cuando se reconoce esta intención, `answer` prioriza entradas candidatas y sus llamadas estáticas. El panel **Flujo estático del código** muestra relaciones apoyadas por las evidencias incluidas; no una traza de ejecución. Ver [alcance, preparación y límites del análisis](code-rag-flujos.md).
 
 ## Identidad visual (0.9.22)
 
-La cabecera integra el logo CodeTrace para fondos claros de `img/codetrace-logo-light.svg`. Su copia en `src/codetrace/web/` se distribuye con el paquete Python y se sirve localmente, sin recursos externos. Al actualizar ese logo, sincronizar ambos archivos. El tamaño se adapta al ancho disponible en escritorio y móvil.
+La cabecera combina el ícono de `assets/branding/codetrace-dark-logo.svg` con el
+nombre CodeTrace en texto. El chat también usa el ícono en la pestaña del
+navegador. La copia de `src/codetrace/web/` se distribuye con el paquete Python
+y se sirve localmente. Si se actualiza el original, sincroniza esa copia.
 
 ## Nombre del proyecto (0.9.23)
 
@@ -100,4 +129,19 @@ El proyecto y el chat utilizan la marca **CodeTrace**, y el paquete se llama `co
 
 ## MLX LM en Apple silicon
 
-Instala el extra con `uv sync --no-editable --extra mlx` junto con los demás extras que uses. Define `CODETRACE_GENERATION_PROVIDER=mlx` y usa como `CODETRACE_GENERATION_MODEL` la ruta a un directorio local de MLX LM con su configuración, tokenizador y pesos. Usa un modelo de instrucciones capaz de devolver el JSON solicitado. Deja vacías las variables de endpoint y proxy. Valida el modelo con `codetrace check-provider`. El límite `CODETRACE_GENERATION_MAX_TOKENS` se aplica al texto generado. MLX ejecuta la generación en el proceso de consulta y el tiempo máximo de la consulta web sigue aplicándose. El timeout de proveedor HTTP no se aplica a MLX.
+Instala el extra con `uv sync --no-editable --extra mlx` junto con los demás extras que uses. Define `CODETRACE_GENERATION_PROVIDER=mlx` y usa como `CODETRACE_GENERATION_MODEL` la ruta a un directorio local de MLX LM con su configuración, tokenizador y pesos. Usa un modelo de instrucciones capaz de devolver el JSON solicitado. Deja vacías las variables de endpoint y proxy. Valida el modelo con `codetrace check-provider`. El límite `CODETRACE_GENERATION_MAX_TOKENS` se aplica al texto generado. El tiempo máximo de la consulta web se aplica a MLX. El timeout del proveedor HTTP se usa con proveedores HTTP.
+
+La primera consulta carga los pesos. Las siguientes reutilizan el modelo mientras el chat esté abierto y la configuración de generación sea la misma. Reinicia el chat si reemplazas los pesos en la misma ruta.
+
+Para comparar con un proceso nuevo por consulta, detén el chat y ejecútalo con:
+
+```bash
+make chat CHAT_ARGS="--fresh-process"
+```
+
+Repite las mismas preguntas con el mismo modelo, repositorio y presupuesto de contexto.
+En `indexes/reports/requests.jsonl`, compara `total_seconds` de
+`chat_request_persistent` y `chat_request_subprocess` para medir la consulta desde
+el servidor. Los eventos `chat` incluyen la lectura de índices, la preparación
+de la recuperación y los tiempos de MLX. `mlx_model_load_seconds` aparece
+cuando se cargan los pesos, y `mlx_inference_seconds` mide la generación.

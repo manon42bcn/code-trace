@@ -3,19 +3,21 @@
 import json
 import os
 import sys
-from contextlib import redirect_stdout
+from contextlib import ExitStack, redirect_stdout
 from pathlib import Path
 
 from .conversation import Conversation
+from .latency import timed
 from .repository_paths import repository_index_path, repository_relationships_path
 from .request_metrics import CHAT_REQUEST_ENV
+from .sqlite_index import index_backend, open_prepared_index
 
 
-def run_answer(args):
+def run_answer(args, *, provider_factory=None):
     """Run a parsed answer request and write its result to stdout."""
     try:
         answer_stdout = sys.stdout
-        with redirect_stdout(sys.stderr):
+        with redirect_stdout(sys.stderr), ExitStack() as resources:
             import time
 
             from .generation_config import load_generation_config
@@ -67,8 +69,11 @@ def run_answer(args):
                 raise ValueError(
                     'Supply --index and --relationships, or --config with --default-repo'
                 )
-            index = json.loads(args.index.read_text(encoding='utf-8'))
-            relationships = json.loads(args.relationships.read_text(encoding='utf-8'))
+            timings = {}
+            with timed(timings, 'index_load_seconds'):
+                index = resources.enter_context(open_prepared_index(args.index))
+                relationships = json.loads(args.relationships.read_text(encoding='utf-8'))
+            backend = index_backend(index)
             from .preparation import assess_sources, needs_update, rebuild_command, source_spec
 
             repo = routing['repository'] if routing else None
@@ -83,9 +88,13 @@ def run_answer(args):
             from .semantic_config import load_retrieval
 
             context_limits = context_limits_from_mapping(raw.get('context'))
-            retrieval, stores, embedding_provider = load_retrieval(
-                raw, args.config or Path.cwd() / 'config.json', args.index
-            )
+            with timed(timings, 'retrieval_setup_seconds'):
+                retrieval, stores, embedding_provider = load_retrieval(
+                    raw,
+                    args.config or Path.cwd() / 'config.json',
+                    args.index,
+                    lexical_only=backend == 'sqlite',
+                )
             from dataclasses import replace
 
             for key in ('limit', 'max_chunks', 'max_chars'):
@@ -101,7 +110,7 @@ def run_answer(args):
             generation = load_generation_config()
             if args.output_format in {'text', 'markdown'} and generation.provider == 'none':
                 raise ValueError('Text output requires a configured generation provider')
-            provider = build_generation_provider(generation)
+            provider = (provider_factory or build_generation_provider)(generation)
             conversation = None
             if args.session is not None:
                 if provider is None:
@@ -120,6 +129,7 @@ def run_answer(args):
                 generation_provider=provider,
                 context_limits=context_limits,
                 allow_remote=args.allow_remote,
+                timings=timings,
                 history=conversation.history() if conversation else None,
                 metrics_source='chat' if os.getenv(CHAT_REQUEST_ENV) == '1' else 'answer',
             )
@@ -175,6 +185,7 @@ def run_answer(args):
 
                     output['answer'] = generation_result_dict(generated_answer)
                 output['latency_seconds'] = elapsed
+                output['index_backend'] = backend
                 if conversation:
                     output['session'] = conversation.identifier
                 if routing is not None:

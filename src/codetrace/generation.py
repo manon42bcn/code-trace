@@ -33,6 +33,14 @@ class GenerationProvider(Protocol):
         ...
 
 
+class CitationValidationError(ValueError):
+    """Citation references that the model can correct using the supplied evidence."""
+
+
+class CitationRangeError(CitationValidationError):
+    """A provider supplied line coordinates outside the cited excerpt."""
+
+
 def validate_generation_result(result: GenerationResult, context: dict) -> None:
     """Reject citations that are not present in the supplied evidence context."""
     known = {item.get('chunk', {}).get('id') for item in context.get('items', [])}
@@ -57,9 +65,8 @@ def validate_generation_result(result: GenerationResult, context: dict) -> None:
     claim_citations = {citation for claim in result.claims for citation in claim.citations}
     unknown_claims = claim_citations - known
     if unknown or unknown_claims:
-        raise ValueError(
-            f'citations reference chunks outside context: {sorted(unknown | unknown_claims)}'
-        )
+        references = sorted(unknown | unknown_claims, key=str)
+        raise CitationValidationError(f'citations reference chunks outside context: {references}')
     for citation in result.citations:
         expected = context_citations.get(citation.get('chunk_id'), {})
         if citation.get('evidence_type') and citation.get('evidence_type') not in {
@@ -72,15 +79,19 @@ def validate_generation_result(result: GenerationResult, context: dict) -> None:
             raise ValueError('citation evidence_type is invalid')
         if citation.get('path') is not None and citation.get('path') != expected.get('path'):
             raise ValueError('citation path does not match context')
+        if any(
+            key in citation and type(citation[key]) is not int for key in ('start_line', 'end_line')
+        ):
+            raise CitationRangeError('citation line coordinates must be integers')
         start = citation.get('start_line', expected.get('start_line'))
         end = citation.get('end_line', expected.get('end_line'))
         context_start, context_end = expected.get('start_line'), expected.get('end_line')
         if context_start is not None and start < context_start:
-            raise ValueError('citation start_line is outside context')
+            raise CitationRangeError('citation start_line is outside context')
         if context_end is not None and end > context_end:
-            raise ValueError('citation end_line is outside context')
+            raise CitationRangeError('citation end_line is outside context')
         if start is not None and end is not None and start > end:
-            raise ValueError('citation line range is invalid')
+            raise CitationRangeError('citation line range is invalid')
     allowed = {
         'observed_static_fact',
         'static_candidate',

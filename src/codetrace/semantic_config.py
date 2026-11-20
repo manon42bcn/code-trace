@@ -42,10 +42,12 @@ def resolve_retrieval(raw, config_path, index_path, *, resolve_paths=True):
     )
 
 
-def load_retrieval(raw, config_path, index_path, *, index=None):
+def load_retrieval(raw, config_path, index_path, *, index=None, lexical_only=False):
     from .retrieval import RetrievalConfig
 
     settings, paths, model = resolve_retrieval(raw, config_path, index_path)
+    if lexical_only:
+        settings['mode'] = 'lexical'
     retrieval = RetrievalConfig.from_mapping(settings)
     if paths is None or retrieval.mode == 'lexical':
         if retrieval.mode == 'semantic':

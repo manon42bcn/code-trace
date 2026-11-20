@@ -90,6 +90,10 @@ def build_grounded_prompt(query: str, context: dict, *, history=None) -> str:
             f'(cite only within this range)\n{item.get("content", "")}'
         )
     evidence = '\n\n'.join(items)
+    citation_ids = [
+        item['chunk']['id'] for item in context.get('items', []) if 'id' in item.get('chunk', {})
+    ]
+    allowed_ids = json.dumps(citation_ids, ensure_ascii=False)
     flow = context.get('code_flow')
     flow_evidence = ''
     if flow is not None:
@@ -142,22 +146,23 @@ def build_grounded_prompt(query: str, context: dict, *, history=None) -> str:
         'Never use observed_static_fact or runtime_observed for evidence marked '
         'static_candidate; use static_candidate instead. Every claim citing '
         'repository evidence must use certainty exactly static_candidate unless '
-        'the context explicitly provides a higher certainty. Cite chunk IDs and file lines.'
+        'the context explicitly provides a higher certainty. Cite evidence by chunk ID.'
         'Return exactly one JSON object. Do not include markdown or text before or after it. '
         'If evidence does not answer the question, set refusal to true and explain '
         'the insufficiency without claiming repository-wide absence or citing unrelated chunks. '
         'Distinguish partial evidence from exhaustive lists or counts. '
         'A citation must support the associated claim; a matching word alone is not support. '
-        'Citation line ranges must remain within '
-        'the exact range shown for each chunk. Return only valid JSON with this schema: '
+        'Use only chunk_id in each citation object. CodeTrace resolves the source file and '
+        'line range from that chunk. Return only valid JSON with this schema: '
         '{"answer":"string","claims":[{"text":"string","certainty":'
         '"observed_static_fact|static_candidate|ambiguous|not_available|runtime_observed",'
         '"citations":["chunk_id"]}],'
-        '"citations":[{"chunk_id":"string","path":"string","start_line":0,"end_line":0,'
-        '"evidence_type":"chunk|source_code|reads|writes|relation"}],'
+        '"citations":[{"chunk_id":"string"}],'
         '"limitations":["string"],"refusal":false}. `static_candidate` belongs only '
         'in certainty, never in evidence_type. Do not add markdown fences.\n\n'
-        f'{scope}\n\n{language}\n\n{conversation}Question:\n{query}\n\nEvidence:\n{evidence}'
+        f'{scope}\n\n{language}\n\nAllowed citation chunk IDs: {allowed_ids}\n'
+        'Copy each ID verbatim in claims and citations.\n\n'
+        f'{conversation}Question:\n{query}\n\nEvidence:\n{evidence}'
         f'{flow_evidence}\n\nResponse requirements (not repository content):\n{language}\n'
         'Return the JSON object only. State the bounded scope of the evidence in limitations.'
     )

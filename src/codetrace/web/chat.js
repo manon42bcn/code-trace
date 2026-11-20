@@ -11,6 +11,25 @@ if (english) {
     });
   }
 }
+const themeToggle = $('dark-mode');
+const themeKey = 'codetrace-theme';
+try {
+  themeToggle.checked = localStorage.getItem(themeKey) === 'dark';
+} catch {
+  // The toggle still works when storage is unavailable.
+}
+function applyTheme() {
+  document.documentElement.dataset.theme = themeToggle.checked ? 'dark' : 'light';
+}
+applyTheme();
+themeToggle.addEventListener('change', () => {
+  applyTheme();
+  try {
+    localStorage.setItem(themeKey, document.documentElement.dataset.theme);
+  } catch {
+    // Keep the selected theme for this page.
+  }
+});
 let repositories = [];
 let pending = false;
 const sessionKey = 'codetrace-conversation';
@@ -38,7 +57,16 @@ async function api(path, options = {}) {
   return data;
 }
 function describe() {
-  $('description').textContent = repositories.find(r => r.name === $('repo').value)?.description || '';
+  const repo = repositories.find(r => r.name === $('repo').value);
+  $('description').textContent = repo?.description || '';
+  const backends = {sqlite: 'SQLite', json: 'JSON', missing: t('Sin preparar', 'Not prepared')};
+  $('runtime-index').textContent = backends[repo?.index_backend] || '—';
+}
+function describeModel(provider, model) {
+  $('runtime-provider').textContent = provider === 'none'
+    ? t('Sin configurar', 'Not configured')
+    : provider || t('No disponible', 'Unavailable');
+  $('runtime-model').textContent = (provider === 'mlx' ? model?.split('/').filter(Boolean).pop() : model) || '—';
 }
 function message(label, className = '') {
   $('empty')?.remove();
@@ -53,10 +81,22 @@ function details(title, content) {
   el.append(node('summary', title), content);
   return el;
 }
-function showAnswer(result) {
+const durationFormat = new Intl.NumberFormat(english ? 'en' : 'es', {
+  maximumFractionDigits: 1,
+});
+function formatDuration(milliseconds) {
+  return `${durationFormat.format(milliseconds / 1000)} s`;
+}
+function showAnswer(result, elapsed) {
   const answer = result.answer;
+  describeModel(answer.provider, answer.model);
+  const repo = repositories.find(r => r.name === $('repo').value);
+  if (repo && result.index_backend) {
+    repo.index_backend = result.index_backend;
+    describe();
+  }
   const block = message('CodeTrace');
-  block.append(node('div', `${result.repository || $('repo').value} · ${answer.provider} · ${answer.model}`, 'metadata'));
+  block.append(node('div', `${result.repository || $('repo').value} · ${answer.provider} · ${answer.model} · ${formatDuration(elapsed)}`, 'metadata'));
   // Provider and repository text stays inert: no HTML/Markdown evaluation or remote resources.
   block.append(node('div', answer.answer, 'answer-text'));
   if (answer.refusal) block.append(node('p', t('El modelo indica que no dispone de evidencia suficiente.', 'The model reports insufficient evidence.'), 'limitations'));
@@ -113,15 +153,19 @@ $('form').addEventListener('submit', async event => {
   const question = $('question').value.trim();
   if (pending || !question || !$('repo').value) return;
   pending = true;
+  const started = performance.now();
   ['send', 'repo', 'remote', 'clear', 'session'].forEach(id => $(id).disabled = true);
   message(`${t('Tú ·', 'You ·')} ${$('repo').value}`, 'question').append(node('div', question, 'question-text'));
   $('question').value = '';
   const indicator = node('div', undefined, 'message pending-answer');
   indicator.setAttribute('aria-hidden', 'true');
-  indicator.append(
-    node('span', t('Preparando la respuesta…', 'Preparing your answer…')),
-    node('div', undefined, 'pending-track')
-  );
+  const pendingTime = node('span', formatDuration(0), 'pending-time');
+  const caption = node('div', undefined, 'pending-caption');
+  caption.append(node('span', t('Preparando la respuesta…', 'Preparing your answer…')), pendingTime);
+  indicator.append(caption, node('div', undefined, 'pending-track'));
+  const timer = setInterval(() => {
+    pendingTime.textContent = formatDuration(performance.now() - started);
+  }, 250);
   $('messages').append(indicator);
   $('status').textContent = t('CodeTrace está buscando evidencias y consultando el modelo…', 'CodeTrace is retrieving evidence and querying the model…');
   scroll();
@@ -135,7 +179,7 @@ $('form').addEventListener('submit', async event => {
       })
     });
     if (result.session) storeSession(result.session);
-    showAnswer(result);
+    showAnswer(result, performance.now() - started);
     $('status').textContent = t('Consulta completada', 'Request completed');
   } catch (error) {
     $('question').value = question;
@@ -154,6 +198,7 @@ $('form').addEventListener('submit', async event => {
       $('status').textContent = t('Puedes corregir la configuración y volver a intentarlo', 'Check the configuration and try again');
     }
   } finally {
+    clearInterval(timer);
     indicator.remove();
     pending = false;
     ['send', 'repo', 'remote', 'clear', 'session'].forEach(id => $(id).disabled = false);
@@ -167,6 +212,8 @@ api('/api/repositories').then(data => {
     const option = node('option', repo.name); option.value = repo.name; return option;
   }));
   if (repositories.some(r => r.name === data.default_repository)) $('repo').value = data.default_repository;
+  $('runtime-ip').textContent = data.runtime.ip || '—';
+  describeModel(data.runtime.provider, data.runtime.model);
   describe();
   $('repo').disabled = $('send').disabled = false;
   $('status').textContent = t('Listo para consultar', 'Ready for questions');

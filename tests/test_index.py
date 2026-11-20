@@ -187,6 +187,7 @@ def test_exclude_cli(tmp_path):
     assert r.returncode == 0, r.stderr
     data = json.loads((tmp_path / 'indexes/r.chunks.json').read_text())
     assert {c['path'] for c in data['chunks']} == {'a.py'}
+    assert (tmp_path / 'indexes/r.chunks.sqlite3').is_file()
 
 
 @pytest.mark.parametrize('syntax_error', [False, True])

@@ -12,6 +12,7 @@ from .latency import timed
 from .request_metrics import request_metrics
 from .retrieval import retrieve_scoped
 from .source_filters import scope_sources
+from .sqlite_index import index_backend
 
 
 def answer(
@@ -41,6 +42,7 @@ def answer(
             getattr(generation_provider, 'provider', None),
             getattr(generation_provider, 'model', None),
             timings,
+            details={'index_backend': index_backend(index)},
         )
     )
     with measurement as timings:
