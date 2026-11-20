@@ -15,6 +15,8 @@ from urllib.parse import urlsplit
 
 from dotenv import dotenv_values
 
+from .request_metrics import CHAT_REQUEST_ENV
+
 WEB = Path(__file__).with_name('web')
 MAX_REQUEST_BYTES = 32768
 ENGLISH_ERRORS = {
@@ -121,6 +123,7 @@ class ChatApplication:
                     encoding='utf-8',
                     timeout=self.timeout,
                     check=False,
+                    env={**os.environ, CHAT_REQUEST_ENV: '1'},
                 )
             except subprocess.TimeoutExpired as exc:
                 raise ChatError(

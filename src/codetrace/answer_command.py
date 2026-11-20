@@ -1,11 +1,13 @@
 """Command-line entry point for grounded repository answers."""
 
 import json
+import os
 import sys
 from contextlib import redirect_stdout
 from pathlib import Path
 
 from .repository_paths import repository_index_path, repository_relationships_path
+from .request_metrics import CHAT_REQUEST_ENV
 
 
 def run_answer(args):
@@ -108,6 +110,7 @@ def run_answer(args):
                 generation_provider=provider,
                 context_limits=context_limits,
                 allow_remote=args.allow_remote,
+                metrics_source='chat' if os.getenv(CHAT_REQUEST_ENV) == '1' else 'answer',
             )
             from .generation import GenerationResult
 

@@ -341,3 +341,44 @@ def test_answer_routing_diagnostic_needs_no_artifacts_or_generation(
     assert result['routing']['query'] == 'handoff'
     assert result['repository'] == 'demo'
     assert result['answer'] is None
+
+
+def test_chat_and_cli_share_request_metrics(configured, monkeypatch, capsys):
+    from types import SimpleNamespace
+
+    from codetrace import chat
+
+    class Provider:
+        provider = 'ollama'
+        model = 'test'
+
+        def generate(self, _prompt, **_kwargs):
+            return GenerationResult(ANSWER, self.provider, self.model)
+
+    def run(command, *, env, **_kwargs):
+        with monkeypatch.context() as child:
+            child.setenv('CODETRACE_CHAT_REQUEST', env['CODETRACE_CHAT_REQUEST'])
+            code = cli.main(command[3:])
+        return SimpleNamespace(returncode=code, stdout=capsys.readouterr().out)
+
+    monkeypatch.chdir(configured.parent)
+    monkeypatch.delenv('CODETRACE_CHAT_REQUEST', raising=False)
+    monkeypatch.setattr(generation_factory, 'build_generation_provider', lambda _: Provider())
+    monkeypatch.setattr(chat.subprocess, 'run', run)
+
+    assert cli.main(['answer', '--config', str(configured), '--repo', 'demo', 'order_id']) in (
+        0,
+        None,
+    )
+    capsys.readouterr()
+    output = chat.ChatApplication(configured).answer({'question': 'order_id', 'repo': 'demo'})
+    assert output['answer']['answer'] == ANSWER
+
+    history = configured.parent / 'indexes/reports/requests.jsonl'
+    payload = history.read_text(encoding='utf-8')
+    events = [json.loads(line) for line in payload.splitlines()]
+    assert [event['source'] for event in events] == ['answer', 'chat']
+    assert all(event['provider'] == 'ollama' and event['model'] == 'test' for event in events)
+    assert all('generation_seconds' in event['timings'] for event in events)
+    assert 'order_id' not in payload
+    assert 'Respuesta' not in payload
