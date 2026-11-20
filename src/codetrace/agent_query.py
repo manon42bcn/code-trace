@@ -11,6 +11,7 @@ from dataclasses import asdict, replace
 from pathlib import Path
 
 from .config_context import context_limits_from_mapping
+from .conversation import SESSION_HELP, Conversation
 from .generation_config import GenerationConfig, load_generation_config
 from .generation_factory import build_generation_provider
 from .match_ranking import RANKING_PROFILE
@@ -77,6 +78,7 @@ def configure_parser(parser):
     )
     parser.add_argument('--page-size', type=int, help='Opt into evidence result pages (1-200)')
     parser.add_argument('--cursor', help='Continue a previous evidence search')
+    parser.add_argument('--session', help=SESSION_HELP)
     parser.add_argument('--session-dir', type=Path)
     parser.add_argument('--session-ttl', type=int, help='New session lifetime, 1-86400 seconds')
     parser.add_argument(
@@ -97,6 +99,8 @@ def run(args):
     for name in ('limit', 'max_chunks', 'max_chars'):
         if getattr(args, name) is not None and getattr(args, name) < 1:
             raise ValueError(f'{name} must be positive')
+    if args.session is not None and (args.mode != 'answer' or args.resolve_only):
+        raise ValueError('--session requires answer mode without --resolve-only')
     if args.budget_profile and args.mode != 'evidence':
         raise ValueError('Budget profiles require evidence mode')
     filters = SourceFilters(
@@ -474,6 +478,14 @@ def render_query(
     if args.mode == 'answer' and generation.provider == 'none':
         raise ValueError('answer mode requires a configured generation provider')
     provider = build_generation_provider(generation)
+    conversation = None
+    if args.session is not None:
+        conversation = Conversation.open(
+            args.session,
+            args.config,
+            args.index,
+            args.relationships,
+        )
     result = answer(
         query,
         index=index,
@@ -485,6 +497,7 @@ def render_query(
         embedding_provider=embedding_provider,
         generation_provider=provider,
         metrics_source='agent_query',
+        history=conversation.history() if conversation else None,
         allow_remote=args.allow_remote,
         search_filters=filters if source_scope is None else None,
     )
@@ -632,6 +645,9 @@ def render_query(
                 **({'routing': routing} if routing is not None else {}),
             },
         )
+    if conversation:
+        conversation.remember(query, generated.answer)
+        output['session'] = conversation.identifier
     return output
 
 

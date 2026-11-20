@@ -15,6 +15,7 @@ from urllib.parse import urlsplit
 
 from dotenv import dotenv_values
 
+from .conversation import valid_session
 from .request_metrics import CHAT_REQUEST_ENV
 
 WEB = Path(__file__).with_name('web')
@@ -42,6 +43,7 @@ ENGLISH_ERRORS = {
     'La pregunta coincide con varios repositorios. Selecciona uno y vuelve a enviarla.': (
         'The question matches several repositories. Select one and submit it again.'
     ),
+    'Usa un ID de conversación válido.': 'Use a valid conversation ID.',
     'Origen no permitido': 'Origin not allowed',
     'Sesión no válida; recarga el chat': 'Invalid session. Reload the chat.',
     'Recurso no encontrado': 'Resource not found',
@@ -102,6 +104,9 @@ class ChatApplication:
         remote = request.get('allow_remote', False)
         if not isinstance(remote, bool):
             raise ChatError('allow_remote debe ser booleano')
+        session = request.get('session')
+        if session is not None and not valid_session(session):
+            raise ChatError('Usa un ID de conversación válido.')
         if not self.busy.acquire(blocking=False):
             raise ChatError('Hay una consulta en curso. Espera a que termine.', 409)
         try:
@@ -115,6 +120,8 @@ class ChatApplication:
                 '--repo',
                 repo,
             ]
+            if session is not None:
+                command.extend(['--session', session])
             if remote:
                 command.append('--allow-remote')
             # End of options keeps question text from becoming CLI arguments.

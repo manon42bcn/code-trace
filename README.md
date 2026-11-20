@@ -187,7 +187,7 @@ La recuperación tiene límites de candidatos, chunks, caracteres y tokens. Las 
 
 El análisis de flujo sigue llamadas estáticas entre símbolos Python e identifica candidatos HTTP de FastAPI/Flask. No es una traza de ejecución; middleware, montaje de routers y despacho dinámico pueden quedar sin resolver. Ver [flujos de código](docs/es/code-rag-flujos.md).
 
-El historial del chat solo permanece en la pestaña. Cada pregunta es independiente y no recibe automáticamente la conversación anterior. Las consultas utilizan la instantánea indexada; los avisos de frescura no reconstruyen los índices por sí solos.
+El chat guarda los últimos tres turnos por repositorio en una conversación local. El ID permite continuar desde el chat, la terminal o un agente. Consulta la [guía de sesiones](docs/es/code-rag-chat.md#historial-y-ejecución). Las consultas utilizan la instantánea indexada; los avisos de frescura no reconstruyen los índices por sí solos.
 
 Las consultas con generación del chat, `answer`, el modo de respuesta para agentes y
 `evaluate-rag` guardan métricas en `indexes/reports/requests.jsonl`, relativo al

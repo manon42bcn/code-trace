@@ -121,12 +121,15 @@ def main(argv=None):
     p.add_argument('--semantic-initial-k', type=int, default=1)
     p.add_argument('--semantic-v2-weight', type=float, default=0.05)
     p.add_argument('--exact', action='store_true')
+    from .conversation import SESSION_HELP
+
     p = sub.add_parser('answer')
     p.add_argument('query')
     p.add_argument('--index', type=Path)
     p.add_argument('--relationships', type=Path)
     p.add_argument('--config', type=Path)
     p.add_argument('--report', type=Path)
+    p.add_argument('--session', help=SESSION_HELP)
     p.add_argument('--resolve-only', action='store_true', help='Inspect repository routing only')
     p.add_argument('--relevant-chunks', type=Path)
     p.add_argument('--allow-remote', action='store_true')

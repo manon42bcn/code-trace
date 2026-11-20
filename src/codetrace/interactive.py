@@ -6,12 +6,15 @@ import shlex
 import sys
 from pathlib import Path
 
+from .conversation import SESSION_HELP, Conversation
+
 
 def run(argv, run_command):
     """Dispatch questions from the terminal session through the answer command."""
     parser = argparse.ArgumentParser(prog='codetrace interactive')
     parser.add_argument('--config', type=Path, default=Path('config.json'))
     parser.add_argument('--repo', required=True)
+    parser.add_argument('--session', help=SESSION_HELP)
     parser.add_argument('--allow-remote', action='store_true')
     args = parser.parse_args(argv)
     config = args.config.resolve()
@@ -20,9 +23,12 @@ def run(argv, run_command):
         repositories = json.loads(config.read_text(encoding='utf-8'))['repositories']
         if not isinstance(repositories, dict) or args.repo not in repositories:
             raise ValueError(f'Repository not configured: {args.repo}')
+        conversation = Conversation.open(args.session, config) if args.session else None
     except (OSError, KeyError, ValueError, TypeError) as exc:
         parser.exit(2, f'Error: {exc}\n')
 
+    if conversation:
+        sys.stdout.write(f'Conversation session: {conversation.identifier}\n')
     repo = args.repo
     sys.stdout.write('Use /repos to list repositories, --repo NAME to switch, or --exit to quit.\n')
     try:
@@ -61,6 +67,7 @@ def run(argv, run_command):
                         repo,
                         '--output-format',
                         'text',
+                        *(['--session', conversation.identifier] if conversation else []),
                         *(['--allow-remote'] if args.allow_remote else []),
                         '--',
                         question,

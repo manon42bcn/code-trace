@@ -241,6 +241,23 @@ details {
   margin-top:12px;
   padding:12px
 }
+.conversation-session {
+  margin:12px 24px 0
+}
+.conversation-session label {
+  display:block;
+  margin-top:8px;
+  font-size:12px;
+  color:var(--muted)
+}
+.conversation-session input {
+  width:100%;
+  max-width:34ch;
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:6px 8px;
+  font:inherit
+}
 summary {
   font-size:12px;
   font-weight:650;

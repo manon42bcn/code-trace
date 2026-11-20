@@ -14,11 +14,16 @@
     <section class="settings" aria-label="Configuración de la consulta" data-en-aria-label="Query settings">
       <label for="repo"><span data-en="Repository">Repositorio</span><select id="repo" disabled><option data-en="Loading…">Cargando…</option></select></label>
       <p id="description"></p>
-      <label class="remote"><input id="remote" type="checkbox"> <span data-en="Allow sending evidence to the configured remote provider">Permitir enviar evidencias al proveedor remoto configurado</span></label>
+      <label class="remote"><input id="remote" type="checkbox"> <span data-en="Allow sending context to the configured remote provider">Permitir enviar contexto al proveedor remoto configurado</span></label>
       <button id="clear" class="secondary" type="button" data-en="New conversation">Nueva conversación</button>
     </section>
     <section class="workspace" aria-label="Chat">
-      <div class="notice" data-en="Each question is independent. History stays in this tab and is never sent to the model.">Cada pregunta es independiente. El historial solo se muestra en esta pestaña y no se envía al modelo.</div>
+      <div class="notice" data-en="CodeTrace keeps the last three turns per repository on this computer. CodeTrace can include that context in model requests.">CodeTrace guarda los últimos tres turnos por repositorio en este equipo. CodeTrace puede incluir ese contexto en las peticiones al modelo.</div>
+      <details class="conversation-session">
+        <summary data-en="Conversation ID">ID de conversación</summary>
+        <label for="session" data-en="Copy the ID or paste one to continue a conversation">Copia el ID o pega uno para continuar una conversación</label>
+        <input id="session" type="text" maxlength="32" size="32" autocomplete="off" spellcheck="false">
+      </details>
       <div id="messages" aria-live="polite" aria-relevant="additions"><div id="empty"><span class="eyebrow" data-en="EXPLORE THE REPOSITORY">EXPLORA EL REPOSITORIO</span><h2 data-en="Start with a specific question.">Empieza por una pregunta concreta.</h2><p data-en="For example: Where is authentication implemented, and which functions are involved?">Por ejemplo: ¿Dónde se implementa la autenticación y qué funciones intervienen?</p><p data-en="Answers and their sources will appear here.">Las respuestas aparecerán aquí, junto a sus fuentes.</p></div></div>
       <form id="form"><label for="question" data-en="Your question">Tu pregunta</label><textarea id="question" rows="3" maxlength="12000" placeholder="¿Qué quieres saber del código?" data-en-placeholder="What do you want to know about the code?" required></textarea><div class="compose-footer"><span id="status" role="status" data-en="Loading repositories…">Cargando repositorios…</span><button id="send" disabled data-en="Ask →">Consultar →</button></div></form>
     </section>

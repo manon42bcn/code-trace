@@ -45,7 +45,7 @@ El selector equivale a `--repo`: establece explícitamente el repositorio. No es
 
 La respuesta se muestra como texto conservando sus saltos de línea, sin ejecutar HTML ni interpretar Markdown. Las evidencias conservan el contenido recuperado, archivo, líneas, certeza y distinción entre fuente citada y contexto. Se señala cuando un fragmento está truncado. Si las fuentes han cambiado, el estado muestra la necesidad de actualización y la orden incremental sugerida; no reconstruye índices automáticamente.
 
-Para proveedores remotos, activar **Permitir enviar evidencias al proveedor remoto configurado** antes de consultar. Esto transmite `--allow-remote` a `answer`; no cambia de proveedor ni de modelo. Ollama mantiene el comportamiento de la CLI con la URL configurada.
+Para proveedores remotos, activar **Permitir enviar contexto al proveedor remoto configurado** antes de consultar. Esto transmite `--allow-remote` a `answer`; no cambia de proveedor ni de modelo. La autorización también cubre Ollama cuando el endpoint está fuera del equipo.
 
 Los errores de configuración, índices o proveedor se muestran en la conversación. Si el proceso no devuelve un error JSON legible, el chat ofrece un mensaje genérico sin exponer stderr. Para diagnosticar:
 
@@ -56,7 +56,25 @@ make check-provider
 
 ## Historial y ejecución
 
-Esta primera versión conserva el historial solo en memoria de la pestaña. **Las preguntas son independientes:** no se envían mensajes anteriores al modelo. Para una pregunta de seguimiento, incluir el contexto necesario en el propio texto. Recargar, cerrar la pestaña o pulsar **Nueva conversación** elimina el historial visible; este botón no modifica los índices.
+CodeTrace guarda los últimos tres turnos completados por repositorio y conversación
+en `indexes/.conversations/conversations.sqlite3`, dentro del directorio de
+configuración. La base está ignorada por Git en el checkout. El modelo puede
+usar esos turnos para interpretar referencias de seguimiento. Cada pregunta
+consulta el índice y valida las citas contra las evidencias recuperadas en ese turno.
+
+El chat guarda el ID en la pestaña para continuar tras recargar. **Nueva conversación**
+limpia la vista y comienza una sesión nueva en la siguiente consulta. La sesión
+anterior sigue disponible por su ID. El panel **ID de conversación** permite copiar
+el ID o pegar uno existente. Usa la misma configuración al continuar desde otro acceso.
+
+```bash
+code-trace answer --config config.json --repo aicc-tests --session new '¿Qué steps crean agentes?'
+code-trace query --mode answer --config config.json --repo aicc-tests --session ID '¿Dónde se implementa el primero?'
+```
+
+Reemplaza `ID` por el valor `session` de la primera respuesta. La terminal
+interactiva también acepta `--session new` o `--session ID`. Las consultas
+desde la CLI sin `--session` son independientes.
 
 El servidor admite una consulta activa a la vez y devuelve un aviso si otra pestaña intenta consultar simultáneamente. No hay streaming ni cancelación desde el navegador. Cerrar la pestaña no cancela una consulta en curso; esta termina o agota su tiempo máximo. El proceso hijo vuelve a cargar los recursos en cada pregunta, igual que una llamada independiente a la CLI.
 
@@ -64,7 +82,7 @@ El servidor lee `config.json` al listar repositorios y ejecutar consultas. Tras 
 
 ## Acceso local
 
-El servidor escucha exclusivamente en `127.0.0.1`, valida Host y Origin y requiere un token de sesión para las API. No expone rutas arbitrarias del sistema de archivos ni la configuración completa. Los recursos de la interfaz se incluyen en el paquete Python y no cargan servicios externos. Las preguntas y respuestas no se guardan en un historial del chat ni se registran en su log HTTP; el proveedor conserva su propia política de tratamiento de datos.
+El servidor escucha exclusivamente en `127.0.0.1`, valida Host y Origin y requiere un token de sesión para las API. No expone rutas arbitrarias del sistema de archivos ni la configuración completa. Los recursos de la interfaz se incluyen en el paquete Python y no cargan servicios externos. Las preguntas y respuestas de una sesión se guardan en la base local y se omiten del log HTTP. El proveedor conserva su propia política de tratamiento de datos.
 
 Está pensado para uso personal en el equipo local, sin autenticación de usuarios, publicación en red ni acceso multiusuario. La protección de sesión restringe peticiones desde otros orígenes del navegador; no a procesos del mismo usuario que puedan abrir la página local.
 

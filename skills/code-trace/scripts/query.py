@@ -60,6 +60,8 @@ def build_command(config_path, args):
         command.append('--resolve-only')
     if args.repo is not None:
         command += ['--repo', args.repo]
+    if getattr(args, 'session', None) is not None:
+        command += ['--session', args.session]
     if args.report:
         command += ['--report', str(args.report.resolve())]
     if args.allow_remote:
@@ -86,6 +88,7 @@ def main(argv=None):
     parser.add_argument('--limit', type=int)
     parser.add_argument('--max-chunks', type=int)
     parser.add_argument('--max-chars', type=int)
+    parser.add_argument('--session', help='Resume a local conversation by ID, or start with new')
     parser.add_argument('--report', type=Path)
     parser.add_argument('--allow-remote', action='store_true')
     args = parser.parse_args(argv)

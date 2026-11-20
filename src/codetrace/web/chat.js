@@ -13,6 +13,14 @@ if (english) {
 }
 let repositories = [];
 let pending = false;
+const sessionKey = 'codetrace-conversation';
+$('session').value = sessionStorage.getItem(sessionKey) || '';
+function storeSession(id) {
+  $('session').value = id;
+  if (id) sessionStorage.setItem(sessionKey, id);
+  else sessionStorage.removeItem(sessionKey);
+}
+$('session').addEventListener('change', () => storeSession($('session').value.trim()));
 function node(tag, text, className) {
   const el = document.createElement(tag);
   if (text !== undefined) el.textContent = String(text);
@@ -96,6 +104,7 @@ function showAnswer(result) {
 }
 $('repo').addEventListener('change', describe);
 $('clear').addEventListener('click', () => {
+  storeSession('');
   $('messages').replaceChildren(node('p', t('Conversación vacía. Escribe una nueva pregunta.', 'Conversation cleared. Ask a new question.'), 'limitations'));
   $('question').focus();
 });
@@ -104,7 +113,7 @@ $('form').addEventListener('submit', async event => {
   const question = $('question').value.trim();
   if (pending || !question || !$('repo').value) return;
   pending = true;
-  ['send', 'repo', 'remote', 'clear'].forEach(id => $(id).disabled = true);
+  ['send', 'repo', 'remote', 'clear', 'session'].forEach(id => $(id).disabled = true);
   message(`${t('Tú ·', 'You ·')} ${$('repo').value}`, 'question').append(node('div', question, 'question-text'));
   $('question').value = '';
   const indicator = node('div', undefined, 'message pending-answer');
@@ -118,7 +127,15 @@ $('form').addEventListener('submit', async event => {
   scroll();
   let focus = 'question';
   try {
-    showAnswer(await api('/api/answer', {method: 'POST', body: JSON.stringify({question, repo: $('repo').value, allow_remote: $('remote').checked})}));
+    const result = await api('/api/answer', {
+      method: 'POST',
+      body: JSON.stringify({
+        question, repo: $('repo').value, allow_remote: $('remote').checked,
+        session: $('session').value.trim() || 'new'
+      })
+    });
+    if (result.session) storeSession(result.session);
+    showAnswer(result);
     $('status').textContent = t('Consulta completada', 'Request completed');
   } catch (error) {
     $('question').value = question;
@@ -139,7 +156,7 @@ $('form').addEventListener('submit', async event => {
   } finally {
     indicator.remove();
     pending = false;
-    ['send', 'repo', 'remote', 'clear'].forEach(id => $(id).disabled = false);
+    ['send', 'repo', 'remote', 'clear', 'session'].forEach(id => $(id).disabled = false);
     scroll();
     $(focus).focus();
   }
