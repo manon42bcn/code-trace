@@ -7,7 +7,10 @@ from contextlib import contextmanager
 
 
 @contextmanager
-def timed(metrics: dict, name: str):
+def timed(metrics: dict | None, name: str):
+    if metrics is None:
+        yield
+        return
     started = time.perf_counter()
     try:
         yield

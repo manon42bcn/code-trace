@@ -484,6 +484,7 @@ def render_query(
         semantic_store=stores,
         embedding_provider=embedding_provider,
         generation_provider=provider,
+        metrics_source='agent_query',
         allow_remote=args.allow_remote,
         search_filters=filters if source_scope is None else None,
     )

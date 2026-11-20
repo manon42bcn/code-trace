@@ -189,6 +189,15 @@ El análisis de flujo sigue llamadas estáticas entre símbolos Python e identif
 
 El historial del chat solo permanece en la pestaña. Cada pregunta es independiente y no recibe automáticamente la conversación anterior. Las consultas utilizan la instantánea indexada; los avisos de frescura no reconstruyen los índices por sí solos.
 
+Las consultas con generación del chat, `answer`, el modo de respuesta para agentes y
+`evaluate-rag` guardan métricas en `indexes/reports/requests.jsonl`, relativo al
+directorio de ejecución e ignorado por Git en el checkout de CodeTrace. Cada línea
+identifica el origen, el proveedor, el modelo, el estado y los tiempos en segundos.
+Las comprobaciones de proveedor se identifican como `check_provider`. El historial
+omite preguntas, evidencias, respuestas y mensajes de error. El tiempo total mide
+el pipeline dentro de CodeTrace, desde la recuperación hasta la validación cuando
+esas etapas forman parte de la consulta.
+
 ## Desarrollo y documentación
 
 ```bash

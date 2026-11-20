@@ -144,7 +144,11 @@ def main(argv=None):
     p.add_argument('--index', type=Path, required=True)
     p.add_argument('--relationships', type=Path, required=True)
     p.add_argument('--config', type=Path)
-    p.add_argument('--output', type=Path, required=True)
+    p.add_argument(
+        '--output',
+        type=Path,
+        help='Explicit report path. Defaults to indexes/reports/evaluate-rag-<run-id>.json.',
+    )
     p.add_argument('--allow-remote', action='store_true')
     sub.add_parser('check-provider', help='Verify the generation provider (check-provider --help)')
     sub.add_parser('embed', help='Prepare configured semantic vectors (embed --help)')
@@ -311,6 +315,7 @@ def main(argv=None):
             print(json.dumps(results, ensure_ascii=False, indent=2))  # noqa: T201 - CLI output
         elif args.command == 'evaluate-rag':
             import time
+            from uuid import uuid4
 
             from .generation_config import load_generation_config
             from .generation_factory import build_generation_provider
@@ -331,9 +336,12 @@ def main(argv=None):
             )
             generation = load_generation_config()
             provider = build_generation_provider(generation)
+            if provider is None:
+                raise ValueError('evaluate-rag requires a configured generation provider')
             started = time.perf_counter()
 
             def run(query):
+                timings = {}
                 result = answer(
                     query,
                     index=index,
@@ -344,17 +352,23 @@ def main(argv=None):
                     allow_remote=args.allow_remote,
                     semantic_store=stores,
                     embedding_provider=embedding_provider,
+                    timings=timings,
+                    metrics_source='evaluate_rag',
                 )
-                return result
+                return {**result, 'timings': timings}
 
-            report = evaluate_rag_dataset(dataset, run)
+            report = evaluate_rag_dataset(dataset, run, include_queries=args.output is not None)
             report['elapsed_seconds'] = time.perf_counter() - started
-            print(json.dumps(report, ensure_ascii=False, indent=2))  # noqa: T201 - CLI output
-            if args.output:
-                args.output.parent.mkdir(parents=True, exist_ok=True)
-                args.output.write_text(
-                    json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
-                )
+            report['provider'] = generation.provider
+            report['model'] = generation.model
+            output = args.output or Path('indexes/reports') / f'evaluate-rag-{uuid4().hex}.json'
+            report['report_path'] = str(output)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            payload = json.dumps(report, ensure_ascii=False, indent=2)
+            output.write_text(payload + '\n', encoding='utf-8')
+            print(payload)  # noqa: T201 - CLI output
+            if report['failures']:
+                return 1
         elif args.command == 'answer':
             from .answer_command import run_answer
 

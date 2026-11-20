@@ -15,6 +15,8 @@ from urllib.parse import urlsplit
 
 from .generation_config import GenerationConfig, GenerationSetupError, generation_environment
 from .generation_factory import build_generation_provider
+from .latency import timed
+from .request_metrics import request_metrics
 
 PROBE = (
     'Return exactly this JSON object, with no additional text: '
@@ -99,8 +101,16 @@ def check_provider(raw, *, allow_remote=False):
     # Exercise the same provider adapter as a real query, with no repository content.
     bounded = replace(config, max_tokens=min(config.max_tokens, 128))
     try:
-        provider = build_generation_provider(bounded)
-        result = provider.generate(PROBE)
+        with request_metrics('check_provider', config.provider, config.model) as timings:
+            provider = build_generation_provider(bounded)
+            with timed(timings, 'generation_seconds'):
+                result = provider.generate(PROBE)
+            if result.refusal or not isinstance(result.answer, str) or not result.answer.strip():
+                raise ProviderCheckError(
+                    'invalid_response', 'Provider refused the probe or returned an empty answer.'
+                )
+    except ProviderCheckError:
+        raise
     except GenerationSetupError as exc:
         raise ProviderCheckError('provider_setup_failed', str(exc)) from exc
     except Exception as exc:
@@ -148,10 +158,6 @@ def check_provider(raw, *, allow_remote=False):
                 'Provider probe failed; check credentials, configuration, and service logs.',
             )
         raise ProviderCheckError(code, message) from exc
-    if result.refusal or not isinstance(result.answer, str) or not result.answer.strip():
-        raise ProviderCheckError(
-            'invalid_response', 'Provider refused the probe or returned an empty answer.'
-        )
     return {
         'provider': config.provider,
         'model': config.model,
