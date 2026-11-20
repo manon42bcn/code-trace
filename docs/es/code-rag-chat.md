@@ -45,7 +45,7 @@ El selector equivale a `--repo`: establece explícitamente el repositorio. No es
 
 La respuesta se muestra como texto conservando sus saltos de línea, sin ejecutar HTML ni interpretar Markdown. Las evidencias conservan el contenido recuperado, archivo, líneas, certeza y distinción entre fuente citada y contexto. Se señala cuando un fragmento está truncado. Si las fuentes han cambiado, el estado muestra la necesidad de actualización y la orden incremental sugerida; no reconstruye índices automáticamente.
 
-Para proveedores remotos, activar **Permitir enviar contexto al proveedor remoto configurado** antes de consultar. Esto transmite `--allow-remote` a `answer`; no cambia de proveedor ni de modelo. La autorización también cubre Ollama cuando el endpoint está fuera del equipo.
+La casilla **Permitir enviar contexto al proveedor remoto configurado** está marcada por defecto. Puedes desmarcarla antes de consultar. El chat pasa `--allow-remote` a `answer` cuando la casilla está marcada. La autorización también cubre Ollama cuando el endpoint está fuera del equipo.
 
 Los errores de configuración, índices o proveedor se muestran en la conversación. Si el proceso no devuelve un error JSON legible, el chat ofrece un mensaje genérico sin exponer stderr. Para diagnosticar:
 
@@ -118,7 +118,10 @@ Se puede preguntar «¿Cuál es la primera función al llegar una petición?», 
 
 ## Identidad visual (0.9.22)
 
-La cabecera integra el logo CodeTrace para fondos claros de `img/codetrace-logo-light.svg`. Su copia en `src/codetrace/web/` se distribuye con el paquete Python y se sirve localmente, sin recursos externos. Al actualizar ese logo, sincronizar ambos archivos. El tamaño se adapta al ancho disponible en escritorio y móvil.
+La cabecera combina el ícono de `assets/branding/codetrace-dark-logo.svg` con el
+nombre CodeTrace en texto. El chat también usa el ícono en la pestaña del
+navegador. La copia de `src/codetrace/web/` se distribuye con el paquete Python
+y se sirve localmente. Si se actualiza el original, sincroniza esa copia.
 
 ## Nombre del proyecto (0.9.23)
 

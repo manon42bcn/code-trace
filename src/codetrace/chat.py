@@ -18,7 +18,9 @@ from dotenv import dotenv_values
 from .chat_worker import ChatWorker
 from .conversation import valid_session
 from .generation_config import load_generation_config
+from .repository_paths import repository_index_path
 from .request_metrics import CHAT_REQUEST_ENV, request_metrics
+from .sqlite_index import sqlite_index_path
 
 WEB = Path(__file__).with_name('web')
 MAX_REQUEST_BYTES = 32768
@@ -86,18 +88,35 @@ class ChatApplication:
         if self.worker is not None:
             self.worker.close()
 
-    def repositories(self):
+    def repositories(self, *, include_backend=False):
         raw = json.loads(self.config.read_text(encoding='utf-8'))
         repositories = raw.get('repositories')
         if not isinstance(repositories, dict) or not repositories:
             raise ValueError('La configuración debe incluir repositories')
-        return {
-            'repositories': [
-                {'name': name, 'description': item.get('description', '')}
-                for name, item in repositories.items()
-            ],
-            'default_repository': raw.get('default_repository'),
-        }
+        entries = []
+        for name, item in repositories.items():
+            entry = {'name': name, 'description': item.get('description', '')}
+            if include_backend:
+                path = repository_index_path(raw, self.config, name)
+                if sqlite_index_path(path).is_file():
+                    entry['index_backend'] = 'sqlite'
+                elif path.is_file():
+                    entry['index_backend'] = 'json'
+                else:
+                    entry['index_backend'] = 'missing'
+            entries.append(entry)
+        return {'repositories': entries, 'default_repository': raw.get('default_repository')}
+
+    def runtime(self, ip):
+        try:
+            generation = load_generation_config()
+        except ValueError:
+            return {'ip': ip, 'provider': None, 'model': None}
+        provider = generation.provider
+        model = generation.model if provider != 'none' else None
+        if provider == 'mlx':
+            model = Path(model).name
+        return {'ip': ip, 'provider': provider, 'model': model}
 
     def answer(self, request):
         if not isinstance(request, dict):
@@ -265,12 +284,16 @@ class ChatHandler(BaseHTTPRequestHandler):
         try:
             self.trusted(api=self.path.startswith('/api/'))
             if self.path == '/api/repositories':
-                self.send(200, self.server.application.repositories())
+                application = self.server.application
+                data = application.repositories(include_backend=True)
+                data['runtime'] = application.runtime(self.server.server_address[0])
+                self.send(200, data)
                 return
             files = {
                 '/': ('index.html', 'text/html'),
                 '/chat.js': ('chat.js', 'text/javascript'),
                 '/chat.css': ('chat.css', 'text/css'),
+                '/codetrace-dark-logo.svg': ('codetrace-dark-logo.svg', 'image/svg+xml'),
                 '/codetrace-logo-light.svg': ('codetrace-logo-light.svg', 'image/svg+xml'),
             }
             if self.path not in files:

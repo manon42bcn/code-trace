@@ -11,6 +11,25 @@ if (english) {
     });
   }
 }
+const themeToggle = $('dark-mode');
+const themeKey = 'codetrace-theme';
+try {
+  themeToggle.checked = localStorage.getItem(themeKey) === 'dark';
+} catch {
+  // The toggle still works when storage is unavailable.
+}
+function applyTheme() {
+  document.documentElement.dataset.theme = themeToggle.checked ? 'dark' : 'light';
+}
+applyTheme();
+themeToggle.addEventListener('change', () => {
+  applyTheme();
+  try {
+    localStorage.setItem(themeKey, document.documentElement.dataset.theme);
+  } catch {
+    // Keep the selected theme for this page.
+  }
+});
 let repositories = [];
 let pending = false;
 const sessionKey = 'codetrace-conversation';
@@ -38,7 +57,16 @@ async function api(path, options = {}) {
   return data;
 }
 function describe() {
-  $('description').textContent = repositories.find(r => r.name === $('repo').value)?.description || '';
+  const repo = repositories.find(r => r.name === $('repo').value);
+  $('description').textContent = repo?.description || '';
+  const backends = {sqlite: 'SQLite', json: 'JSON', missing: t('Sin preparar', 'Not prepared')};
+  $('runtime-index').textContent = backends[repo?.index_backend] || '—';
+}
+function describeModel(provider, model) {
+  $('runtime-provider').textContent = provider === 'none'
+    ? t('Sin configurar', 'Not configured')
+    : provider || t('No disponible', 'Unavailable');
+  $('runtime-model').textContent = (provider === 'mlx' ? model?.split('/').filter(Boolean).pop() : model) || '—';
 }
 function message(label, className = '') {
   $('empty')?.remove();
@@ -55,6 +83,12 @@ function details(title, content) {
 }
 function showAnswer(result) {
   const answer = result.answer;
+  describeModel(answer.provider, answer.model);
+  const repo = repositories.find(r => r.name === $('repo').value);
+  if (repo && result.index_backend) {
+    repo.index_backend = result.index_backend;
+    describe();
+  }
   const block = message('CodeTrace');
   block.append(node('div', `${result.repository || $('repo').value} · ${answer.provider} · ${answer.model}`, 'metadata'));
   // Provider and repository text stays inert: no HTML/Markdown evaluation or remote resources.
@@ -167,6 +201,8 @@ api('/api/repositories').then(data => {
     const option = node('option', repo.name); option.value = repo.name; return option;
   }));
   if (repositories.some(r => r.name === data.default_repository)) $('repo').value = data.default_repository;
+  $('runtime-ip').textContent = data.runtime.ip || '—';
+  describeModel(data.runtime.provider, data.runtime.model);
   describe();
   $('repo').disabled = $('send').disabled = false;
   $('status').textContent = t('Listo para consultar', 'Ready for questions');

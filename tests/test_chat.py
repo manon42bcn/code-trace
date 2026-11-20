@@ -5,6 +5,7 @@ import subprocess
 import sys
 import threading
 from http.client import HTTPConnection
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -121,20 +122,33 @@ def test_chat_language_from_dotenv(
             thread.join(timeout=3)
 
 
-def test_static_ui_and_repository_list_do_not_expose_configuration(server):
+def test_static_ui_and_repository_list_do_not_expose_configuration(server, monkeypatch):
+    monkeypatch.setenv('CODETRACE_GENERATION_PROVIDER', 'mlx')
+    monkeypatch.setenv('CODETRACE_GENERATION_MODEL', '/private-models/example-model')
     status, headers, body = request(server, 'GET', '/')
     assert status == 200
     assert server.application.token.encode() in body
     assert b'__CHAT_TOKEN__' not in body
+    assert b'src="/codetrace-dark-logo.svg"' in body
+    assert b'rel="icon" type="image/svg+xml" href="/codetrace-dark-logo.svg"' in body
+    assert b'<span>Code<span class="brand-accent">Trace</span></span>' in body
+    assert b'id="runtime-model"' in body
     assert headers['Cache-Control'] == 'no-store'
     assert "frame-ancestors 'none'" in headers['Content-Security-Policy']
     status, _, body = request(server, 'GET', '/api/repositories')
     assert status == 200
     assert json.loads(body) == {
-        'repositories': [{'name': 'demo', 'description': 'Ejemplo'}],
+        'repositories': [{'name': 'demo', 'description': 'Ejemplo', 'index_backend': 'missing'}],
         'default_repository': 'demo',
+        'runtime': {'ip': '127.0.0.1', 'provider': 'mlx', 'model': 'example-model'},
     }
     assert b'PRIVATE' not in body
+    assert b'/private-models' not in body
+    status, headers, icon = request(server, 'GET', '/codetrace-dark-logo.svg')
+    assert status == 200
+    assert headers['Content-Type'].startswith('image/svg+xml')
+    original = Path(__file__).resolve().parents[1] / 'assets/branding/codetrace-dark-logo.svg'
+    assert icon == original.read_bytes()
     for path in ('/chat.js', '/chat.css', '/codetrace-logo-light.svg'):
         assert request(server, 'GET', path)[0] == 200
     for path in ('/config.json', '/../config.json', '/api/unknown'):
