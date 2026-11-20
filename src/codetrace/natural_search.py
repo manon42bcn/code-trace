@@ -37,7 +37,7 @@ def natural_signal(chunk, plan, matched=None, anchors=None):
     }
 
 
-def search_natural(index, plan, *, kind='any', limit=50):
+def search_natural(index, plan, *, kind='any', limit=50, document_count=None):
     terms = {term: set(forms) for term, forms in plan['lexical_variants'].items()}
     fields = ('symbol', 'path', 'content') if kind == 'any' else (kind,)
     documents = []
@@ -57,7 +57,7 @@ def search_natural(index, plan, *, kind='any', limit=50):
         if matched or anchors:
             frequencies.update(matched)
             documents.append((chunk, tokens, matched, anchors))
-    count = len(index.get('chunks', []))
+    count = len(index.get('chunks', [])) if document_count is None else document_count
     weights = {'symbol': 3.0, 'path': 2.0, 'content': 1.0}
     results = []
     for chunk, tokens, matched, anchors in documents:

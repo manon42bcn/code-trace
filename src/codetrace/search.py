@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .evidence_context import chunk_lookup
 from .hybrid_search import hybrid_search
 from .lexical_search import search_index
 from .query_planning import active_sources, plan_query
@@ -108,7 +109,7 @@ def search_hybrid(
         semantic,
         access=access,
         limit=limit,
-        chunks={chunk['id']: chunk for chunk in index.get('chunks', [])},
+        chunks=chunk_lookup(index),
         term=term,
         query_plan=query_plan if mode != 'semantic' else None,
     )

@@ -15,8 +15,10 @@ from urllib.parse import urlsplit
 
 from dotenv import dotenv_values
 
+from .chat_worker import ChatWorker
 from .conversation import valid_session
-from .request_metrics import CHAT_REQUEST_ENV
+from .generation_config import load_generation_config
+from .request_metrics import CHAT_REQUEST_ENV, request_metrics
 
 WEB = Path(__file__).with_name('web')
 MAX_REQUEST_BYTES = 32768
@@ -68,7 +70,7 @@ class ChatError(Exception):
 
 
 class ChatApplication:
-    def __init__(self, config, *, timeout=600):
+    def __init__(self, config, *, timeout=600, reuse_mlx=True):
         self.config = Path(config).resolve()
         dotenv = dotenv_values('.env', interpolate=False) if Path('.env').is_file() else {}
         self.language = (os.getenv('CHAT_LANG', dotenv.get('CHAT_LANG')) or 'es').strip().lower()
@@ -77,7 +79,12 @@ class ChatApplication:
         self.timeout = timeout
         self.token = secrets.token_urlsafe(32)
         self.busy = threading.Lock()
+        self.worker = ChatWorker() if reuse_mlx else None
         self.repositories()  # Fail before opening a browser if configuration is invalid.
+
+    def close(self):
+        if self.worker is not None:
+            self.worker.close()
 
     def repositories(self):
         raw = json.loads(self.config.read_text(encoding='utf-8'))
@@ -110,10 +117,7 @@ class ChatApplication:
         if not self.busy.acquire(blocking=False):
             raise ChatError('Hay una consulta en curso. Espera a que termine.', 409)
         try:
-            command = [
-                sys.executable,
-                '-m',
-                'codetrace',
+            argv = [
                 'answer',
                 '--config',
                 str(self.config),
@@ -121,60 +125,85 @@ class ChatApplication:
                 repo,
             ]
             if session is not None:
-                command.extend(['--session', session])
+                argv.extend(['--session', session])
             if remote:
-                command.append('--allow-remote')
+                argv.append('--allow-remote')
             # End of options keeps question text from becoming CLI arguments.
-            command.extend(['--', question.strip()])
+            argv.extend(['--', question.strip()])
             try:
-                result = subprocess.run(
-                    command,
-                    capture_output=True,
-                    text=True,
-                    encoding='utf-8',
-                    timeout=self.timeout,
-                    check=False,
-                    env={**os.environ, CHAT_REQUEST_ENV: '1'},
-                )
-            except subprocess.TimeoutExpired as exc:
-                raise ChatError(
-                    'Se agotó el tiempo de la consulta. Puedes volver a intentarlo.', 504
-                ) from exc
-            try:
-                output = json.loads(result.stdout)
-            except (json.JSONDecodeError, TypeError) as exc:
-                # Stderr may include provider secrets. Keep it in the local process, off the API.
-                raise ChatError(
-                    'CodeTrace no devolvió JSON válido. '
-                    'Revisa el proveedor y los índices con codetrace doctor.',
-                    502,
-                ) from exc
-            if not isinstance(output, dict):
-                raise ChatError('Respuesta de CodeTrace no válida', 502)
-            if result.returncode or output.get('error'):
-                error = output.get('error') or {}
-                code = error.get('code')
-                if code in ('ambiguous_repository', 'conflicting_repository'):
-                    candidates = error.get('candidates', [])
-                    if isinstance(candidates, list):
-                        candidates = sorted(
-                            {name for name in candidates if isinstance(name, str) and name in names}
+                generation = load_generation_config()
+            except ValueError:
+                generation = None  # The CLI will report the configuration error.
+            provider = generation.provider if generation is not None else None
+            model = generation.model if generation is not None and provider != 'none' else None
+            persistent = self.worker is not None and provider == 'mlx'
+            if self.worker is not None and not persistent:
+                self.worker.reset()
+            source = 'chat_request_persistent' if persistent else 'chat_request_subprocess'
+            details = {}
+            with request_metrics(source, provider, model, details=details):
+                try:
+                    if persistent:
+                        result = self.worker.run(argv, timeout=self.timeout)
+                    else:
+                        result = subprocess.run(
+                            [sys.executable, '-m', 'codetrace', *argv],
+                            capture_output=True,
+                            text=True,
+                            encoding='utf-8',
+                            timeout=self.timeout,
+                            check=False,
+                            env={**os.environ, CHAT_REQUEST_ENV: '1'},
                         )
-                        if len(candidates) > 1:
-                            raise ChatError(
-                                'La pregunta coincide con varios repositorios. '
-                                'Selecciona uno y vuelve a enviarla.',
-                                409,
-                                code=code,
-                                candidates=candidates,
+                except subprocess.TimeoutExpired as exc:
+                    raise ChatError(
+                        'Se agotó el tiempo de la consulta. Puedes volver a intentarlo.', 504
+                    ) from exc
+                except OSError as exc:
+                    raise ChatError(
+                        'No se pudo ejecutar CodeTrace. Revisa la configuración local.', 502
+                    ) from exc
+                try:
+                    output = json.loads(result.stdout)
+                except (json.JSONDecodeError, TypeError) as exc:
+                    # Keep child diagnostics off the API.
+                    raise ChatError(
+                        'CodeTrace no devolvió JSON válido. '
+                        'Revisa el proveedor y los índices con codetrace doctor.',
+                        502,
+                    ) from exc
+                if not isinstance(output, dict):
+                    raise ChatError('Respuesta de CodeTrace no válida', 502)
+                if output.get('index_backend') in ('sqlite', 'json'):
+                    details['index_backend'] = output['index_backend']
+                if result.returncode or output.get('error'):
+                    error = output.get('error') or {}
+                    code = error.get('code')
+                    if code in ('ambiguous_repository', 'conflicting_repository'):
+                        candidates = error.get('candidates', [])
+                        if isinstance(candidates, list):
+                            candidates = sorted(
+                                {
+                                    name
+                                    for name in candidates
+                                    if isinstance(name, str) and name in names
+                                }
                             )
-                message = error.get('message', 'No se pudo completar la consulta')
-                raise ChatError(str(message), 502)
-            if not output.get('generated') or not isinstance(output.get('answer'), dict):
-                raise ChatError(
-                    'Configura un proveedor de generación disponible en config.json.', 502
-                )
-            return output
+                            if len(candidates) > 1:
+                                raise ChatError(
+                                    'La pregunta coincide con varios repositorios. '
+                                    'Selecciona uno y vuelve a enviarla.',
+                                    409,
+                                    code=code,
+                                    candidates=candidates,
+                                )
+                    message = error.get('message', 'No se pudo completar la consulta')
+                    raise ChatError(str(message), 502)
+                if not output.get('generated') or not isinstance(output.get('answer'), dict):
+                    raise ChatError(
+                        'Configura un proveedor de generación disponible en config.json.', 502
+                    )
+                return output
         finally:
             self.busy.release()
 
@@ -294,19 +323,27 @@ def main(argv=None):
         '--timeout', type=int, default=600, help='Tiempo máximo por consulta, segundos'
     )
     parser.add_argument('--no-browser', action='store_true')
+    parser.add_argument(
+        '--fresh-process', action='store_true', help='Ejecutar cada consulta en un proceso nuevo'
+    )
     args = parser.parse_args(argv)
     if not 0 <= args.port <= 65535 or args.timeout < 1:
         parser.error('Puerto o tiempo máximo no válido')
     try:
-        application = ChatApplication(args.config, timeout=args.timeout)
+        application = ChatApplication(
+            args.config, timeout=args.timeout, reuse_mlx=not args.fresh_process
+        )
         server = ChatServer(('127.0.0.1', args.port), application)
     except (OSError, ValueError, TypeError, AttributeError) as exc:
         parser.exit(2, f'No se pudo iniciar el chat: {exc}\n')
-    with server:
-        print(f'CodeTrace: {server.origin} · Ctrl+C para detener', flush=True)  # noqa: T201
-        if not args.no_browser:
-            webbrowser.open(server.origin)
-        try:
-            server.serve_forever()
-        except KeyboardInterrupt:
-            pass
+    try:
+        with server:
+            print(f'CodeTrace: {server.origin} · Ctrl+C para detener', flush=True)  # noqa: T201
+            if not args.no_browser:
+                webbrowser.open(server.origin)
+            try:
+                server.serve_forever()
+            except KeyboardInterrupt:
+                pass
+    finally:
+        application.close()

@@ -28,8 +28,13 @@ def answer_query(
             context, allow_remote=allow_remote or is_local_generation_provider(provider)
         )
         prompt = build_grounded_prompt(query, context, history=history)
-        with timed(timings, 'generation_seconds'):
-            result = provider.generate(prompt, metadata=metadata)
+        try:
+            with timed(timings, 'generation_seconds'):
+                result = provider.generate(prompt, metadata=metadata)
+        finally:
+            provider_timings = getattr(provider, 'last_timings', None)
+            if timings is not None and isinstance(provider_timings, dict):
+                timings.update(provider_timings)
         if not isinstance(result, GenerationResult):
             raise TypeError('generation provider must return GenerationResult')
         with timed(timings, 'validation_seconds'):

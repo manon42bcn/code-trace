@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .generation import GenerationResult
 from .generation_config import GenerationSetupError
+from .latency import timed
 from .structured_generation import parse_generation_json
 
 
@@ -27,9 +28,11 @@ class MLXProvider:
         # Pass an existing absolute path so MLX LM does not resolve a Hub model ID.
         self._model_path = model_path.resolve()
         self._loaded = None
+        self.last_timings = {}
 
     def generate(self, prompt: str, *, metadata=None) -> GenerationResult:  # noqa: ARG002 - Provider interface
         """Apply the chat template and decode the completion as structured JSON."""
+        self.last_timings = {}
         # Keep the optional runtime out of CodeTrace's import path for other providers.
         try:
             from mlx_lm import generate, load
@@ -40,7 +43,8 @@ class MLXProvider:
 
         if self._loaded is None:
             try:
-                self._loaded = load(self._model_path)
+                with timed(self.last_timings, 'mlx_model_load_seconds'):
+                    self._loaded = load(self._model_path)
             except (OSError, ValueError, RuntimeError) as exc:
                 raise GenerationSetupError('Cannot load the local MLX LM model') from exc
 
@@ -50,9 +54,10 @@ class MLXProvider:
                 prompt = tokenizer.apply_chat_template(
                     [{'role': 'user', 'content': prompt}], add_generation_prompt=True
                 )
-            text = generate(
-                model, tokenizer, prompt=prompt, max_tokens=self.max_tokens, verbose=False
-            )
+            with timed(self.last_timings, 'mlx_inference_seconds'):
+                text = generate(
+                    model, tokenizer, prompt=prompt, max_tokens=self.max_tokens, verbose=False
+                )
         except (OSError, RuntimeError, ValueError) as exc:
             raise ValueError('MLX could not generate a completion with the local model') from exc
         try:

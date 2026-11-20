@@ -10,7 +10,7 @@ from .repository_paths import (
 )
 
 
-def main(argv=None):
+def main(argv=None, *, provider_factory=None):
     import sys
 
     argv = sys.argv[1:] if argv is None else argv
@@ -69,6 +69,8 @@ def main(argv=None):
     p.add_argument(
         '--incremental', action='store_true', help='Reutilizar chunks de archivos sin cambios'
     )
+    p = sub.add_parser('prepare-sqlite', help='Build a SQLite snapshot from an existing JSON index')
+    p.add_argument('index', type=Path)
     p = sub.add_parser('link')
     p.add_argument('--config', type=Path, default=Path('config.json'))
     p.add_argument('--repo', required=True)
@@ -197,6 +199,10 @@ def main(argv=None):
                 excludes=args.exclude,
                 incremental=args.incremental,
             )
+            from .sqlite_index import prepare_sqlite_index
+
+            sqlite_output = prepare_sqlite_index(output, index=result)
+            print(f'Índice SQLite: {sqlite_output}')  # noqa: T201 - CLI output
             for diagnostic in result.get('diagnostics', []):
                 if diagnostic.get('type') == 'python_syntax_warning':
                     location = source / diagnostic['path']
@@ -218,6 +224,10 @@ def main(argv=None):
                     f'Exclusiones aplicadas: {len(result["excluded_paths"])} rutas '
                     '(los directorios incluyen sus descendientes)'
                 )
+        elif args.command == 'prepare-sqlite':
+            from .sqlite_index import prepare_sqlite_index
+
+            print(prepare_sqlite_index(args.index))  # noqa: T201 - CLI output
         elif args.command == 'link':
             from .repo_links import build_repository_links, save_links
 
@@ -286,17 +296,13 @@ def main(argv=None):
                 print(payload, end='')  # noqa: T201 - CLI output
         elif args.command == 'search':
             from .lexical_search import search_index
+            from .sqlite_index import open_prepared_index
 
-            index = json.loads(args.index.read_text(encoding='utf-8'))
-            print(  # noqa: T201 - CLI output
-                json.dumps(
-                    search_index(
-                        index, args.term, kind=args.kind, exact=args.exact, limit=args.limit
-                    ),
-                    ensure_ascii=False,
-                    indent=2,
+            with open_prepared_index(args.index) as index:
+                results = search_index(
+                    index, args.term, kind=args.kind, exact=args.exact, limit=args.limit
                 )
-            )
+            print(json.dumps(results, ensure_ascii=False, indent=2))  # noqa: T201 - CLI output
         elif args.command == 'hybrid-search':
             from .search import search_hybrid
 
@@ -325,23 +331,19 @@ def main(argv=None):
             from .rag_batch import evaluate_rag_dataset
             from .rag_dataset import load_rag_dataset
             from .rag_pipeline import answer
+            from .sqlite_index import index_backend, open_prepared_index
 
             dataset = load_rag_dataset(args.dataset)
-            index = json.loads(args.index.read_text(encoding='utf-8'))
             relationships = json.loads(args.relationships.read_text(encoding='utf-8'))
             raw = json.loads(args.config.read_text(encoding='utf-8')) if args.config else {}
             from .config_context import context_limits_from_mapping
             from .semantic_config import load_retrieval
 
             context_limits = context_limits_from_mapping(raw.get('context'))
-            retrieval, stores, embedding_provider = load_retrieval(
-                raw, args.config or Path.cwd() / 'config.json', args.index
-            )
             generation = load_generation_config()
             provider = build_generation_provider(generation)
             if provider is None:
                 raise ValueError('evaluate-rag requires a configured generation provider')
-            started = time.perf_counter()
 
             def run(query):
                 timings = {}
@@ -360,8 +362,18 @@ def main(argv=None):
                 )
                 return {**result, 'timings': timings}
 
-            report = evaluate_rag_dataset(dataset, run, include_queries=args.output is not None)
-            report['elapsed_seconds'] = time.perf_counter() - started
+            with open_prepared_index(args.index) as index:
+                backend = index_backend(index)
+                retrieval, stores, embedding_provider = load_retrieval(
+                    raw,
+                    args.config or Path.cwd() / 'config.json',
+                    args.index,
+                    lexical_only=backend == 'sqlite',
+                )
+                started = time.perf_counter()
+                report = evaluate_rag_dataset(dataset, run, include_queries=args.output is not None)
+                report['elapsed_seconds'] = time.perf_counter() - started
+            report['index_backend'] = backend
             report['provider'] = generation.provider
             report['model'] = generation.model
             output = args.output or Path('indexes/reports') / f'evaluate-rag-{uuid4().hex}.json'
@@ -375,7 +387,7 @@ def main(argv=None):
         elif args.command == 'answer':
             from .answer_command import run_answer
 
-            return run_answer(args)
+            return run_answer(args, provider_factory=provider_factory)
         elif args.command == 'analyze':
             if args.index is not None:
                 index_path = args.index
