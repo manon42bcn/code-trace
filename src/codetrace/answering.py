@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .generation import GenerationResult, validate_generation_result
+from .generation import CitationValidationError, GenerationResult, validate_generation_result
 from .generation_safety import is_local_generation_provider, validate_generation_context
 from .grounded_prompt import build_grounded_prompt
 from .latency import timed
@@ -28,15 +28,30 @@ def answer_query(
             context, allow_remote=allow_remote or is_local_generation_provider(provider)
         )
         prompt = build_grounded_prompt(query, context, history=history)
-        try:
-            with timed(timings, 'generation_seconds'):
-                result = provider.generate(prompt, metadata=metadata)
-        finally:
-            provider_timings = getattr(provider, 'last_timings', None)
-            if timings is not None and isinstance(provider_timings, dict):
-                timings.update(provider_timings)
-        if not isinstance(result, GenerationResult):
-            raise TypeError('generation provider must return GenerationResult')
-        with timed(timings, 'validation_seconds'):
-            validate_generation_result(result, context)
-        return result
+        for attempt in range(2):
+            measurements = {}
+            try:
+                try:
+                    with timed(measurements, 'generation_seconds'):
+                        result = provider.generate(prompt, metadata=metadata)
+                finally:
+                    provider_timings = getattr(provider, 'last_timings', None)
+                    if isinstance(provider_timings, dict):
+                        measurements.update(provider_timings)
+                if not isinstance(result, GenerationResult):
+                    raise TypeError('generation provider must return GenerationResult')
+                with timed(measurements, 'validation_seconds'):
+                    validate_generation_result(result, context)
+                return result
+            except CitationValidationError:
+                if attempt:
+                    raise
+                prompt += (
+                    '\nThe previous result contained invalid citations. '
+                    'Answer again using the same evidence. Omit path, start_line and end_line. '
+                    'Copy IDs verbatim from the allowed chunk IDs in both claims and citations.'
+                )
+            finally:
+                if timings is not None:
+                    for name, seconds in measurements.items():
+                        timings[name] = timings.get(name, 0) + seconds

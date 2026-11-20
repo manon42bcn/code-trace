@@ -265,6 +265,16 @@ h2 {
   font-size:13px;
   padding:0 18px
 }
+.pending-caption {
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:4px 10px
+}
+.pending-time {
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap
+}
 .pending-track {
   overflow:hidden;
   width:100%;
