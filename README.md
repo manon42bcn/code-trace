@@ -200,7 +200,7 @@ esas etapas forman parte de la consulta.
 
 ## Desarrollo y documentación
 
-[Cómo añadir un adaptador de generación o embeddings](docs/es/adaptadores.md).
+[Cómo añadir un adaptador de generación o embeddings](docs/es/adaptadores.md) · [English](docs/en/adapters.md).
 
 ```bash
 make lint

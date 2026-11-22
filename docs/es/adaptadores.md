@@ -1,5 +1,7 @@
 # Adaptadores de CodeTrace
 
+[English](../en/adapters.md)
+
 CodeTrace tiene dos contratos. `GenerationProvider` recibe un prompt y devuelve
 un `GenerationResult`. `EmbeddingProvider` expone `metadata`,
 `embed_documents` y `embed_query`. Las clases pueden implementar el contrato
