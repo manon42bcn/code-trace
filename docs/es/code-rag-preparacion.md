@@ -42,6 +42,14 @@ CodeTrace analiza las lecturas y escrituras de `behave.context` en repositorios 
 
 El punto de entrada es `make indexes`, que ejecuta `scripts/build_indexes.py`. Sin selección explícita se preparan todos los repositorios configurados; con `REPOS` se incluyen también sus dependencias transitivas.
 
+Para reconstruir desde cero, ejecuta `make clean && make indexes`. La limpieza
+retira los índices JSON y SQLite, las relaciones y los vectores de los
+adaptadores registrados para todos los repositorios de `CONFIG`. También
+reconoce las rutas de vectores personalizadas de esa configuración.
+`make clean REPOS="demo"` limita la limpieza a la selección y sus dependencias.
+Se conservan los repositorios fuente, la configuración, los informes y las
+sesiones guardadas.
+
 ```mermaid
 flowchart TD
     A["config.json + repositorios locales"] --> B["Seleccionar repositorios e incluir dependencias transitivas"]

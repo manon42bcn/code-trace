@@ -44,6 +44,13 @@ flowchart TD
 
 `make indexes` runs [scripts/build_indexes.py](../../scripts/build_indexes.py). Without `REPOS`, it processes all configured repositories. A selection includes its transitive dependencies. Linking waits for all selected indexes so that cross-repository dependencies can use the new snapshots. Links and graph edges describe static evidence. Preparation uses local checkouts and writes JSON artifacts under `indexes/` beside the configuration. Vector paths can be overridden. A failed command stops the remaining phases and preserves artifacts already written.
 
+To rebuild from scratch, run `make clean && make indexes`. Cleanup removes
+JSON and SQLite indexes, relationships, and vectors for the registered
+adapters and repositories in `CONFIG`. It also recognizes custom vector
+paths in that configuration. `make clean REPOS="demo"` limits cleanup to the
+selection and its dependencies. Source repositories, configuration, reports,
+and saved sessions are preserved.
+
 ## Index source files
 
 ```mermaid

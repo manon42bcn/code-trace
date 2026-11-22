@@ -126,3 +126,89 @@ def test_repository_output_field_is_rejected_before_writing(config):
     with pytest.raises(ValueError, match='remove output'):
         builder.build_plan(config)
     assert not (config.parent / 'indexes').exists()
+
+
+def test_make_clean_removes_both_adapters_and_allows_a_clean_rebuild(config):
+    root = config.parent
+    indexes = root / 'indexes'
+    indexes.mkdir()
+    raw = json.loads(config.read_text())
+    raw['repositories']['app']['retrieval'] = {
+        'semantic_enabled': False,
+        'semantic_v1_store': 'custom/base.json',
+        'semantic_v2_store': 'custom/enriched.json',
+    }
+    config.write_text(json.dumps(raw))
+    custom = root / 'custom'
+    custom.mkdir()
+    commands = ['make', f'CONFIG={config}', f'PYTHON={sys.executable}', 'REPOS=app']
+    subprocess.run([*commands, 'indexes'], cwd=ROOT, check=True, capture_output=True)
+
+    snapshots = [
+        indexes / f'{repo}.{suffix}'
+        for repo in ('app', 'lib')
+        for suffix in ('chunks.json', 'chunks.sqlite3', 'relationships.json')
+    ]
+    assert all(path.is_file() for path in snapshots)
+    vectors = [
+        indexes / f'{repo}.vectors-{version}{suffix}.json'
+        for repo in ('app', 'lib')
+        for version in ('v1', 'v2')
+        for suffix in ('', '.mlx')
+    ]
+    custom_vectors = [
+        custom / f'{name}{suffix}.json' for name in ('base', 'enriched') for suffix in ('', '.mlx')
+    ]
+    for path in vectors + custom_vectors:
+        path.write_text(
+            json.dumps(
+                {
+                    'schema_version': 1,
+                    'metadata': {'model_id': 'test', 'dimensions': 2, 'config_version': 'v1'},
+                    'records': {},
+                }
+            )
+        )
+    keep = [
+        indexes / 'unselected.chunks.json',
+        indexes / 'reports' / 'requests.jsonl',
+        indexes / '.conversations' / 'conversations.sqlite3',
+        indexes / '.query_sessions' / 'session.json',
+        indexes / '.gitkeep',
+    ]
+    for path in keep:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('keep')
+
+    subprocess.run([*commands, 'clean'], cwd=ROOT, check=True, capture_output=True)
+    assert all(not path.exists() for path in snapshots + vectors + custom_vectors)
+    assert all(path.read_text() == 'keep' for path in keep)
+    assert config.is_file()
+    assert (root / 'app/example.py').is_file()
+
+    subprocess.run([*commands, 'indexes'], cwd=ROOT, check=True, capture_output=True)
+    assert all(path.is_file() for path in snapshots)
+
+
+def test_make_clean_rejects_unrelated_custom_file_before_deleting(config):
+    raw = json.loads(config.read_text())
+    raw['retrieval'] = {'semantic_v1_store': 'notes.json'}
+    config.write_text(json.dumps(raw))
+    notes = config.parent / 'notes.json'
+    notes.write_text('{"content":"keep"}')
+    indexes = config.parent / 'indexes'
+    indexes.mkdir()
+    artifact = indexes / 'app.chunks.json'
+    artifact.write_text('{}')
+
+    result = subprocess.run(
+        ['make', f'CONFIG={config}', f'PYTHON={sys.executable}', 'clean'],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode
+    assert 'not a CodeTrace vector file' in result.stderr
+    assert artifact.is_file()
+    assert notes.read_text() == '{"content":"keep"}'

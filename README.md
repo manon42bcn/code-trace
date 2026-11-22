@@ -151,6 +151,7 @@ La CLI está disponible como `codetrace`, `code-trace` y `python -m codetrace`.
 | Comando | Uso |
 | --- | --- |
 | `make indexes` | Preparar todos los repositorios configurados. |
+| `make clean` | Eliminar los índices, relaciones y vectores generados para los repositorios configurados. |
 | `make indexes REPOS="demo"` | Preparar una selección y sus dependencias. |
 | `make indexes-plan` | Revisar el plan sin generar artefactos. |
 | `make indexes-incremental REPOS="demo"` | Actualizar artefactos reutilizando archivos sin cambios. |

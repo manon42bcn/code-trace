@@ -28,14 +28,30 @@ def embedding_model(configured):
     )
 
 
+def repository_retrieval_settings(raw, repository=None):
+    settings = dict(raw.get('retrieval') or {})
+    if repository is not None:
+        settings.update(raw['repositories'][repository].get('retrieval') or {})
+    return settings
+
+
+def vector_paths_with_suffix(paths, root, suffix):
+    logical = [(root / path).absolute() for path in paths]
+    return [path.with_suffix(suffix + path.suffix) for path in logical] if suffix else logical
+
+
 def resolve_retrieval(raw, config_path, index_path, *, resolve_paths=True):
     root = Path(config_path).resolve().parent
     index_path = Path(index_path).resolve()
-    settings = dict(raw.get('retrieval') or {})
-    for name, repository in raw.get('repositories', {}).items():
-        if repository_index_path(raw, config_path, name) == index_path:
-            settings.update(repository.get('retrieval') or {})
-            break
+    repository = next(
+        (
+            name
+            for name in raw.get('repositories', {})
+            if repository_index_path(raw, config_path, name) == index_path
+        ),
+        None,
+    )
+    settings = repository_retrieval_settings(raw, repository)
     enabled = settings.pop('semantic_enabled', None)
     paths = [settings.pop(key, None) for key in STORE_KEYS]
     configured_model = settings.pop('embedding_model', MODEL)
@@ -52,11 +68,7 @@ def resolve_retrieval(raw, config_path, index_path, *, resolve_paths=True):
         raise ValueError('semantic retrieval requires both v1 and v2 stores')
     if not all(paths):
         return settings, None, model
-    logical_paths = [(root / path).absolute() for path in paths]
-    if adapter.store_suffix:
-        logical_paths = [
-            path.with_suffix(adapter.store_suffix + path.suffix) for path in logical_paths
-        ]
+    logical_paths = vector_paths_with_suffix(paths, root, adapter.store_suffix)
     paths = [path.resolve() for path in logical_paths]
     if paths[0] == paths[1] or index_path in paths:
         raise ValueError('semantic stores must have distinct paths separate from the chunks index')
