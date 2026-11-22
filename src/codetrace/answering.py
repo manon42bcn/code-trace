@@ -6,6 +6,7 @@ from .generation import CitationValidationError, GenerationResult, validate_gene
 from .generation_safety import is_local_generation_provider, validate_generation_context
 from .grounded_prompt import build_grounded_prompt
 from .latency import timed
+from .providers.llm.metrics import generate
 from .request_metrics import request_metrics
 
 
@@ -31,13 +32,7 @@ def answer_query(
         for attempt in range(2):
             measurements = {}
             try:
-                try:
-                    with timed(measurements, 'generation_seconds'):
-                        result = provider.generate(prompt, metadata=metadata)
-                finally:
-                    provider_timings = getattr(provider, 'last_timings', None)
-                    if isinstance(provider_timings, dict):
-                        measurements.update(provider_timings)
+                result = generate(provider, prompt, measurements, metadata=metadata)
                 if not isinstance(result, GenerationResult):
                     raise TypeError('generation provider must return GenerationResult')
                 with timed(measurements, 'validation_seconds'):

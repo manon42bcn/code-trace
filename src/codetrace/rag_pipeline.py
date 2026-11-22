@@ -7,6 +7,7 @@ from contextlib import nullcontext
 from .answering import answer_query
 from .context_api import build_context
 from .conversation import retrieval_question
+from .direct_definition import DIRECT_DEFINITION, direct_definition
 from .grounded_prompt import build_grounded_prompt
 from .latency import timed
 from .request_metrics import request_metrics
@@ -32,8 +33,10 @@ def answer(
     timings=None,
     metrics_source='rag_pipeline',
     history=None,
+    prefer_direct=False,
 ):
     """Retrieve, build grounded context, and optionally generate an answer."""
+    details = {'index_backend': index_backend(index)}
     measurement = (
         nullcontext(timings)
         if generation_provider is None
@@ -42,7 +45,7 @@ def answer(
             getattr(generation_provider, 'provider', None),
             getattr(generation_provider, 'model', None),
             timings,
-            details={'index_backend': index_backend(index)},
+            details=details,
         )
     )
     with measurement as timings:
@@ -53,6 +56,30 @@ def answer(
             if search_filters and search_filters.active
             else None
         )
+        scope = (
+            {
+                'filters': search_filters.describe(),
+                'indexed_chunks': indexed_chunks,
+                'eligible_chunks': len(index.get('chunks', [])),
+            }
+            if allowed_chunk_ids is not None
+            else None
+        )
+        if prefer_direct and generation_provider is not None and retrieval_results is None:
+            with timed(timings, 'definition_lookup_seconds'):
+                direct = direct_definition(
+                    query,
+                    index,
+                    graph,
+                    history=history,
+                    limits=context_limits,
+                    relevant_chunk_ids=relevant_chunk_ids,
+                )
+            if direct is not None:
+                if scope is not None:
+                    direct['context']['source_scope'] = scope
+                details['answer_mode'] = DIRECT_DEFINITION
+                return direct
         search_query = retrieval_question(query, history)
         results = retrieval_results
         if results is None:
@@ -78,12 +105,8 @@ def answer(
                 flow_analysis=generation_provider is not None,
                 **(context_limits or {}),
             )
-            if allowed_chunk_ids is not None:
-                context['source_scope'] = {
-                    'filters': search_filters.describe(),
-                    'indexed_chunks': indexed_chunks,
-                    'eligible_chunks': len(index.get('chunks', [])),
-                }
+            if scope is not None:
+                context['source_scope'] = scope
         if generation_provider is None:
             return {
                 'answer': None,

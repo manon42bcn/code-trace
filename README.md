@@ -53,7 +53,7 @@ make check-provider
 make chat
 ```
 
-`make indexes` genera chunks, relaciones y los vectores semánticos habilitados. La primera preparación puede requerir descargar el modelo de embeddings configurado. `make doctor` diagnostica la preparación y `make check-provider` comprueba el proveedor generativo. Si se elige Anthropic, OpenAI, Azure OpenAI, OpenRouter o Groq, instalar también el extra `llm`, conservando los extras de preparación:
+`make indexes` genera chunks, relaciones y los vectores semánticos habilitados. La primera preparación puede requerir descargar el modelo de embeddings configurado. Puedes elegir Sentence Transformers o Jina en MLX desde `.env`. [Adaptadores de embeddings](docs/es/code-rag-chat.md#adaptadores-de-embeddings-locales). `make doctor` diagnostica la preparación y `make check-provider` comprueba el proveedor generativo. Si se elige Anthropic, OpenAI, Azure OpenAI, OpenRouter o Groq, instalar también el extra `llm`, conservando los extras de preparación:
 
 ```bash
 uv sync --no-editable --extra parsers --extra llm --group dev
@@ -199,6 +199,8 @@ el pipeline dentro de CodeTrace, desde la recuperación hasta la validación cua
 esas etapas forman parte de la consulta.
 
 ## Desarrollo y documentación
+
+[Cómo añadir un adaptador de generación o embeddings](docs/es/adaptadores.md).
 
 ```bash
 make lint

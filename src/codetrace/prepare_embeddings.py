@@ -23,9 +23,9 @@ def prepare(config_path, repo, *, provider=None):
     graph_path = repository_relationships_path(config_path, repo)
     graph = json.loads(graph_path.read_text(encoding='utf-8'))['evidence_graph']
     if provider is None:
-        from .embedding_provider import SentenceTransformerProvider
+        from .embedding_provider import build_embedding_provider
 
-        provider = SentenceTransformerProvider(model)
+        provider = build_embedding_provider(model)
     # Both representations use the current text renderer; v2 adds graph metadata.
     provider.metadata = replace(provider.metadata, text_version='v2')
     enriched = enrich_chunks_from_graph(index, graph)

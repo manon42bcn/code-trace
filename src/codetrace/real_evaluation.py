@@ -168,6 +168,7 @@ def evaluate_case(case, raw, config_path, profile, cache):
         artifacts['vectors_sha256'] = {
             version: hashlib.sha256(path.read_bytes()).hexdigest()
             for version, path in (vector_paths or {}).items()
+            if version in (stores or {})
         }
         artifacts.update(
             links=links,

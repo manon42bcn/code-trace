@@ -214,7 +214,6 @@ def test_direct_paths_without_configuration_do_not_invent_signature_mismatches(p
 @pytest.mark.parametrize('problem', ['identifiers', 'dimensions'])
 def test_bad_vectors_fail_before_provider_creation(prepared, monkeypatch, problem):
     _, _, index, _, config, raw, _ = prepared
-    from codetrace import embedding_provider
     from codetrace.embeddings import EmbeddingMetadata
     from codetrace.vector_store import VectorStore
 
@@ -232,8 +231,7 @@ def test_bad_vectors_fail_before_provider_creation(prepared, monkeypatch, proble
             next(iter(store.records.values()))['vector'] = [1.0]
         store.save()
     monkeypatch.setattr(
-        embedding_provider,
-        'SentenceTransformerProvider',
+        'codetrace.providers.embeddings.registry.SentenceTransformerProvider',
         lambda *_args: pytest.fail('Invalid vectors must fail before loading the model'),
     )
     with pytest.raises(preparation.VectorPreparationError):

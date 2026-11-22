@@ -20,7 +20,7 @@ PHASE_LABELS = {
 }
 
 
-def build_plan(config_path, selected=None, *, incremental=False):
+def build_plan(config_path, selected=None, *, incremental=False, require_runtime=False):
     config_path = config_path.resolve()
     config = json.loads(config_path.read_text(encoding='utf-8'))
     repositories = config.get('repositories')
@@ -46,6 +46,7 @@ def build_plan(config_path, selected=None, *, incremental=False):
         include(name)
     if str(ROOT / 'src') not in sys.path:
         sys.path.insert(0, str(ROOT / 'src'))
+    from codetrace.embedding_provider import embedding_runtime_issue
     from codetrace.repository_paths import repository_index_path, repository_relationships_path
     from codetrace.semantic_config import resolve_retrieval
 
@@ -76,8 +77,10 @@ def build_plan(config_path, selected=None, *, incremental=False):
     vector_outputs = set()
     for name in names:
         index_path = repository_index_path(config, config_path, name)
-        _, paths, _ = resolve_retrieval(config, config_path, index_path)
+        _, paths, model = resolve_retrieval(config, config_path, index_path)
         if paths is not None:
+            if require_runtime and (issue := embedding_runtime_issue(model)):
+                raise ValueError(f'Repository {name}: {issue}')
             for path in paths.values():
                 if (
                     path in vector_outputs
@@ -112,12 +115,9 @@ def main(argv=None):
     )
     args = parser.parse_args(argv)
     try:
-        commands = build_plan(args.config, args.repo, incremental=args.incremental)
-        if not args.dry_run and any(command[2] == 'embed' for command in commands):
-            import importlib.util
-
-            if importlib.util.find_spec('sentence_transformers') is None:
-                raise ValueError('Embedding dependencies missing; run make setup first')
+        commands = build_plan(
+            args.config, args.repo, incremental=args.incremental, require_runtime=not args.dry_run
+        )
         env = os.environ.copy()
         python_path = [str(ROOT / 'src')]
         if env.get('PYTHONPATH'):

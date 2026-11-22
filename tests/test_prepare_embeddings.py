@@ -63,9 +63,10 @@ def config(tmp_path):
 
 def test_prepare_and_query_share_per_repository_stores(config, monkeypatch):
     path, raw = config
-    from codetrace import embedding_provider
 
-    monkeypatch.setattr(embedding_provider, 'SentenceTransformerProvider', Provider)
+    monkeypatch.setattr(
+        'codetrace.providers.embeddings.registry.SentenceTransformerProvider', Provider
+    )
     for name in ('app', 'lib'):
         result = prepare(path, name, provider=Provider())
         assert result['stores']['v1']['embedded'] == 1
@@ -132,11 +133,13 @@ def test_per_repository_disable_and_explicit_paths(config):
 
 
 def test_prepared_vectors_are_consumed_by_compact_query(config, monkeypatch, capsys):
-    from codetrace import agent_query, embedding_provider
+    from codetrace import agent_query
 
     path, _raw = config
     prepare(path, 'app', provider=Provider())
-    monkeypatch.setattr(embedding_provider, 'SentenceTransformerProvider', Provider)
+    monkeypatch.setattr(
+        'codetrace.providers.embeddings.registry.SentenceTransformerProvider', Provider
+    )
     # A non-literal question exercises semantic retrieval, not an exact key match.
     agent_query.main(
         [
@@ -156,12 +159,13 @@ def test_prepared_vectors_are_consumed_by_compact_query(config, monkeypatch, cap
 
 
 def test_default_profile_can_query_a_pair_of_stores(config, monkeypatch):
-    from codetrace import embedding_provider
     from codetrace.search import search_hybrid
 
     path, raw = config
     prepare(path, 'app', provider=Provider())
-    monkeypatch.setattr(embedding_provider, 'SentenceTransformerProvider', Provider)
+    monkeypatch.setattr(
+        'codetrace.providers.embeddings.registry.SentenceTransformerProvider', Provider
+    )
     raw['retrieval']['semantic_profile'] = 'default'
     _, stores, provider = load_retrieval(raw, path, path.parent / 'indexes/app.chunks.json')
     index = json.loads((path.parent / 'indexes/app.chunks.json').read_text())
@@ -173,3 +177,60 @@ def test_default_profile_can_query_a_pair_of_stores(config, monkeypatch):
         provider=provider,
     )
     assert results[0]['chunk_id'] == 'app'
+
+
+def test_mlx_env_selects_separate_vectors_and_preserves_sqlite_search(config, monkeypatch):
+    path, raw = config
+    from codetrace import embedding_provider
+
+    monkeypatch.chdir(path.parent)
+    monkeypatch.delenv('CODETRACE_EMBEDDING_PROVIDER', raising=False)
+    monkeypatch.delenv('CODETRACE_EMBEDDING_MODEL', raising=False)
+    model = path.parent / 'jina-mlx'
+    (path.parent / '.env').write_text(
+        f'CODETRACE_EMBEDDING_PROVIDER=mlx\nCODETRACE_EMBEDDING_MODEL={model}\n',
+        encoding='utf-8',
+    )
+    monkeypatch.setattr(embedding_provider, 'build_embedding_provider', Provider)
+    index_path = path.parent / 'indexes/app.chunks.json'
+    _, paths, model_id = resolve_retrieval(raw, path, index_path)
+    assert model_id == f'mlx:{model}'
+    assert paths['v1'].name == 'app.vectors-v1.mlx.json'
+
+    _, missing, provider = load_retrieval(raw, path, index_path, sqlite_backend=True)
+    assert missing is None
+    assert provider is None
+
+    prepare(path, 'app')
+    retrieval, stores, provider = load_retrieval(raw, path, index_path, sqlite_backend=True)
+    assert retrieval.semantic_profile == 'two_stage'
+    assert provider.metadata.model_id == model_id
+    assert stores['v1'].search(provider.embed_query('order_id'))[0]['chunk_id'] == 'app'
+
+
+@pytest.mark.parametrize('adapter', ['sentence-transformers', 'mlx'])
+def test_sqlite_loads_each_selected_embedding_adapter_only_on_search(config, monkeypatch, adapter):
+    path, raw = config
+    from codetrace import embedding_provider
+
+    monkeypatch.setenv('CODETRACE_EMBEDDING_PROVIDER', adapter)
+    if adapter == 'mlx':
+        monkeypatch.setenv('CODETRACE_EMBEDDING_MODEL', str(path.parent / 'jina'))
+    index = path.parent / 'indexes/app.chunks.json'
+    _, _, model_id = resolve_retrieval(raw, path, index)
+    prepare(path, 'app', provider=Provider(model_id))
+    initialized = []
+
+    def build(model):
+        initialized.append(model)
+        return Provider(model)
+
+    monkeypatch.setattr(embedding_provider, 'build_embedding_provider', build)
+    retrieval, stores, provider = load_retrieval(raw, path, index, sqlite_backend=True)
+
+    assert retrieval.mode == 'configured'
+    assert initialized == []
+    vector = provider.embed_query('order_id')
+    assert stores['v1'].search(vector)[0]['chunk_id'] == 'app'
+    assert stores['v2'].search(vector)[0]['chunk_id'] == 'app'
+    assert initialized == [model_id]

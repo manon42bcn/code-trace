@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .embedding_text import chunk_embedding_text
+from .providers.embeddings.metrics import embed_documents
 
 
 def update_embedding_store(index, repository, provider, store):
@@ -35,7 +36,7 @@ def update_embedding_store(index, repository, provider, store):
         pending.append((chunk_id, chunk, text, content_hash))
 
     if pending:
-        vectors = provider.embed_documents([item[2] for item in pending])
+        vectors = embed_documents(provider, [item[2] for item in pending])
         store.upsert(
             [
                 {

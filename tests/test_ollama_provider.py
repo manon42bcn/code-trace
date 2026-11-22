@@ -17,7 +17,7 @@ def test_ollama_provider_parses_structured_response(monkeypatch):
             pass
 
     monkeypatch.setattr(
-        'codetrace.ollama_provider.urlopen',
+        'codetrace.providers.llm.ollama.urlopen',
         lambda _request, timeout: Response(json.dumps(payload).encode()),  # noqa: ARG005 - urlopen keyword
     )
     result = OllamaProvider(model='local').generate('prompt')

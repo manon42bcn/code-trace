@@ -17,7 +17,9 @@ from dotenv import dotenv_values
 
 from .chat_worker import ChatWorker
 from .conversation import valid_session
+from .direct_definition import DIRECT_DEFINITION
 from .generation_config import load_generation_config
+from .providers.llm.registry import GENERATION_PROVIDERS
 from .repository_paths import repository_index_path
 from .request_metrics import CHAT_REQUEST_ENV, request_metrics
 from .sqlite_index import sqlite_index_path
@@ -155,7 +157,8 @@ class ChatApplication:
                 generation = None  # The CLI will report the configuration error.
             provider = generation.provider if generation is not None else None
             model = generation.model if generation is not None and provider != 'none' else None
-            persistent = self.worker is not None and provider == 'mlx'
+            adapter = GENERATION_PROVIDERS.get(provider)
+            persistent = self.worker is not None and adapter is not None and adapter.reuse_in_chat
             if self.worker is not None and not persistent:
                 self.worker.reset()
             source = 'chat_request_persistent' if persistent else 'chat_request_subprocess'
@@ -218,7 +221,11 @@ class ChatApplication:
                                 )
                     message = error.get('message', 'No se pudo completar la consulta')
                     raise ChatError(str(message), 502)
-                if not output.get('generated') or not isinstance(output.get('answer'), dict):
+                if output.get('answer_mode') == DIRECT_DEFINITION:
+                    details['answer_mode'] = DIRECT_DEFINITION
+                if not isinstance(output.get('answer'), dict) or not (
+                    output.get('generated') or output.get('answer_mode') == DIRECT_DEFINITION
+                ):
                     raise ChatError(
                         'Configura un proveedor de generación disponible en config.json.', 502
                     )

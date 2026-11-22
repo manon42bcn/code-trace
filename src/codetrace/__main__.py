@@ -368,7 +368,7 @@ def main(argv=None, *, provider_factory=None):
                     raw,
                     args.config or Path.cwd() / 'config.json',
                     args.index,
-                    lexical_only=backend == 'sqlite',
+                    sqlite_backend=backend == 'sqlite',
                 )
                 started = time.perf_counter()
                 report = evaluate_rag_dataset(dataset, run, include_queries=args.output is not None)

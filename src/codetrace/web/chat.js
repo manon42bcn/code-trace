@@ -89,14 +89,18 @@ function formatDuration(milliseconds) {
 }
 function showAnswer(result, elapsed) {
   const answer = result.answer;
-  describeModel(answer.provider, answer.model);
+  const direct = result.answer_mode === 'direct_definition';
+  if (!direct) describeModel(answer.provider, answer.model);
   const repo = repositories.find(r => r.name === $('repo').value);
   if (repo && result.index_backend) {
     repo.index_backend = result.index_backend;
     describe();
   }
   const block = message('CodeTrace');
-  block.append(node('div', `${result.repository || $('repo').value} · ${answer.provider} · ${answer.model} · ${formatDuration(elapsed)}`, 'metadata'));
+  const source = direct
+    ? t('Definición exacta · índice estático', 'Exact definition · static index')
+    : `${answer.provider} · ${answer.model}`;
+  block.append(node('div', `${result.repository || $('repo').value} · ${source} · ${formatDuration(elapsed)}`, 'metadata'));
   // Provider and repository text stays inert: no HTML/Markdown evaluation or remote resources.
   block.append(node('div', answer.answer, 'answer-text'));
   if (answer.refusal) block.append(node('p', t('El modelo indica que no dispone de evidencia suficiente.', 'The model reports insufficient evidence.'), 'limitations'));

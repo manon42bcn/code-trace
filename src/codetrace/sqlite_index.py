@@ -64,6 +64,7 @@ def prepare_sqlite_index(index_path, *, index=None):
         index = json.loads(index_path.read_text(encoding='utf-8'))
     chunks = index['chunks']
     metadata = {key: index[key] for key in SNAPSHOT_METADATA if key in index}
+    metadata['step_definitions'] = index.get('behave_relations', {}).get('step_definitions', [])
     fd, name = tempfile.mkstemp(prefix=f'.{output.name}.', dir=output.parent)
     os.close(fd)
     try:

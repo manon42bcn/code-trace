@@ -6,15 +6,17 @@ import os
 from ipaddress import ip_address
 from urllib.parse import urlsplit
 
+from .providers.llm.registry import GENERATION_PROVIDERS
+
 SENSITIVE_NAMES = {'.env', '.env.local', 'id_rsa', 'credentials.json'}
 
 
 def is_local_generation_provider(provider) -> bool:
-    name = getattr(provider, 'provider', None)
-    if name == 'mlx':
-        return True
-    if name != 'ollama':
+    entry = GENERATION_PROVIDERS.get(getattr(provider, 'provider', None))
+    if entry is None:
         return False
+    if entry.execution != 'loopback':
+        return entry.execution == 'local'
     host = urlsplit(getattr(provider, 'base_url', 'http://localhost')).hostname
     if host == 'localhost':
         return True
