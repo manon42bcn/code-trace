@@ -61,12 +61,12 @@ def test_minified_long_line():
 
 
 def test_missing_parser_fails_loudly(monkeypatch):
-    import codetrace.core as core
+    from codetrace.languages import registry
 
     def unavailable(*_args, **_kwargs):
         raise ValueError('parser missing')
 
-    monkeypatch.setattr(core, 'treesitter_units', unavailable)
+    monkeypatch.setattr(registry, 'treesitter_units', unavailable)
     with pytest.raises(ValueError, match='parser missing'):
         build_chunks('hi.cpp', 'cpp', 'int f() { return 1; }', CFG)
 
@@ -239,3 +239,23 @@ def test_tree_sitter_coordinates_use_tuple_access(monkeypatch, syntax_error):
         assert diagnostics[0]['end_line'] == 303
     else:
         assert units == [(301, 303, 'function_declaration', 'tree_sitter')]
+
+
+def test_registered_custom_extractor_uses_shared_chunk_budget(monkeypatch):
+    from codetrace.languages.registry import LANGUAGES, Language
+
+    def extract(source, *, language, filename, syntax_policy, diagnostics):
+        assert language == 'fixture'
+        assert filename == 'sample.fixture'
+        assert syntax_policy == 'error'
+        assert diagnostics is None
+        return [(1, len(source.splitlines()), 'registered', 'fixture_parser')]
+
+    monkeypatch.setitem(LANGUAGES, 'fixture', Language(extractor=extract))
+    source = '\n'.join('entry name = value' for _ in range(40))
+    chunks = build_chunks('sample.fixture', 'fixture', source, CFG)
+
+    assert len(chunks) > 1
+    assert all(chunk['estimated_tokens'] <= CFG['chunking']['max_tokens'] for chunk in chunks)
+    assert {chunk['symbol'] for chunk in chunks} == {'registered'}
+    assert {chunk['strategy'] for chunk in chunks} == {'fixture_parser'}
