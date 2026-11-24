@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Protocol
 
+INSUFFICIENT_EVIDENCE = 'insufficient_evidence'
+
 
 @dataclass(frozen=True)
 class Claim:

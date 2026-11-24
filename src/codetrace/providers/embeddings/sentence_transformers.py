@@ -38,6 +38,10 @@ class SentenceTransformerProvider:
         self._model = SentenceTransformer(model_id, **kwargs)
         dimensions = self._model.get_embedding_dimension()
         self.metadata = EmbeddingMetadata(model_id, dimensions, config_version)
+        # This floor applies to raw cosine similarities from this model only.
+        self.minimum_similarity = (
+            0.10 if model_id == 'sentence-transformers/all-MiniLM-L6-v2' else None
+        )
 
     def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
         vectors = self._model.encode(list(texts), convert_to_numpy=True)

@@ -18,6 +18,7 @@ from dotenv import dotenv_values
 from .chat_worker import ChatWorker
 from .conversation import valid_session
 from .direct_definition import DIRECT_DEFINITION
+from .generation import INSUFFICIENT_EVIDENCE
 from .generation_config import load_generation_config
 from .providers.llm.registry import GENERATION_PROVIDERS
 from .repository_paths import repository_index_path
@@ -221,10 +222,12 @@ class ChatApplication:
                                 )
                     message = error.get('message', 'No se pudo completar la consulta')
                     raise ChatError(str(message), 502)
-                if output.get('answer_mode') == DIRECT_DEFINITION:
-                    details['answer_mode'] = DIRECT_DEFINITION
+                answer_mode = output.get('answer_mode')
+                local_answer = answer_mode in (DIRECT_DEFINITION, INSUFFICIENT_EVIDENCE)
+                if local_answer:
+                    details['answer_mode'] = answer_mode
                 if not isinstance(output.get('answer'), dict) or not (
-                    output.get('generated') or output.get('answer_mode') == DIRECT_DEFINITION
+                    output.get('generated') or local_answer
                 ):
                     raise ChatError(
                         'Configura un proveedor de generación disponible en config.json.', 502

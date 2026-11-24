@@ -27,6 +27,9 @@ def response_language_instruction(query):
         spanish_words = words & {
             'que',
             'como',
+            'puedo',
+            'enviar',
+            'peticion',
             'donde',
             'cual',
             'cuales',
@@ -152,6 +155,8 @@ def build_grounded_prompt(query: str, context: dict, *, history=None) -> str:
         'the insufficiency without claiming repository-wide absence or citing unrelated chunks. '
         'Distinguish partial evidence from exhaustive lists or counts. '
         'A citation must support the associated claim; a matching word alone is not support. '
+        'Check that the evidence concerns the specific operation and target in the question. '
+        'If excerpts only cover another operation or target, return a refusal. '
         'Use only chunk_id in each citation object. CodeTrace resolves the source file and '
         'line range from that chunk. Return only valid JSON with this schema: '
         '{"answer":"string","claims":[{"text":"string","certainty":'

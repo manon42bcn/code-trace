@@ -26,6 +26,10 @@ class DeferredEmbeddingProvider:
     def metadata(self):
         return self.provider.metadata
 
+    @property
+    def minimum_similarity(self):
+        return getattr(self.provider, 'minimum_similarity', None)
+
     def embed_query(self, text):
         return self.provider.embed_query(text)
 

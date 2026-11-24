@@ -14,6 +14,7 @@ def search_vectors(
     vector = embed_query(provider, query) if query_vector is None else query_vector
     options = {'allowed_chunk_ids': allowed_chunk_ids} if allowed_chunk_ids is not None else {}
     results = store.search(vector, top_k=top_k, filters=filters, **options)
+    minimum_similarity = getattr(provider, 'minimum_similarity', None)
     return [
         {
             'chunk_id': result['chunk_id'],
@@ -24,4 +25,5 @@ def search_vectors(
             'symbol': result.get('symbol'),
         }
         for result in results
+        if minimum_similarity is None or result['score'] >= minimum_similarity
     ]

@@ -33,6 +33,7 @@ themeToggle.addEventListener('change', () => {
 let repositories = [];
 let pending = false;
 const sessionKey = 'codetrace-conversation';
+const repositoryKey = 'codetrace-repository';
 $('session').value = sessionStorage.getItem(sessionKey) || '';
 function storeSession(id) {
   $('session').value = id;
@@ -90,7 +91,8 @@ function formatDuration(milliseconds) {
 function showAnswer(result, elapsed) {
   const answer = result.answer;
   const direct = result.answer_mode === 'direct_definition';
-  if (!direct) describeModel(answer.provider, answer.model);
+  const insufficient = result.answer_mode === 'insufficient_evidence';
+  if (!direct && !insufficient) describeModel(answer.provider, answer.model);
   const repo = repositories.find(r => r.name === $('repo').value);
   if (repo && result.index_backend) {
     repo.index_backend = result.index_backend;
@@ -99,11 +101,13 @@ function showAnswer(result, elapsed) {
   const block = message('CodeTrace');
   const source = direct
     ? t('Definición exacta · índice estático', 'Exact definition · static index')
-    : `${answer.provider} · ${answer.model}`;
+    : insufficient
+      ? t('Evidencia insuficiente', 'Insufficient evidence')
+      : `${answer.provider} · ${answer.model}`;
   block.append(node('div', `${result.repository || $('repo').value} · ${source} · ${formatDuration(elapsed)}`, 'metadata'));
   // Provider and repository text stays inert: no HTML/Markdown evaluation or remote resources.
   block.append(node('div', answer.answer, 'answer-text'));
-  if (answer.refusal) block.append(node('p', t('El modelo indica que no dispone de evidencia suficiente.', 'The model reports insufficient evidence.'), 'limitations'));
+  if (answer.refusal && !insufficient) block.append(node('p', t('El modelo indica que no dispone de evidencia suficiente.', 'The model reports insufficient evidence.'), 'limitations'));
   const items = result.context?.items || [];
   const cited = new Set((answer.citations || []).map(c => c.chunk_id));
   if (items.length) {
@@ -146,7 +150,10 @@ function showAnswer(result, elapsed) {
     if (state.needs_update === true) block.append(node('p', t('El código ha cambiado desde la indexación. Revisa el estado del índice.', 'The code has changed since indexing. Check the index status.'), 'limitations warning'));
   }
 }
-$('repo').addEventListener('change', describe);
+$('repo').addEventListener('change', () => {
+  sessionStorage.setItem(repositoryKey, $('repo').value);
+  describe();
+});
 $('clear').addEventListener('click', () => {
   storeSession('');
   $('messages').replaceChildren(node('p', t('Conversación vacía. Escribe una nueva pregunta.', 'Conversation cleared. Ask a new question.'), 'limitations'));
@@ -215,7 +222,11 @@ api('/api/repositories').then(data => {
   $('repo').replaceChildren(...repositories.map(repo => {
     const option = node('option', repo.name); option.value = repo.name; return option;
   }));
-  if (repositories.some(r => r.name === data.default_repository)) $('repo').value = data.default_repository;
+  const savedRepository = sessionStorage.getItem(repositoryKey);
+  const selectedRepository = repositories.some(repo => repo.name === savedRepository)
+    ? savedRepository
+    : data.default_repository;
+  if (repositories.some(repo => repo.name === selectedRepository)) $('repo').value = selectedRepository;
   $('runtime-ip').textContent = data.runtime.ip || '—';
   describeModel(data.runtime.provider, data.runtime.model);
   describe();

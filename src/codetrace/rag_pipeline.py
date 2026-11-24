@@ -8,7 +8,8 @@ from .answering import answer_query
 from .context_api import build_context
 from .conversation import retrieval_question
 from .direct_definition import DIRECT_DEFINITION, direct_definition
-from .grounded_prompt import build_grounded_prompt
+from .generation import INSUFFICIENT_EVIDENCE, GenerationResult
+from .grounded_prompt import build_grounded_prompt, response_language_instruction
 from .latency import timed
 from .request_metrics import request_metrics
 from .retrieval import retrieve_scoped
@@ -113,6 +114,20 @@ def answer(
                 'context': context,
                 'prompt': build_grounded_prompt(query, context),
                 'generated': False,
+            }
+        if prefer_direct and semantic_store and not context['items']:
+            spanish = response_language_instruction(query).startswith('Response language: Spanish')
+            message = (
+                'No encontré evidencia suficiente en el repositorio seleccionado para responder.'
+                if spanish
+                else 'I found insufficient evidence in the selected repository to answer.'
+            )
+            details['answer_mode'] = INSUFFICIENT_EVIDENCE
+            return {
+                'answer': GenerationResult(message, 'codetrace', 'static-index', refusal=True),
+                'context': context,
+                'generated': False,
+                'answer_mode': INSUFFICIENT_EVIDENCE,
             }
         result = answer_query(
             query,

@@ -42,19 +42,21 @@ class MLXJinaProvider:
             mx.eval(model.parameters())
             self._loaded = model, Tokenizer.from_file(str(self.path / 'tokenizer.json'))
         model, tokenizer = self._loaded
-        vectors = []
+        # The upstream encoder pads every batch to its longest input.
+        order = sorted(range(len(texts)), key=lambda position: len(texts[position]))
+        vectors = [[] for _ in texts]
         for start in range(0, len(texts), BATCH_SIZE):
+            positions = order[start : start + BATCH_SIZE]
             result = model.encode(
-                list(texts[start : start + BATCH_SIZE]),
+                [texts[position] for position in positions],
                 tokenizer,
                 task='nl2code',
                 prompt_type=prompt_type,
                 truncate_dim=self.metadata.dimensions,
                 max_length=MAX_LENGTH,
             )
-            vectors.extend(result.tolist())
-        if len(vectors) != len(texts):
-            raise ValueError('Jina returned an unexpected number of vectors')
+            for position, vector in zip(positions, result.tolist(), strict=True):
+                vectors[position] = vector
         validate_vectors(vectors, self.metadata)
         return vectors
 

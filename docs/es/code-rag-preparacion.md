@@ -105,6 +105,8 @@ La reutilización incremental comprueba el hash y la compatibilidad pertinente, 
 
 El índice conserva también fuentes Python y de configuración para los análisis posteriores. Las exclusiones y los diagnósticos ayudan a entender la cobertura: una preparación puede terminar con archivos omitidos.
 
+La preparación imprime el avance por lotes de cada almacén. Si el texto renderizado coincide en `v1` y `v2`, la segunda pasada reutiliza el vector de la primera. Cada almacén se publica al completar su pasada.
+
 `make indexes-incremental` sigue ejecutando `link` y, si corresponde, `embed`. Para los vectores se reutilizan los chunks cuyo texto renderizado no cambia; se recalculan los modificados y se eliminan los ausentes. Un cambio de relaciones puede modificar el texto enriquecido v2 aunque el código del chunk no haya cambiado. Un almacén incompatible con el modelo o sus metadatos se reconstruye. **v1 y v2 distinguen las representaciones base y enriquecida; ambas usan el renderizador de texto actual.**
 
 ## 3. Cuándo está listo para consultar

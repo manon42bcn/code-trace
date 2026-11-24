@@ -234,3 +234,19 @@ def test_sqlite_loads_each_selected_embedding_adapter_only_on_search(config, mon
     assert stores['v1'].search(vector)[0]['chunk_id'] == 'app'
     assert stores['v2'].search(vector)[0]['chunk_id'] == 'app'
     assert initialized == [model_id]
+
+
+def test_identical_enrichment_reuses_v1_vectors(config):
+    path, _ = config
+    graph = path.parent / 'indexes/app.relationships.json'
+    graph.write_text('{"evidence_graph": {}}')
+    provider = Provider()
+    updates = []
+
+    result = prepare(path, 'app', provider=provider, progress=lambda *args: updates.append(args))
+
+    assert result['stores']['v1']['embedded'] == 1
+    assert result['stores']['v2']['embedded'] == 0
+    assert result['stores']['v2']['reused'] == 1
+    assert len(provider.calls) == 1
+    assert updates == [('v1', 0, 1, 0), ('v1', 1, 1, 0), ('v2', 0, 0, 1)]
