@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import math
+import os
+import tempfile
 from pathlib import Path
 
 from .embeddings import EmbeddingMetadata, validate_vectors
@@ -36,7 +38,21 @@ class VectorStore:
             raise ValueError('cannot save an empty vector store without metadata')
         self.path.parent.mkdir(parents=True, exist_ok=True)
         payload = {'schema_version': 1, 'metadata': self.metadata.__dict__, 'records': self.records}
-        self.path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
+        temporary = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode='w',
+                encoding='utf-8',
+                dir=self.path.parent,
+                prefix=f'.{self.path.name}.',
+                delete=False,
+            ) as file:
+                temporary = Path(file.name)
+                json.dump(payload, file, ensure_ascii=False, indent=2)
+            os.replace(temporary, self.path)
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
 
     def search(
         self,

@@ -33,11 +33,15 @@ class GenerationConfig:
             or config.max_tokens <= 0
         ):
             raise ValueError('generation timeout and max_tokens must be positive')
-        chat_providers = {'openai', 'azure_openai', 'openrouter', 'groq'}
-        if config.provider not in {'none', 'anthropic', 'ollama', 'mlx'} | chat_providers:
+        from .providers.llm.registry import GENERATION_PROVIDERS
+
+        registered = GENERATION_PROVIDERS.get(config.provider)
+        if config.provider != 'none' and registered is None:
             raise ValueError('unsupported generation provider')
-        if config.provider in chat_providers | {'mlx'} and (
-            not isinstance((value or {}).get('model'), str) or not config.model.strip()
+        if (
+            registered is not None
+            and registered.requires_model
+            and (not isinstance((value or {}).get('model'), str) or not config.model.strip())
         ):
             raise ValueError(f'Set generation.model explicitly for {config.provider}')
         return config

@@ -91,11 +91,14 @@ def test_sqlite_chat_preserves_evidence_and_graph_expansion(snapshot, monkeypatc
     monkeypatch.setenv('CODETRACE_GENERATION_PROVIDER', 'ollama')
     monkeypatch.setenv('CODETRACE_GENERATION_MODEL', 'test')
 
+    calls = []
+
     class Provider:
         provider = 'ollama'
         model = 'test'
 
         def generate(self, _prompt, **_kwargs):
+            calls.append(_prompt)
             return GenerationResult('ok', self.provider, self.model)
 
     def run(command, **_kwargs):
@@ -110,7 +113,8 @@ def test_sqlite_chat_preserves_evidence_and_graph_expansion(snapshot, monkeypatc
     baseline = ChatApplication(config, reuse_mlx=False).answer(payload)
     main(['prepare-sqlite', str(path)])
     capsys.readouterr()
-    experimental = ChatApplication(config, reuse_mlx=False).answer(payload)
+    application = ChatApplication(config, reuse_mlx=False)
+    experimental = application.answer(payload)
 
     assert baseline['index_backend'] == 'json'
     assert experimental['index_backend'] == 'sqlite'
@@ -120,3 +124,8 @@ def test_sqlite_chat_preserves_evidence_and_graph_expansion(snapshot, monkeypatc
         'b',
         'c',
     ]
+
+    direct = application.answer({'question': 'Where is create_agent defined?', 'repo': 'demo'})
+    assert direct['answer_mode'] == 'direct_definition'
+    assert direct['answer']['citations'][0]['chunk_id'] == 'a'
+    assert len(calls) == 2

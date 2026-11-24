@@ -42,6 +42,14 @@ CodeTrace analiza las lecturas y escrituras de `behave.context` en repositorios 
 
 El punto de entrada es `make indexes`, que ejecuta `scripts/build_indexes.py`. Sin selección explícita se preparan todos los repositorios configurados; con `REPOS` se incluyen también sus dependencias transitivas.
 
+Para reconstruir desde cero, ejecuta `make clean && make indexes`. La limpieza
+retira los índices JSON y SQLite, las relaciones y los vectores de los
+adaptadores registrados para todos los repositorios de `CONFIG`. También
+reconoce las rutas de vectores personalizadas de esa configuración.
+`make clean REPOS="demo"` limita la limpieza a la selección y sus dependencias.
+Se conservan los repositorios fuente, la configuración, los informes y las
+sesiones guardadas.
+
 ```mermaid
 flowchart TD
     A["config.json + repositorios locales"] --> B["Seleccionar repositorios e incluir dependencias transitivas"]
@@ -96,6 +104,8 @@ flowchart TD
 La reutilización incremental comprueba el hash y la compatibilidad pertinente, como el lenguaje y la versión de chunking de configuración. Los archivos eliminados dejan de aportar chunks al nuevo índice. El presupuesto de chunking usa una estimación léxica de tokens, no el tokenizador real del LLM.
 
 El índice conserva también fuentes Python y de configuración para los análisis posteriores. Las exclusiones y los diagnósticos ayudan a entender la cobertura: una preparación puede terminar con archivos omitidos.
+
+La preparación imprime el avance por lotes de cada almacén. Si el texto renderizado coincide en `v1` y `v2`, la segunda pasada reutiliza el vector de la primera. Cada almacén se publica al completar su pasada.
 
 `make indexes-incremental` sigue ejecutando `link` y, si corresponde, `embed`. Para los vectores se reutilizan los chunks cuyo texto renderizado no cambia; se recalculan los modificados y se eliminan los ausentes. Un cambio de relaciones puede modificar el texto enriquecido v2 aunque el código del chunk no haya cambiado. Un almacén incompatible con el modelo o sus metadatos se reconstruye. **v1 y v2 distinguen las representaciones base y enriquecida; ambas usan el renderizador de texto actual.**
 

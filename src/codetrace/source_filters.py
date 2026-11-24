@@ -3,9 +3,9 @@
 from dataclasses import asdict, dataclass
 from pathlib import PurePosixPath
 
-from .core import EXT, SPECIAL
+from .languages.registry import LANGUAGES
 
-SOURCE_TYPES = tuple(sorted(set(EXT.values()) | set(SPECIAL.values())))
+SOURCE_TYPES = tuple(sorted(LANGUAGES))
 
 
 def relative_path(value, *, directory=False):

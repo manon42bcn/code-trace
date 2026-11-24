@@ -42,7 +42,7 @@ def test_anthropic_reads_dotenv_and_prefers_exported_values(monkeypatch, tmp_pat
     monkeypatch.setenv('ANTHROPIC_API_KEY', 'exported-key')
     monkeypatch.delenv('ANTHROPIC_AUTH_TOKEN', raising=False)
     provider = Mock()
-    monkeypatch.setattr('codetrace.generation_factory.AnthropicProvider', provider)
+    monkeypatch.setattr('codetrace.providers.llm.registry.AnthropicProvider', provider)
 
     build_generation_provider(GenerationConfig(provider='anthropic'))
 

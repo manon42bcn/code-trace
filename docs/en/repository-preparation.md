@@ -44,6 +44,13 @@ flowchart TD
 
 `make indexes` runs [scripts/build_indexes.py](../../scripts/build_indexes.py). Without `REPOS`, it processes all configured repositories. A selection includes its transitive dependencies. Linking waits for all selected indexes so that cross-repository dependencies can use the new snapshots. Links and graph edges describe static evidence. Preparation uses local checkouts and writes JSON artifacts under `indexes/` beside the configuration. Vector paths can be overridden. A failed command stops the remaining phases and preserves artifacts already written.
 
+To rebuild from scratch, run `make clean && make indexes`. Cleanup removes
+JSON and SQLite indexes, relationships, and vectors for the registered
+adapters and repositories in `CONFIG`. It also recognizes custom vector
+paths in that configuration. `make clean REPOS="demo"` limits cleanup to the
+selection and its dependencies. Source repositories, configuration, reports,
+and saved sessions are preserved.
+
 ## Index source files
 
 ```mermaid
@@ -59,6 +66,8 @@ flowchart TD
 ```
 
 Each chunk has an ID, path, original line range, content, and metadata. Depending on the language, CodeTrace uses Python AST, Tree-sitter, or a specialized parser. The chunk budget measures lexical tokens. Source snapshots support later Python and configuration analysis. Error policies can skip files and record diagnostics or stop indexing. Exclusions and skipped files affect coverage.
+
+Preparation prints batch progress for each store. When the rendered text is identical in `v1` and `v2`, the second pass reuses the vector from the first. Each store is published when its pass completes.
 
 Incremental indexing checks source hashes and relevant compatibility metadata. Removed files disappear from the index. `make indexes-incremental` still links artifacts and embeds when enabled. Embedding updates reuse vectors for unchanged rendered text and remove absent chunks. v1 embeds the base representation and v2 enriches it with relationships. Relationship changes can therefore invalidate v2 even when source is unchanged. Both stores use the current renderer. Incompatible model or metadata requires rebuilding the store.
 

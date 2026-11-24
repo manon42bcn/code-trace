@@ -246,7 +246,6 @@ def test_session_option_validation(search):
 
 
 def test_semantic_continuation_skips_embeddings_and_vector_changes_invalidate(search, monkeypatch):
-    from codetrace import embedding_provider
     from codetrace.embeddings import EmbeddingMetadata
     from codetrace.vector_store import VectorStore
 
@@ -273,7 +272,7 @@ def test_semantic_continuation_skips_embeddings_and_vector_changes_invalidate(se
             counts['embeddings'] += 1
             return [1.0, 0.0]
 
-    monkeypatch.setattr(embedding_provider, 'SentenceTransformerProvider', Fake)
+    monkeypatch.setattr('codetrace.providers.embeddings.registry.SentenceTransformerProvider', Fake)
     base = [
         'Where is order_id used?',
         '--index',

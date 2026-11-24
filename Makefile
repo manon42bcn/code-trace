@@ -16,7 +16,7 @@ JSON_PATHS ?=
 # Example: make indexes REPOS="demo demo_library"
 REPO_ARGS = $(foreach repo,$(REPOS),--repo "$(repo)")
 
-.PHONY: chat setup reinstall indexes indexes-incremental indexes-plan format format-check lint lint-python lint-json hooks-install hooks-run check-provider doctor evaluate-real skills-install skills-update skills-status
+.PHONY: chat setup reinstall indexes clean indexes-incremental indexes-plan format format-check lint lint-python lint-json hooks-install hooks-run check-provider doctor evaluate-real skills-install skills-update skills-status
 
 setup: reinstall
 
@@ -25,6 +25,9 @@ reinstall:
 
 indexes:
 	@$(PYTHON) scripts/build_indexes.py --config "$(CONFIG)" $(REPO_ARGS)
+
+clean:
+	@$(PYTHON) scripts/clean_indexes.py --config "$(CONFIG)" $(REPO_ARGS)
 
 indexes-incremental:
 	@$(PYTHON) scripts/build_indexes.py --config "$(CONFIG)" $(REPO_ARGS) --incremental

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import ast
 import fnmatch
 import hashlib
 import heapq
@@ -17,59 +16,19 @@ from itertools import pairwise
 from pathlib import Path
 
 from .artifact_state import file_stamp
-from .configuration_chunks import CONFIGURATION_CHUNKING_VERSION, configuration_units
+from .configuration_chunks import CONFIGURATION_CHUNKING_VERSION
 from .generation_safety import SENSITIVE_NAMES
-from .python_parsing import PYTHON_DIAGNOSTICS_VERSION, parse_python
+from .languages.extractors import python_units as python_units
+from .languages.registry import (
+    EXT as EXT,
+    LANGUAGES,
+    SPECIAL as SPECIAL,
+    detect_language as detect_language,
+    treesitter_units as treesitter_units,
+    units_for,
+)
+from .python_parsing import PYTHON_DIAGNOSTICS_VERSION
 
-EXT = {
-    '.py': 'python',
-    '.js': 'javascript',
-    '.jsx': 'javascript',
-    '.mjs': 'javascript',
-    '.cjs': 'javascript',
-    '.ts': 'typescript',
-    '.tsx': 'typescript',
-    '.mts': 'typescript',
-    '.cts': 'typescript',
-    '.java': 'java',
-    '.cs': 'csharp',
-    '.go': 'go',
-    '.c': 'c',
-    '.i': 'c',
-    '.cpp': 'cpp',
-    '.cc': 'cpp',
-    '.cxx': 'cpp',
-    '.c++': 'cpp',
-    '.hpp': 'cpp',
-    '.hh': 'cpp',
-    '.hxx': 'cpp',
-    '.h++': 'cpp',
-    '.h': 'c/cpp',
-    '.sh': 'shell',
-    '.bash': 'shell',
-    '.zsh': 'shell',
-    '.mk': 'makefile',
-    '.lock': 'lock',
-    '.feature': 'gherkin',
-    '.yaml': 'yaml',
-    '.yml': 'yaml',
-    '.json': 'json',
-}
-SPECIAL = {
-    'Makefile': 'makefile',
-    'makefile': 'makefile',
-    'GNUmakefile': 'makefile',
-    'package-lock.json': 'lock',
-    'npm-shrinkwrap.json': 'lock',
-    'Cargo.lock': 'lock',
-    'poetry.lock': 'lock',
-    'Pipfile.lock': 'lock',
-    'yarn.lock': 'lock',
-    'pnpm-lock.yaml': 'lock',
-    'Gemfile.lock': 'lock',
-    'uv.lock': 'lock',
-    'composer.lock': 'lock',
-}
 SKIP = {
     '.git',
     '.hg',
@@ -91,69 +50,10 @@ SKIP = {
 MAX_FILE_BYTES = 1_048_576
 # Conservative, dependency-free lexical accounting; not the tokenizer of an embedding model.
 TOK = re.compile(r'\w+|[^\w\s]', re.UNICODE)
-TREE_LANG = {
-    'javascript': 'javascript',
-    'typescript': 'typescript',
-    'java': 'java',
-    'csharp': 'c_sharp',
-    'go': 'go',
-    'c': 'c',
-    'cpp': 'cpp',
-    'shell': 'bash',
-}
-NODE_TYPES = {
-    'javascript': {
-        'function_declaration',
-        'class_declaration',
-        'method_definition',
-        'arrow_function',
-        'generator_function_declaration',
-    },
-    'typescript': {
-        'function_declaration',
-        'class_declaration',
-        'method_definition',
-        'interface_declaration',
-        'type_alias_declaration',
-        'enum_declaration',
-        'arrow_function',
-    },
-    'java': {
-        'class_declaration',
-        'interface_declaration',
-        'method_declaration',
-        'constructor_declaration',
-        'enum_declaration',
-        'record_declaration',
-    },
-    'csharp': {
-        'class_declaration',
-        'interface_declaration',
-        'method_declaration',
-        'constructor_declaration',
-        'struct_declaration',
-        'record_declaration',
-    },
-    'go': {'function_declaration', 'method_declaration', 'type_declaration'},
-    'c': {'function_definition', 'struct_specifier', 'enum_specifier', 'type_definition'},
-    'cpp': {
-        'function_definition',
-        'class_specifier',
-        'struct_specifier',
-        'namespace_definition',
-        'template_declaration',
-        'enum_specifier',
-    },
-    'shell': {'function_definition'},
-}
 
 
 def token_count(s: str) -> int:
     return len(TOK.findall(s))
-
-
-def detect_language(path: Path, overrides: dict) -> str | None:
-    return overrides.get(path.suffix.lower(), SPECIAL.get(path.name, EXT.get(path.suffix.lower())))
 
 
 def is_excluded(relative_path: str, patterns: list[str]) -> bool:
@@ -236,211 +136,6 @@ def discover(root, languages, overrides, excludes=None, excluded_paths=None, *, 
             continue
 
 
-def python_units(source: str, *, filename='<unknown>', diagnostics=None):
-    tree = parse_python(source, filename=filename, diagnostics=diagnostics)
-    nodes = []
-
-    def walk(body, prefix=''):
-        for node in body:
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                symbol = prefix + node.name
-                nodes.append(
-                    (
-                        min([node.lineno] + [d.lineno for d in node.decorator_list]),
-                        node.end_lineno,
-                        symbol,
-                        'python_ast',
-                    )
-                )
-                if isinstance(node, ast.ClassDef):
-                    walk(node.body, symbol + '.')
-
-    walk(tree.body)
-    return nodes
-
-
-def treesitter_units(
-    source: str, language: str, *, recover: bool = False, diagnostics: list | None = None
-):
-    try:
-        from tree_sitter_language_pack import get_parser
-    except ImportError as exc:
-        raise ValueError(
-            'Falta tree-sitter-language-pack: ejecuta uv sync --extra parsers'
-        ) from exc
-    try:
-        parser = get_parser(TREE_LANG[language])
-        root = parser.parse(source.encode('utf-8')).root_node
-    except Exception as exc:
-        raise ValueError(f'No se pudo analizar {language} con Tree-sitter: {exc}') from exc
-    # Tuple access avoids the Point attribute refcount bug in tree-sitter 0.26.0.
-    if root.has_error:
-        errors = []
-
-        def collect(node):
-            if node.type == 'ERROR' or node.is_missing:
-                errors.append(
-                    {
-                        'line': node.start_point[0] + 1,
-                        'column': node.start_point[1] + 1,
-                        'node': node.type,
-                        'end_line': node.end_point[0] + 1,
-                    }
-                )
-                return
-            for child in node.children:
-                collect(child)
-
-        collect(root)
-        if diagnostics is not None:
-            diagnostics.extend(
-                {'type': 'syntax_error', 'language': language, **e} for e in errors[:100]
-            )
-        if not recover:
-            loc = errors[0] if errors else {'line': '?', 'column': '?'}
-            raise ValueError(
-                f'Errores de sintaxis detectados por Tree-sitter en {language} '
-                f'(línea {loc["line"]}, columna {loc["column"]})'
-            )
-    units = []
-
-    def visit(node, parent=''):
-        for ch in node.named_children:
-            if ch.type in NODE_TYPES[language] and not ch.has_error:
-                ident = ch.child_by_field_name('name') or ch.child_by_field_name('declarator')
-                label = (
-                    source.encode('utf-8')[ident.start_byte : ident.end_byte].decode(
-                        'utf-8', 'replace'
-                    )
-                    if ident
-                    else ch.type
-                )
-                label = re.sub(r'\s+', ' ', label)[:100]
-                symbol = (parent + '.' if parent else '') + label
-                units.append((ch.start_point[0] + 1, ch.end_point[0] + 1, symbol, 'tree_sitter'))
-                visit(ch, symbol)
-            else:
-                visit(ch, parent)
-
-    visit(root)
-    return units
-
-
-def make_units(source: str):
-    lines = source.splitlines()
-    starts = []
-    for i, line in enumerate(lines, 1):
-        if (
-            line.startswith((' ', '\t', '#', '.PHONY'))
-            or '=' in line.split(':', 1)[0]
-            or ':' not in line
-        ):
-            continue
-        # Targets may contain substitutions such as $(NAME) and pattern rules.
-        if re.match(r'^[^\s:#][^:]*:(?!=)', line) and not line.startswith(
-            ('ifeq', 'ifneq', 'ifdef', 'ifndef', 'endif')
-        ):
-            starts.append(i)
-    return [
-        (
-            a,
-            starts[j + 1] - 1 if j + 1 < len(starts) else len(lines),
-            lines[a - 1].split(':', 1)[0].strip(),
-            'makefile_rules',
-        )
-        for j, a in enumerate(starts)
-    ]
-
-
-def gherkin_units(source: str):
-    """Recognize Gherkin sections, preserving tags and Scenario Outline examples.
-
-    Sections are extracted without execution and tolerate localized keywords.
-    """
-    lines = source.splitlines()
-    pattern = re.compile(
-        (
-            '^\\s*(Feature|Background|Scenario Outline|Scenario Template|'
-            'Scenario|Rule|Examples|Example|Característica|Antecedentes|'
-            'Esquema del escenario|Escenario|Regla|Ejemplos)\\s*:'
-        ),
-        re.I,
-    )
-    sections = []
-    pending = None
-    for i, line in enumerate(lines, 1):
-        if line.strip().startswith('@'):
-            if pending is None:
-                pending = i
-            continue
-        match = pattern.match(line)
-        if match:
-            start = pending or i
-            label = line.strip().split(':', 1)[1].strip()
-            kind = match.group(1).lower().replace(' ', '_')
-            sections.append((start, i, kind, label))
-            pending = None
-        elif line.strip() and not line.lstrip().startswith('#'):
-            pending = None
-    # Keep whole scenarios, incl. Examples (do not make Examples independent chunks).
-    primary = [v for v in sections if v[2] not in ('examples', 'example', 'ejemplos')]
-    units = []
-    for j, (start, head, kind, label) in enumerate(primary):
-        end = primary[j + 1][0] - 1 if j + 1 < len(primary) else len(lines)
-        # Feature / Rule are parents, not a giant chunk consuming nested scenarios.
-        if kind in ('feature', 'característica', 'rule', 'regla'):
-            end = head
-        units.append((start, end, f'{kind}: {label}', 'gherkin_ast'))
-    return units
-
-
-def units_for(
-    source: str,
-    language: str,
-    missing: str,
-    syntax_policy: str = 'error',
-    diagnostics: list | None = None,
-    *,
-    filename='<unknown>',
-):
-    try:
-        if language == 'python':
-            return python_units(source, filename=filename, diagnostics=diagnostics)
-        if language == 'gherkin':
-            return gherkin_units(source)
-        if language in {'yaml', 'json'}:
-            try:
-                return configuration_units(source, language)
-            except ValueError as exc:
-                if syntax_policy != 'recover':
-                    raise
-                if diagnostics is not None:
-                    diagnostics.append(
-                        {
-                            'type': 'configuration_parse_error',
-                            'language': language,
-                            'message': str(exc),
-                            'recovery': 'raw_document',
-                        }
-                    )
-                return []
-        if language in TREE_LANG:
-            return treesitter_units(
-                source, language, recover=syntax_policy == 'recover', diagnostics=diagnostics
-            )
-        if language == 'makefile':
-            return make_units(source)
-        return []
-    except (SyntaxError, ValueError) as exc:
-        if missing == 'skip':
-            return None
-        if missing == 'error':
-            raise ValueError(
-                f'No se puede aplicar fragmentación estructural ({language}): {exc}'
-            ) from exc
-        raise ValueError(f'on_missing_parser inválido: {missing}') from exc
-
-
 def partition(lines, units):
     """Cover every source line, preferring leaf units with stable tie-breaking.
 
@@ -515,7 +210,8 @@ def split_budget(lines, start, end, max_tokens, overlap):
 
 
 def attach_leading_docs(lines, units, language):
-    if language not in ('c', 'cpp', 'javascript', 'typescript', 'java', 'csharp', 'go'):
+    specification = LANGUAGES.get(language)
+    if specification is None or not specification.leading_docs:
         return units
     ordered = sorted(units, key=lambda x: (x[0], x[1]))
     result = []
@@ -566,11 +262,8 @@ def build_chunks(path: str, lang: str, source: str, cfg: dict, diagnostics: list
     if units is None:
         return []
     units = attach_leading_docs(lines, units, language)
-    fallback_strategy = {
-        'yaml': 'yaml_document',
-        'json': 'json_document',
-        'lock': 'lock_document',
-    }.get(language, 'surrounding_code')
+    specification = LANGUAGES.get(language)
+    fallback_strategy = specification.fallback_strategy if specification else 'surrounding_code'
     chunks = []
     for range_start, range_end, unit in partition(lines, units):
         if unit is None:
@@ -603,63 +296,8 @@ def build_chunks(path: str, lang: str, source: str, cfg: dict, diagnostics: list
                     'sha256': hashlib.sha256(content.encode()).hexdigest(),
                 }
             )
-    if language in {'yaml', 'json'}:
-        for row in chunks:
-            row['configuration_chunking_version'] = CONFIGURATION_CHUNKING_VERSION
-            row['data_path'] = row['symbol']
-            if (
-                chunking_options['include_parent_context']
-                and row['symbol']
-                and '/' in row['symbol']
-            ):
-                row['parent_symbol'] = row['symbol'].rsplit('/', 1)[0]
-    if language == 'gherkin':
-        # Enrich scenario chunks with their feature context (including inherited tags).
-        feature = None
-        feature_tags = []
-        pending_tags = []
-        feature_positions = []
-        for lineno, line in enumerate(lines, 1):
-            stripped = line.strip()
-            if stripped.startswith('@'):
-                pending_tags.extend(stripped.split())
-            elif re.match(r'^(Feature|Característica)\s*:', stripped, re.I):
-                feature = stripped.split(':', 1)[1].strip()
-                feature_tags = pending_tags[:]
-                feature_positions.append((lineno, feature, feature_tags))
-                pending_tags = []
-            elif re.match(
-                (
-                    '^(Scenario|Scenario Outline|Scenario Template|Background|'
-                    'Escenario|Esquema del escenario|Antecedentes)\\s*:'
-                ),
-                stripped,
-                re.I,
-            ):
-                pending_tags = []
-            elif stripped and not stripped.startswith('#'):
-                pending_tags = []
-        for row in chunks:
-            if row['symbol'] and row['symbol'].startswith(
-                (
-                    'scenario:',
-                    'scenario_outline:',
-                    'scenario_template:',
-                    'background:',
-                    'escenario:',
-                    'esquema_del_escenario:',
-                    'antecedentes:',
-                )
-            ):
-                ancestors = [
-                    (name, tags)
-                    for pos, name, tags in feature_positions
-                    if pos <= row['start_line']
-                ]
-                if ancestors:
-                    name, tags = ancestors[-1]
-                    row['parent_symbol'] = 'feature: ' + name
-                    row['feature_tags'] = tags
+    if specification is not None and specification.finalize is not None:
+        specification.finalize(lines, chunks, chunking_options)
     return chunks
 
 

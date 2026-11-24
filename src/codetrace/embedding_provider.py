@@ -1,50 +1,37 @@
-"""Local sentence-transformers embedding provider."""
+"""Public factory and deferred loading for embedding providers."""
 
-from __future__ import annotations
+from functools import cached_property
 
-import os
-from collections.abc import Sequence
+from .providers.embeddings.registry import (
+    build_embedding_provider as build_embedding_provider,
+    embedding_adapter as embedding_adapter,
+    embedding_runtime_issue as embedding_runtime_issue,
+)
+from .providers.embeddings.sentence_transformers import (
+    SentenceTransformerProvider as SentenceTransformerProvider,
+)
 
-from dotenv import dotenv_values
 
-from .embeddings import EmbeddingMetadata, validate_vectors
+class DeferredEmbeddingProvider:
+    """Initialize the selected adapter only when semantic evidence is requested."""
 
+    def __init__(self, model_id):
+        self.model_id = model_id
 
-class SentenceTransformerProvider:
-    """Embed text locally through sentence-transformers.
+    @cached_property
+    def provider(self):
+        return build_embedding_provider(self.model_id)
 
-    The dependency and model are loaded only when this provider is instantiated.
-    """
+    @property
+    def metadata(self):
+        return self.provider.metadata
 
-    def __init__(
-        self,
-        model_id: str = 'sentence-transformers/all-MiniLM-L6-v2',
-        *,
-        config_version: str = 'v1',
-        device: str | None = None,
-    ):
-        try:
-            from sentence_transformers import SentenceTransformer
-        except ImportError as exc:
-            raise RuntimeError(
-                'Could not import sentence-transformers. Check the CodeTrace installation.'
-            ) from exc
-        kwargs = {'device': device} if device else {}
-        token = os.environ.get('HF_TOKEN')
-        if token is None:
-            token = dotenv_values('.env', interpolate=False).get('HF_TOKEN')
-        if token:
-            kwargs['token'] = token
-        self._model = SentenceTransformer(model_id, **kwargs)
-        dimensions = self._model.get_embedding_dimension()
-        self.metadata = EmbeddingMetadata(model_id, dimensions, config_version)
+    @property
+    def minimum_similarity(self):
+        return getattr(self.provider, 'minimum_similarity', None)
 
-    def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
-        vectors = self._model.encode(list(texts), convert_to_numpy=True)
-        result = vectors.tolist()
-        validate_vectors(result, self.metadata)
-        return result
+    def embed_query(self, text):
+        return self.provider.embed_query(text)
 
-    def embed_query(self, text: str) -> list[float]:
-        result = self.embed_documents([text])
-        return result[0]
+    def embed_documents(self, texts):
+        return self.provider.embed_documents(texts)

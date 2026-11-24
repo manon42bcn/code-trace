@@ -15,7 +15,8 @@ from urllib.parse import urlsplit
 
 from .generation_config import GenerationConfig, GenerationSetupError, generation_environment
 from .generation_factory import build_generation_provider
-from .latency import timed
+from .providers.llm.metrics import generate
+from .providers.llm.registry import GENERATION_PROVIDERS
 from .request_metrics import request_metrics
 
 PROBE = (
@@ -89,10 +90,11 @@ def check_provider(raw, *, allow_remote=False):
         )
     if config.base_url is not None and not isinstance(config.base_url, str):
         raise ProviderCheckError('invalid_endpoint', 'Use an HTTP(S) endpoint string.')
-    local = config.provider == 'mlx' or (
-        config.provider == 'ollama' and is_loopback(config.base_url or 'http://localhost:11434')
+    execution = GENERATION_PROVIDERS[config.provider].execution
+    local = execution == 'local' or (
+        execution == 'loopback' and is_loopback(config.base_url or 'http://localhost')
     )
-    if config.base_url and config.provider not in {'ollama', 'mlx'}:
+    if config.base_url and execution == 'remote':
         is_loopback(config.base_url)  # Validate a custom endpoint without exposing it in output.
     if not local and not allow_remote:
         raise ProviderCheckError(
@@ -103,8 +105,7 @@ def check_provider(raw, *, allow_remote=False):
     try:
         with request_metrics('check_provider', config.provider, config.model) as timings:
             provider = build_generation_provider(bounded)
-            with timed(timings, 'generation_seconds'):
-                result = provider.generate(PROBE)
+            result = generate(provider, PROBE, timings)
             if result.refusal or not isinstance(result.answer, str) or not result.answer.strip():
                 raise ProviderCheckError(
                     'invalid_response', 'Provider refused the probe or returned an empty answer.'

@@ -9,7 +9,7 @@ CodeTrace first prepares a repository snapshot, then retrieves and selects evide
 | Stage | Implementation | Result |
 | --- | --- | --- |
 | Plan repositories | [build_indexes.py](../../scripts/build_indexes.py) · `build_plan()`, `main()` | Selects repositories and their dependencies, validates paths, and schedules all indexes before linking. |
-| Discover and parse | [core.py](../../src/codetrace/core.py) · `discover()`, `index_repository()`, `units_for()` | Selects files, reads sources, and extracts structural units with AST, Tree-sitter, or a format-specific parser. |
+| Discover and parse | [core.py](../../src/codetrace/core.py) · `discover()`, `index_repository()` and [language registry](../../src/codetrace/languages/registry.py) · `units_for()` | Selects files, reads sources, and extracts structural units with AST, Tree-sitter, or a format-specific parser. |
 | Build chunks | [core.py](../../src/codetrace/core.py) · `build_chunks()`, `partition()`, `split_budget()` | Creates citable ranges using lexical token estimates and overlap. Incremental indexing can reuse compatible chunks for unchanged files. |
 | Link repositories | [repo_links.py](../../src/codetrace/repo_links.py) and [evidence_graph.py](../../src/codetrace/evidence_graph.py) | Relates indexed sources and normalizes static relationships as graph nodes and edges. |
 | Prepare vectors | [prepare_embeddings.py](../../src/codetrace/prepare_embeddings.py), [embedding_enrichment.py](../../src/codetrace/embedding_enrichment.py), and [embedding_index.py](../../src/codetrace/embedding_index.py) | Builds v1 vectors from base text and v2 vectors from graph-enriched text. Reuses embeddings for unchanged rendered inputs when compatible. |
@@ -24,6 +24,38 @@ Chunking uses a lexical token count. Embedding uses the embedding model's input 
 | Optional sessions and reports | Store paginated search state or results and can contain source excerpts. |
 
 The standard artifact directory is `indexes/` beside the configuration. [Repository preparation](repository-preparation.md) covers operational checks. [pyproject.toml](../../pyproject.toml) declares PyYAML, python-dotenv, and sentence-transformers as base dependencies, with extras for Tree-sitter and model providers.
+
+### Add a language
+
+Add an entry to [`LANGUAGES`](../../src/codetrace/languages/registry.py)
+with its file extensions or exact filenames. CodeTrace uses the registry to
+detect languages and determine which source types filters accept.
+`indexing.language_overrides` takes precedence over detection by extension
+or filename.
+
+If a Tree-sitter grammar is available, declare its name and the node types
+that form structural units. This is the existing Go registration:
+
+```python
+'go': tree_language(
+    ('.go',), 'go', 'function_declaration', 'method_declaration', 'type_declaration'
+),
+```
+
+For a format that needs its own parser, register a `Language` with an
+`extractor` that implements `UnitExtractor`. Each unit contains
+`(start_line, end_line, symbol, strategy)`, with inclusive, 1-based line
+numbers. The extractor receives the filename, the syntax policy, and the
+optional diagnostics list. The optional `finalize` hook can add
+language-specific metadata after the chunks are built. Existing Python,
+configuration, Gherkin, and Makefile implementations are in
+[`languages/extractors.py`](../../src/codetrace/languages/extractors.py).
+
+Include the language in `indexing.languages` to index it. Test file
+detection, symbol names and ranges, error handling, and long units. The
+shared chunker applies the token budget and overlap to every unit.
+Relationship extraction, call analysis, and HTTP route analysis have
+their own rules.
 
 ## Route, retrieve, and select evidence
 
@@ -40,6 +72,8 @@ The [CLI](../../src/codetrace/__main__.py) runs `answer`. [agent_query.py](../..
 Retrieval ranks candidates. Context budgets determine which excerpts the answer can cite. A match can therefore appear in metadata without its source excerpt. Both stages limit coverage.
 
 ## Generate and deliver
+
+The [adapter guide](adapters.md) shows how to add and register generation and embedding providers and configure them through `.env`.
 
 [rag_pipeline.py](../../src/codetrace/rag_pipeline.py) orchestrates retrieval and context selection. In evidence mode, `render_query()` returns JSON for the consuming agent. With a generation provider, [answering.py](../../src/codetrace/answering.py) checks permissions and sensitive filenames, builds a [grounded prompt](../../src/codetrace/grounded_prompt.py), calls the selected adapter, and validates citations against the context.
 

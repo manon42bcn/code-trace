@@ -93,7 +93,7 @@ def run_answer(args, *, provider_factory=None):
                     raw,
                     args.config or Path.cwd() / 'config.json',
                     args.index,
-                    lexical_only=backend == 'sqlite',
+                    sqlite_backend=backend == 'sqlite',
                 )
             from dataclasses import replace
 
@@ -127,6 +127,7 @@ def run_answer(args, *, provider_factory=None):
                 semantic_store=stores,
                 embedding_provider=embedding_provider,
                 generation_provider=provider,
+                prefer_direct=True,
                 context_limits=context_limits,
                 allow_remote=args.allow_remote,
                 timings=timings,

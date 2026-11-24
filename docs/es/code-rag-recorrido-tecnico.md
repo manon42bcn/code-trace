@@ -44,16 +44,45 @@ Los errores detienen la ejecución y conservan los artefactos ya generados. El d
 | Etapa y función | Qué hace y cómo | Librería o mecanismo |
 | --- | --- | --- |
 | [`core.py`](../../src/codetrace/core.py) · `discover_paths()`, `discover()` | Detecta lenguajes por nombre/extensión y overrides, aplica exclusiones y obtiene fuentes aptas para indexar. | Código propio; biblioteca estándar para rutas, lectura y patrones. |
-| `core.py` · `python_units()` | Lee funciones, funciones async y clases, con nombres y rangos; incluye decoradores en el comienzo de la unidad. | `ast.parse()` de Python. Analiza sintaxis sin importar el módulo. |
-| `core.py` · `treesitter_units()` | Recorre el árbol de sintaxis de los lenguajes configurados en `TREE_LANG` y recoge nodos estructurales. Puede registrar recuperación de errores sintácticos. | `tree-sitter-language-pack`, mediante `get_parser()` y `parser.parse()`. Dependencia opcional `parsers`. |
+| [`languages/extractors.py`](../../src/codetrace/languages/extractors.py) · `python_units()` | Lee funciones, funciones async y clases, con nombres y rangos; incluye decoradores en el comienzo de la unidad. | `ast.parse()` de Python. Analiza sintaxis sin importar el módulo. |
+| `languages/extractors.py` · `parse_treesitter_units()` | Recorre el árbol de sintaxis de los lenguajes declarados en el registro y recoge nodos estructurales. Puede registrar recuperación de errores sintácticos. | `tree-sitter-language-pack`, mediante `get_parser()` y `parser.parse()`. Dependencia opcional `parsers`. |
 | [`configuration_chunks.py`](../../src/codetrace/configuration_chunks.py) · `configuration_units()`, `parse_configuration()` | Identifica unidades y rutas estructurales YAML/JSON conservando posiciones en el texto. | YAML: eventos de **PyYAML** con `SafeLoader`. JSON: parser estructural propio `JsonStructure`, apoyado en `json` para valores. |
-| `core.py` · `gherkin_units()`, `make_units()` | Extrae unidades específicas, por ejemplo escenarios Gherkin o bloques Makefile. | Código propio; no se usa un parser externo para estas funciones. |
+| `languages/extractors.py` · `gherkin_units()`, `make_units()` | Extrae unidades específicas, por ejemplo escenarios Gherkin o bloques Makefile. | Código propio; no se usa un parser externo para estas funciones. |
 | `core.py` · `attach_leading_docs()`, `partition()` | Asocia documentación precedente y organiza bloques estructurales y código circundante. | Código propio sobre líneas y rangos. |
 | `core.py` · `split_budget()` | Mantiene bloques que caben; divide los grandes y reutiliza parte del final como solapamiento. Una línea demasiado larga se divide por límites de tokens léxicos. | Código propio y `re`; el solapamiento está acotado por el presupuesto y los fragmentos disponibles. |
 | `core.py` · `build_chunks()` | Construye cada chunk con contenido, símbolo, lenguaje, líneas, estrategia, hashes y estimación de tokens. | `hashlib.sha256()`; ID de 16 caracteres derivado de ruta, líneas y contenido. |
 | `core.py` · `index_repository()` | Reúne chunks, crea un índice de términos por símbolo/ruta/contenido, guarda fuentes completas Python y YAML/JSON, manifiestos y diagnósticos. | Diccionarios y JSON; escritura del índice mediante archivo temporal y sustitución atómica. |
 
 Un **chunk** es la unidad recuperable y citable. Por ejemplo, una función pequeña puede formar un fragmento; una función extensa puede dividirse en varios. Sus líneas remiten al archivo original. El rango y el símbolo permiten ubicar la evidencia, mientras el contenido es lo que se recupera o transforma en embeddings.
+
+### Añadir un lenguaje
+
+Añade una entrada a [`LANGUAGES`](../../src/codetrace/languages/registry.py)
+con sus extensiones o nombres de archivo. CodeTrace deriva de ahí la detección
+y los tipos de fuente admitidos. `indexing.language_overrides` sigue teniendo
+prioridad sobre la detección por extensión o nombre.
+
+Si hay una gramática Tree-sitter disponible, declara el nombre de la gramática
+y los tipos de nodo que forman una unidad. Esta es la entrada de Go:
+
+```python
+'go': tree_language(
+    ('.go',), 'go', 'function_declaration', 'method_declaration', 'type_declaration'
+),
+```
+
+Para un formato que necesita su propio parser, registra un `Language` con un
+`extractor` que cumpla el contrato `UnitExtractor`. Cada unidad devuelve
+`(línea_inicial, línea_final, símbolo, estrategia)`, con líneas inclusivas
+a partir de 1. El extractor recibe el nombre de archivo, la política de
+sintaxis y el destino de los diagnósticos. Si el formato necesita metadatos
+adicionales después de construir los chunks, puede registrar `finalize`.
+
+Incluye el lenguaje en `indexing.languages` para indexarlo. Prueba la
+detección, los símbolos y sus rangos, la política de errores y el
+comportamiento con unidades largas. El motor aplica el presupuesto de tokens
+y el solapamiento a todas las unidades. Los análisis de relaciones, llamadas
+y rutas HTTP se amplían por separado.
 
 En modo incremental, `index_repository()` compara SHA-256 por archivo y condiciones de reutilización, como lenguaje y compatibilidad del chunking de configuración. Los archivos ausentes dejan de aportar chunks al nuevo índice. Las relaciones se regeneran después; no se mantienen automáticamente por reutilizar chunks.
 

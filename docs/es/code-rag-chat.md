@@ -54,6 +54,16 @@ make doctor
 make check-provider
 ```
 
+## Consultas de definición
+
+Una pregunta que solo pide dónde se define un símbolo explícito o un step
+entre acentos graves puede resolverse desde el índice cuando hay una única
+definición exacta. El chat muestra **Definición exacta · índice estático** junto
+con la referencia y la evidencia. Un seguimiento como «¿Dónde se define ese
+step?» puede usar la misma vía si la respuesta anterior contiene una única
+referencia entre acentos graves. Las preguntas de uso, explicación o
+descubrimiento siguen usando el modelo y la evidencia recuperada.
+
 ## Historial y ejecución
 
 CodeTrace guarda los últimos tres turnos completados por repositorio y conversación
@@ -99,8 +109,8 @@ make chat
 ```
 
 SQLite obtiene los candidatos léxicos y carga las evidencias por ID. El grafo sigue
-leyéndose desde su JSON. Cuando se usa SQLite, las consultas combinan recuperación
-léxica y estructural. Las métricas y las salidas JSON de `answer` y `evaluate-rag`
+leyéndose desde su JSON. SQLite combina recuperación léxica y estructural, y puede sumar los vectores
+de cualquiera de los adaptadores configurados abajo. Las métricas y las salidas JSON de `answer` y `evaluate-rag`
 identifican el backend en `index_backend`.
 
 Después de cambiar el código, el usuario puede regenerar explícitamente los índices:
@@ -111,6 +121,42 @@ make indexes REPOS="aicc-tests"
 
 `make indexes` y `make indexes-incremental` generan ambas instantáneas de
 fragmentos. Se requiere SQLite con FTS5 y tokenizador trigrama.
+
+## Adaptadores de embeddings locales
+
+El modelo de generación conserva su propia configuración. Sentence Transformers
+es el adaptador predeterminado. Para cambiarlo, configura el adaptador y su modelo
+en `.env`:
+
+```dotenv
+CODETRACE_EMBEDDING_PROVIDER=sentence-transformers
+CODETRACE_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+```
+
+Para usar Jina con MLX en Apple silicon, instala el extra `mlx` y configura la
+ruta al modelo descargado:
+
+```dotenv
+CODETRACE_EMBEDDING_PROVIDER=mlx
+CODETRACE_EMBEDDING_MODEL=/ruta/absoluta/jina-code-embeddings-1.5b-mlx
+```
+
+El adaptador carga los pesos y el código del paquete local de Jina. Genera
+vectores de 256 dimensiones con perfiles separados de consulta y fragmento.
+Para cambiar de modelo, vuelve a generar los vectores a partir de los índices
+existentes, incluidos sus artefactos de relaciones:
+
+```bash
+PYTHONPATH=src .venv/bin/python -m codetrace embed --config config.json --repo demo
+```
+
+Los vectores de Jina usan archivos `*.vectors-v*.mlx.json` junto a los índices.
+Sentence Transformers usa sus archivos de vectores habituales. Cuando ambos
+archivos del adaptador seleccionado están preparados, SQLite combina sus
+resultados léxicos y estructurales con los semánticos. `make doctor` comprueba
+el adaptador configurado y los artefactos de cada repositorio. En el modo de recuperación configurado, un repositorio que
+todavía está pendiente de embeddings sigue usando búsqueda léxica y estructural.
+El modo semántico explícito requiere los vectores.
 
 ## Preguntas sobre flujos (0.9.21)
 

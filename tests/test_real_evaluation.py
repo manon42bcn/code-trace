@@ -171,7 +171,6 @@ def test_cli_report_exit_status_and_case_selection(suite, tmp_path):
 
 
 def test_profile_comparison_uses_same_cases_and_semantic_only_provider(suite, monkeypatch):
-    from codetrace import embedding_provider
     from codetrace.embeddings import EmbeddingMetadata
     from codetrace.real_evaluation import compare_profiles
     from codetrace.vector_store import VectorStore
@@ -206,7 +205,7 @@ def test_profile_comparison_uses_same_cases_and_semantic_only_provider(suite, mo
             calls.append(query)
             return [1.0, 0.0]
 
-    monkeypatch.setattr(embedding_provider, 'SentenceTransformerProvider', Fake)
+    monkeypatch.setattr('codetrace.providers.embeddings.registry.SentenceTransformerProvider', Fake)
     report = compare_profiles(dataset, config, selected=['source'])
     assert report['passed'] == 1
     assert report['failed'] == 0

@@ -7,6 +7,7 @@ import shlex
 import sys
 from pathlib import Path
 
+from .embedding_provider import embedding_adapter, embedding_runtime_issue
 from .preparation import (
     assess_sources,
     relationship_checks,
@@ -142,18 +143,19 @@ def diagnose(config_path, *, repos=None, full=False, probe=False, allow_remote=F
             else:
                 from .vector_store import VectorStore
 
+                adapter = embedding_adapter(model)
+                issue = embedding_runtime_issue(model)
+                add(
+                    'embedding_runtime',
+                    'error' if issue else 'ok',
+                    f'{adapter}: {issue or "runtime and local model configuration available."}',
+                    name,
+                )
                 loaded = {key: VectorStore(path) for key, path in stores.items()}
                 validate_vectors_for_index(index, loaded, model)
 
                 add(
                     'vectors', 'ok', 'Model metadata, dimensions and chunk identifiers match.', name
-                )
-                add(
-                    'embedding_runtime',
-                    'ok' if importlib.util.find_spec('sentence_transformers') else 'error',
-                    'Embedding package availability (model not loaded).',
-                    name,
-                    'Run make setup.',
                 )
         except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
             add('vectors', 'error', str(exc), name, rebuild)

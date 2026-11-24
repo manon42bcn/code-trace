@@ -42,3 +42,41 @@ def test_rag_pipeline_generates_and_validates_answer():
     )
     assert result['generated'] is True
     assert result['answer'].answer == 'answer'
+
+
+def test_weak_semantic_matches_cannot_produce_an_unrelated_answer():
+    class Embeddings:
+        minimum_similarity = 0.1
+
+        def embed_query(self, _query):
+            return [1.0]
+
+    class Store:
+        def search(self, _vector, **_options):
+            return [{'chunk_id': 'auth', 'score': 0.04}]
+
+    class Model:
+        provider = 'ollama'
+        model = 'fixture'
+
+        def generate(self, *_args, **_kwargs):
+            raise AssertionError('The model should not receive unrelated evidence')
+
+    index = {
+        'chunks': [
+            {'id': 'auth', 'path': 'auth.py', 'content': 'def login(): pass'},
+        ]
+    }
+    result = answer(
+        '¿Cómo envío datos al servicio de reportes?',
+        index=index,
+        graph={},
+        generation_provider=Model(),
+        prefer_direct=True,
+        semantic_store=Store(),
+        embedding_provider=Embeddings(),
+    )
+
+    assert result['answer_mode'] == 'insufficient_evidence'
+    assert result['answer'].refusal
+    assert result['context']['items'] == []

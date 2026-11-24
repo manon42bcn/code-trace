@@ -177,13 +177,12 @@ def run(args):
         for settings in raw.get('repositories', {}).values():
             settings.setdefault('retrieval', {})['mode'] = args.retrieval_mode
     if use_session:
-        from .semantic_config import resolve_retrieval
+        from .semantic_config import active_vector_paths, resolve_retrieval
 
-        settings, vector_paths, _ = resolve_retrieval(
+        settings, vector_paths, model = resolve_retrieval(
             raw, args.config or Path.cwd() / 'config.json', args.index, resolve_paths=False
         )
-        if settings.get('mode') == 'lexical':
-            vector_paths = None
+        vector_paths = active_vector_paths(settings, vector_paths, model)
         watched.update(
             file_stamps([args.index, args.relationships, *(vector_paths or {}).values()])
         )
@@ -218,14 +217,13 @@ def run(args):
     page_results = None
     if paging and not use_session:
         from .query_pagination import CursorError, decode_cursor, digest
-        from .semantic_config import resolve_retrieval
+        from .semantic_config import active_vector_paths, resolve_retrieval
 
         cursor = decode_cursor(args.cursor) if args.cursor else None
-        settings, paths, _ = resolve_retrieval(
+        settings, paths, model = resolve_retrieval(
             raw, args.config or Path.cwd() / 'config.json', args.index
         )
-        if settings.get('mode') == 'lexical':
-            paths = None
+        paths = active_vector_paths(settings, paths, model)
         snapshot = digest(
             {
                 'query': query,
@@ -496,6 +494,7 @@ def render_query(
         semantic_store=stores,
         embedding_provider=embedding_provider,
         generation_provider=provider,
+        prefer_direct=args.mode == 'answer',
         metrics_source='agent_query',
         history=conversation.history() if conversation else None,
         allow_remote=args.allow_remote,
@@ -645,6 +644,8 @@ def render_query(
                 **({'routing': routing} if routing is not None else {}),
             },
         )
+    if result.get('answer_mode'):
+        output['answer_mode'] = result['answer_mode']
     if conversation:
         conversation.remember(query, generated.answer)
         output['session'] = conversation.identifier

@@ -5,6 +5,7 @@ from __future__ import annotations
 from .evidence_context import chunk_lookup
 from .hybrid_search import hybrid_search
 from .lexical_search import search_index
+from .providers.embeddings.metrics import embed_query
 from .query_planning import active_sources, plan_query
 from .query_routing import classify_query
 from .semantic_search import search_vectors
@@ -73,21 +74,32 @@ def search_hybrid(
     )
     semantic = []
 
-    def semantic_results(store):
+    def semantic_results(store, vector):
         if isinstance(store, list):
             if allowed_chunk_ids is None:
                 return store
             return [row for row in store if row.get('chunk_id') in allowed_chunk_ids][:limit]
         return search_vectors(
-            store, provider, term, top_k=limit, allowed_chunk_ids=allowed_chunk_ids
+            store,
+            provider,
+            term,
+            top_k=limit,
+            allowed_chunk_ids=allowed_chunk_ids,
+            query_vector=vector,
         )
 
     if 'semantic' in sources and semantic_store and provider:
         if semantic_profile == 'two_stage' and isinstance(semantic_store, dict):
             v1 = semantic_store.get('v1')
             v2 = semantic_store.get('v2')
-            v1_results = semantic_results(v1)
-            v2_results = semantic_results(v2)
+            vector = (
+                embed_query(provider, term)
+                if (allowed_chunk_ids is None or allowed_chunk_ids)
+                and not (isinstance(v1, list) and isinstance(v2, list))
+                else None
+            )
+            v1_results = semantic_results(v1, vector)
+            v2_results = semantic_results(v2, vector)
             semantic = two_stage_retrieve(
                 v1_results,
                 v2_results,
